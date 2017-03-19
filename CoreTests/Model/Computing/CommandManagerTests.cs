@@ -63,7 +63,6 @@ namespace Core.Tests.Model.Computing
 			var function = new BasicFunction()
 			{
 				Id = 1,
-				Name = "CallFunction1",
 				Header = function_header
 			};
 

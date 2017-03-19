@@ -6,8 +6,8 @@ using Core.Model.Headers.Functions;
 
 namespace Core.Model.Bodies.Functions
 {
-	public class ControlFunction : ControlFunctionHeader
+	public class ControlFunction : Function
 	{
-		public CommandTemplate Commands { get; set; }
+		public IEnumerable<CommandTemplate> Commands { get; set; }
 	}
 }

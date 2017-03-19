@@ -32,7 +32,7 @@ namespace Core.Model.Headers.Commands
 
 		public virtual FunctionHeader FunctionHeader { get; set; }
 
-		public virtual IEnumerable<InvokeHeader> TriggeredCommands { get; set; }
+		public virtual List<InvokeHeader> TriggeredCommands { get; set; }
 
 	}
 }

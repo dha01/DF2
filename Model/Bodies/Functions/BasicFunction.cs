@@ -9,6 +9,5 @@ namespace Core.Model.Bodies.Functions
 	public class BasicFunction : Function
 	{
 		public int Id { get; set; }
-		public string Name { get; set; }
 	}
 }

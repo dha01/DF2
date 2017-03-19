@@ -10,6 +10,7 @@ namespace Core.Model.Headers.Functions
 
 	public class FunctionHeader : InvokeHeader
 	{
+		public string Name { get; set; }
 	}
 }
 

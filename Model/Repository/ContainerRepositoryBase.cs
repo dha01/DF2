@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,31 +12,50 @@ namespace Core.Model.Repository
 		where T_conteiner : IContainer 
 		where T_header : InvokeHeader
 	{
-		private List<T_conteiner> _items;
-		private List<T_header> _itemHeaders;
+		private ConcurrentDictionary<string, T_conteiner> _items;
+		private ConcurrentDictionary<string, T_header> _itemHeaders;
 
-		private Dictionary<T_header, Action<T_header>> _subscribes; 
+		private ConcurrentDictionary<string,  List<Action<T_header>>> _subscribes;
+
+		//private Dictionary<T_header, List<Action<T_header>>> _subscribes;
+		private List<Action<T_header>> _unionSubscribe;
+
+
+		//private ConcurrentList<> 
 
 		public ContainerRepositoryBase()
 		{
-			_items = new List<T_conteiner>();
-			_itemHeaders = new List<T_header>();
-			_subscribes = new Dictionary<T_header, Action<T_header>>();
+			_items = new ConcurrentDictionary<string, T_conteiner>();
+			_itemHeaders = new ConcurrentDictionary<string, T_header>();
+			_subscribes = new ConcurrentDictionary<string, List<Action<T_header>>>();
+			_unionSubscribe = new List<Action<T_header>>();
 		}
 		
 		public virtual void Add(IEnumerable<T_conteiner> conteiners)
 		{
-			_items.AddRange(conteiners);
-			_itemHeaders.AddRange(conteiners.Select(x => (T_header)x.Header));
+			// AddRange(conteiners);
+			//_itemHeaders.AddRange(conteiners.Select(x => (T_header)x.Header));
 
+			
 			foreach (var conteiner in conteiners)
 			{
-				var key = _subscribes.Keys.FirstOrDefault(x => x.Equals(conteiner.Header));
-				if (key != null)
+				var key = string.Join("/", conteiner.Header.CallStack);
+				_items[key] = conteiner;
+				_itemHeaders[key] = (T_header)conteiner.Header;
+
+				//var key = _subscribes.Keys.FirstOrDefault(x => x.Equals(conteiner.Header));
+
+
+				List<Action<T_header>> actions;
+				_subscribes.TryRemove(key, out actions);
+				if (actions != null)
 				{
-					_subscribes[key].Invoke((T_header)conteiner.Header);
-					_subscribes.Remove(key);
+					actions.ForEach(x => x.Invoke((T_header)conteiner.Header));
 				}
+				
+				_unionSubscribe.ForEach(x => x.Invoke((T_header)conteiner.Header));
+
+				Console.WriteLine(string.Format("Added Callstack={0}", string.Join("/", conteiner.Header.CallStack)));
 			}
 		}
 
@@ -44,32 +64,45 @@ namespace Core.Model.Repository
 			var list = new List<T_conteiner>();
 			foreach (var header in headers)
 			{
-				var key = _items.FirstOrDefault(x => x.Header.Equals(header));
-				if (key != null)
+				var key = string.Join("/", header.CallStack);
+				if (_items.ContainsKey(key))
 				{
-					list.Add(key);
+					list.Add(_items[key]);
 				}
 			}
 			return list;
 		}
 
-		public virtual void AddHeaders(IEnumerable<T_header> header)
+		public virtual void AddHeaders(IEnumerable<T_header> headers)
 		{
-			_itemHeaders.AddRange(header);
+
+			foreach (var header in headers)
+			{
+				//var key = _itemHeaders.FirstOrDefault(x => x.Equals(header));
+				var key = string.Join("/", header.CallStack);
+				_itemHeaders[key] = header;
+			}
 		}
 
 		public virtual void Subscribe(IEnumerable<T_header> headers, Action<T_header> callback)
 		{
-			foreach (var header in headers)
+			if (headers == null)
 			{
-				var key = _subscribes.Keys.FirstOrDefault(x => x.Equals(header));
-				if (key != null)
+				_unionSubscribe.Add(callback);
+			}
+			else
+			{
+				foreach (var header in headers)
 				{
-					_subscribes[key] += callback;
-				}
-				else
-				{
-					_subscribes.Add(header, callback);
+					var key = string.Join("/", header.CallStack);
+					if (_subscribes.ContainsKey(key))
+					{
+						_subscribes[key].Add(callback);
+					}
+					else
+					{
+						_subscribes[key] = new List<Action<T_header>>() { callback };
+					}
 				}
 			}
 		}

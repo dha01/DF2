@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Core.Model.Bodies.Commands;
 using Core.Model.Bodies.Data;
+using Core.Model.Execution;
 using Core.Model.Headers.Commands;
 using Core.Model.Repository;
 
@@ -18,6 +19,8 @@ namespace Core.Model.Job
 		private IEnumerable<Job> _jobs;
 
 		private Action<Command> _onReliseJob;
+
+		private IExecutionManager _executionManager;
 
 		public Action<Command> OnReliseJob
 		{
@@ -34,9 +37,9 @@ namespace Core.Model.Job
 
 		public virtual object ExecutionServiceFactory { get; set; }
 
-		public JobManager()
+		public JobManager(IExecutionManager execution_manager)
 		{
-			_jobs = new List<Job>() { new Job() };
+			_jobs = new List<Job>() { new Job(execution_manager) };
 		}
 
 		public bool HasFreeJob()

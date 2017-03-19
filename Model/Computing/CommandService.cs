@@ -165,7 +165,7 @@ namespace Core.Model.Computing
 						break;
 					}
 				}
-
+				/*
 				if (data_cell != null)
 				{
 					_dataCellRepository.Add(new[] { data_cell });
@@ -175,7 +175,7 @@ namespace Core.Model.Computing
 				{
 					// TODO: Нужно что то делать если ни у кого из владельцев нет нужных данных.
 					throw new NotImplementedException("Нужно что то делать если ни у кого из владельцев нет нужных данных.");
-				}
+				}*/
 			}
 		}
 

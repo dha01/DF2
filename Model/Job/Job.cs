@@ -6,7 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Core.Model.Bodies.Base;
 using Core.Model.Bodies.Commands;
+using Core.Model.Bodies.Data;
 using Core.Model.Bodies.Functions;
+using Core.Model.Execution;
 using Core.Model.Headers.Commands;
 using Core.Model.Repository;
 
@@ -27,13 +29,16 @@ namespace Core.Model.Job
 		private Queue<Command> CommandQueue { get; set; }
 
 
+		private IExecutionManager _executionManager;
+
 		private Task _currentTask;
 
 		private ManualResetEvent _eventReset = new ManualResetEvent(false);
 
-		public Job()
+		public Job(IExecutionManager execution_manager)
 		{
 			CommandQueue = new Queue<Command>();
+			_executionManager = execution_manager;
 		}
 
 		public void Start()
@@ -57,20 +62,20 @@ namespace Core.Model.Job
 		{
 			while (CommandQueue.Count > 0)
 			{
-				var command = CommandQueue.Dequeue();
-
-				switch (((BasicFunction) command.Function).Id)
+			/*	try
+				{*/
+					var command = CommandQueue.Dequeue();
+					_executionManager.Execute(command.Function, command.InputData, command.OutputData);
+					/*command.OutputData.Data
+					command.OutputData.HasValue = true;*/
+					//invoke
+					Callback(command);
+				/*}
+				catch (Exception)
 				{
-					case 1:
-						command.OutputData.Data = (int)command.InputData.ToArray()[0].Data + (int)command.InputData.ToArray()[1].Data;
-						break;
-					case 2:
-						command.OutputData.Data = (int)command.InputData.ToArray()[0].Data * (int)command.InputData.ToArray()[1].Data;
-						break;
-				}
-				command.OutputData.HasValue = true;
-				//invoke
-				Callback(command);
+					
+					throw;
+				}*/
 			}
 		}
 

@@ -6,6 +6,7 @@ using System.Net;
 using System.Text;
 using Core.Model.Bodies.Commands;
 using Core.Model.Bodies.Data;
+using Core.Model.Bodies.Functions;
 using Core.Model.Headers.Base;
 using Core.Model.Headers.Commands;
 using Core.Model.Headers.Data;
@@ -48,6 +49,8 @@ namespace Core.Model.Computing
 			_commandHeaders = new Queue<CommandHeader>();
 			_preparingCommandHeaders = new Queue<CommandHeader>();
 			_readyCommands = new Queue<Command>();
+
+			_commandRepository.Subscribe(null, OnNewCommand);
 		}
 
 		/// <summary>
@@ -56,31 +59,37 @@ namespace Core.Model.Computing
 		/// <param name="result"></param>
 		private void OnReliseJob(Command result)
 		{
-			_dataCellRepository.Add(new[] { result.OutputData });
+			if (result.Function.GetType() != typeof(ControlFunction))
+			{
+				_dataCellRepository.Add(new[] { result.OutputData });
 
-			if (_readyCommands.Count > 0)
-			{
-				_jobManager.AddCommand(_readyCommands.Dequeue());
+				if (_readyCommands.Count > 0)
+				{
+					_jobManager.AddCommand(_readyCommands.Dequeue());
+				}
+				else
+				if (_commandHeaders.Count > 0)
+				{
+					PrepareOrSendToWait(new[] { _commandHeaders.Dequeue() });
+				}
 			}
-			else
-			if (_commandHeaders.Count > 0)
-			{
-				PrepareOrSendToWait(new[] {_commandHeaders.Dequeue()});
-			}
+		}
+
+		public void OnNewCommand(InvokeHeader invoke_header)
+		{
+			var command_header = _commandRepository.Get(new[] { invoke_header }).First();
+			
+			_functionRepository.AddHeaders(new [] { command_header.FunctionHeader });
+			_dataCellRepository.AddHeaders(new [] { command_header.OutputDataHeader });
+			_dataCellRepository.AddHeaders(command_header.InputDataHeaders);
+
+			Console.WriteLine(string.Format("New command Callstack={0}", string.Join("/", invoke_header.CallStack)));
+			PrepareOrSendToWait(new[] { command_header });
 		}
 
 		public virtual void AddHeaders(IEnumerable<CommandHeader> command_headers)
 		{
-			_functionRepository.AddHeaders(command_headers.Select(x => x.FunctionHeader));
-			_dataCellRepository.AddHeaders(command_headers.Select(x => x.OutputDataHeader));
-			foreach (var command_header in command_headers)
-			{
-				_dataCellRepository.AddHeaders(command_header.InputDataHeaders);				
-			}
-
-			_commandRepository.AddHeaders(command_headers);
-
-			PrepareOrSendToWait(command_headers);
+			_commandRepository.Add(command_headers);
 		}
 
 		/// <summary>
