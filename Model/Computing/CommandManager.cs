@@ -1,41 +1,34 @@
-﻿
-using System;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Text;
 using Core.Model.Bodies.Commands;
-using Core.Model.Bodies.Data;
 using Core.Model.Bodies.Functions;
 using Core.Model.Headers.Base;
 using Core.Model.Headers.Commands;
-using Core.Model.Headers.Data;
-using Core.Model.Headers.Functions;
 using Core.Model.Job;
 using Core.Model.Repository;
 
 namespace Core.Model.Computing
 {
 	/// <summary>
-	/// Управляет потоком команд и решает нужно лих их исполнять на этом узле или ищет другой подходящий узел и отправляет на исполнение на него.
+	/// Управляет потоком команд и решает нужно ли их исполнять на этом узле или ищет другой подходящий узел и отправляет на исполнение на него.
 	/// </summary>
 	public class CommandManager : ICommandManager
 	{
-		private IDataCellRepository _dataCellRepository;
+		private readonly IDataCellRepository _dataCellRepository;
 
-		private IFunctionRepository _functionRepository;
+		private readonly IFunctionRepository _functionRepository;
 
-		private IJobManager _jobManager;
+		private readonly IJobManager _jobManager;
 
-		private ICommandRepository _commandRepository;
+		private readonly ICommandRepository _commandRepository;
 
-		private Queue<CommandHeader> _commandHeaders;
+		private readonly ConcurrentQueue<CommandHeader> _commandHeaders;
 
-		private Queue<CommandHeader> _preparingCommandHeaders;
+		private readonly ConcurrentQueue<Command> _readyCommands;
 
-		private Queue<Command> _readyCommands;
-
-		private ICommandService _commandService;
+		private readonly ICommandService _commandService;
 
 		public CommandManager(IFunctionRepository function_repository, IDataCellRepository data_cell_repository, IJobManager job_manager, ICommandRepository command_repository, ICommandService command_service)
 		{
@@ -46,9 +39,8 @@ namespace Core.Model.Computing
 			_commandRepository = command_repository;
 			_commandService = command_service;
 
-			_commandHeaders = new Queue<CommandHeader>();
-			_preparingCommandHeaders = new Queue<CommandHeader>();
-			_readyCommands = new Queue<Command>();
+			_commandHeaders = new ConcurrentQueue<CommandHeader>();
+			_readyCommands = new ConcurrentQueue<Command>();
 
 			_commandRepository.Subscribe(null, OnNewCommand);
 		}
@@ -62,15 +54,24 @@ namespace Core.Model.Computing
 			if (result.Function.GetType() != typeof(ControlFunction))
 			{
 				_dataCellRepository.Add(new[] { result.OutputData });
+				Console.WriteLine(string.Format("CommandManager.OnReliseJob _readyCommands.Count={0}, _commandHeaders.Count={1}", _readyCommands.Count, _commandHeaders.Count));
+			}
 
-				if (_readyCommands.Count > 0)
+			if (_readyCommands.Count > 0)
+			{
+				Command command;
+				if (_readyCommands.TryDequeue(out command))
 				{
-					_jobManager.AddCommand(_readyCommands.Dequeue());
+					_jobManager.AddCommand(command);
 				}
-				else
-				if (_commandHeaders.Count > 0)
+			}
+			else
+			if (_commandHeaders.Count > 0)
+			{
+				CommandHeader command_header;
+				if (_commandHeaders.TryDequeue(out command_header))
 				{
-					PrepareOrSendToWait(new[] { _commandHeaders.Dequeue() });
+					PrepareOrSendToWait(new[] { command_header });
 				}
 			}
 		}
@@ -83,7 +84,7 @@ namespace Core.Model.Computing
 			_dataCellRepository.AddHeaders(new [] { command_header.OutputDataHeader });
 			_dataCellRepository.AddHeaders(command_header.InputDataHeaders);
 
-			Console.WriteLine(string.Format("New command Callstack={0}", string.Join("/", invoke_header.CallStack)));
+			Console.WriteLine(string.Format("CommandManager.OnNewCommand Callstack={0}", string.Join("/", invoke_header.CallStack)));
 			PrepareOrSendToWait(new[] { command_header });
 		}
 
@@ -100,8 +101,11 @@ namespace Core.Model.Computing
 		{
 			var list = command_headers as IList<CommandHeader> ?? command_headers.ToList();
 			int free_job_count = _jobManager.GetFreeJobCount();
+			
+			// Отправляет на исполнение количество команд равное числу свододных исполнителей.
 			_commandService.PrepareAndInvokeCommands(list.Take(free_job_count), SendToInvokeCommand);
 
+			// Отправляет оставшиеся заголовки команд в очередь ожидания.
 			foreach (var command_header in list.Skip(free_job_count))
 			{
 				_commandHeaders.Enqueue(command_header);

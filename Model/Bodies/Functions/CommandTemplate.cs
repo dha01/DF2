@@ -9,8 +9,8 @@ namespace Core.Model.Bodies.Functions
 	public class CommandTemplate : Function
 	{
 		public FunctionHeader FunctionHeader { get; set; }
-		public IEnumerable<int> InputDataIds { get; set; }
+		public List<int> InputDataIds { get; set; }
 		public int OutputDataId { get; set; }
-		public IEnumerable<int> TriggeredCommandIds { get; set; }
+		public List<int> TriggeredCommandIds { get; set; }
 	}
 }

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Core.Model.Bodies.Data;
 using Core.Model.Bodies.Functions;
 
 namespace Core.Model.Execution
 {
+	/// <summary>
+	/// Класс для управления исполняющими сервисами.
+	/// </summary>
 	public class ExecutionManager : IExecutionManager
 	{
 

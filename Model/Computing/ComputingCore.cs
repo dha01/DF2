@@ -15,25 +15,24 @@ using Core.Model.Repository;
 
 namespace Core.Model.Computing
 {
-
+	/// <summary>
+	/// Вычислительное ядро.
+	/// </summary>
 	public class ComputingCore : IComputingCore
 	{
-		private IFunctionRepository _functionRepository;
+		private readonly IFunctionRepository _functionRepository;
 
-		private IDataCellRepository _dataCellRepository;
+		private readonly IDataCellRepository _dataCellRepository;
 
-		private ICommandRepository _commandRepository;
+		private readonly ICommandRepository _commandRepository;
 
-		private IJobManager _jobManager;
+		private readonly ICommandManager _commandManager;
 
-		private ICommandManager _commandManager;
-
-		public ComputingCore(IFunctionRepository function_repository, IDataCellRepository data_cell_repository, IJobManager job_manager, ICommandRepository command_repository, ICommandManager command_manager)
+		public ComputingCore(IFunctionRepository function_repository, IDataCellRepository data_cell_repository, ICommandRepository command_repository, ICommandManager command_manager)
 		{
 			_functionRepository = function_repository;
 			_dataCellRepository = data_cell_repository;
 			_commandRepository = command_repository;
-			_jobManager = job_manager;
 			_commandManager = command_manager;
 		}
 
@@ -55,6 +54,7 @@ namespace Core.Model.Computing
 		}
 
 		#endregion
+
 		#region Данные
 
 		public virtual void AddDataCell(IEnumerable<DataCell> data_cells)
@@ -82,7 +82,6 @@ namespace Core.Model.Computing
 		}
 
 		#endregion
-
 	}
 }
 

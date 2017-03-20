@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Core.Model.Headers.Functions
+﻿namespace Core.Model.Headers.Functions
 {
-	
-
+	/// <summary>
+	/// Заголовок функции C#.
+	/// </summary>
 	public class CSharpFunctionHeader : ComputingFunctionHeader
 	{
 		public virtual string FileName { get; set; }

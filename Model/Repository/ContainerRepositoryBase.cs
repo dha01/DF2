@@ -2,12 +2,19 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using Core.Model.Bodies.Base;
 using Core.Model.Headers.Base;
 
 namespace Core.Model.Repository
 {
+	/// <summary>
+	/// Базовый репозиторий контейнеров.
+	/// </summary>
+	/// <typeparam name="T_conteiner"></typeparam>
+	/// <typeparam name="T_header"></typeparam>
 	public class ContainerRepositoryBase<T_conteiner, T_header> : IContainerRepository<T_conteiner, T_header> 
 		where T_conteiner : IContainer 
 		where T_header : InvokeHeader
@@ -43,19 +50,15 @@ namespace Core.Model.Repository
 				_items[key] = conteiner;
 				_itemHeaders[key] = (T_header)conteiner.Header;
 
-				//var key = _subscribes.Keys.FirstOrDefault(x => x.Equals(conteiner.Header));
-
-
 				List<Action<T_header>> actions;
 				_subscribes.TryRemove(key, out actions);
 				if (actions != null)
 				{
-					actions.ForEach(x => x.Invoke((T_header)conteiner.Header));
+					Parallel.Invoke(actions.Select(x => new Action(() => { x.Invoke((T_header) conteiner.Header); })).ToArray());
 				}
-				
-				_unionSubscribe.ForEach(x => x.Invoke((T_header)conteiner.Header));
+				Parallel.Invoke(_unionSubscribe.Select(x => new Action(() => { x.Invoke((T_header)conteiner.Header); })).ToArray());
 
-				Console.WriteLine(string.Format("Added Callstack={0}", string.Join("/", conteiner.Header.CallStack)));
+				Console.WriteLine(string.Format("ContainerRepositoryBase Add Callstack={0}", string.Join("/", conteiner.Header.CallStack)));
 			}
 		}
 
@@ -95,6 +98,14 @@ namespace Core.Model.Repository
 				foreach (var header in headers)
 				{
 					var key = string.Join("/", header.CallStack);
+
+					if (_items.ContainsKey(key))
+					{
+						var local_header = header;
+						Parallel.Invoke(() => { callback.Invoke(local_header); });
+						continue;
+					}
+
 					if (_subscribes.ContainsKey(key))
 					{
 						_subscribes[key].Add(callback);

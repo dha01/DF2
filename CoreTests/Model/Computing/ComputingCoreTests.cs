@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Core.Model;
 using Core.Model.Bodies.Data;
 using Core.Model.Bodies.Functions;
+using Core.Model.Commands.Build;
 using Core.Model.Computing;
 using Core.Model.Execution;
 using Core.Model.Headers.Base;
@@ -44,7 +45,7 @@ namespace Core.Tests.Model.Computing
 			_jobManager = Mock.Of<IJobManager>();
 			_commandManager = Mock.Of<ICommandManager>();
 
-			_computingCore = new ComputingCore(_functionRepository, _dataCellRepository, _jobManager, _commandRepository, _commandManager);
+			_computingCore = new ComputingCore(_functionRepository, _dataCellRepository, _commandRepository, _commandManager);
 		}
 		
 		[Test]
@@ -63,7 +64,7 @@ namespace Core.Tests.Model.Computing
 			Mock.Get(_commandManager).Verify(x => x.AddHeaders(command_headers));
 		}
 
-		private static BasicFunction CallFunction1 = new BasicFunction()
+		private static BasicFunction Sum = new BasicFunction()
 			{
 				Id = 1,
 				Header = new BasicFunctionHeader()
@@ -75,7 +76,7 @@ namespace Core.Tests.Model.Computing
 				}
 			};
 
-		private static BasicFunction CallFunction2 = new BasicFunction()
+		private static BasicFunction Mul = new BasicFunction()
 		{
 			Id = 2,
 			Header = new BasicFunctionHeader()
@@ -87,6 +88,51 @@ namespace Core.Tests.Model.Computing
 			}
 		};
 
+		private ControlFunction BuildedControlFunction = CommandBuilder.Build(
+			"ControlCallFunction",
+			new List<string>() {"User1", "Process1", "ControlCallFunction"},
+			() =>
+			{
+				var cmd = new CommandBuilder();
+
+				var a = cmd.InputData();
+				var b = cmd.InputData();
+				var c = cmd.InputData();
+				var d = cmd.InputData();
+				var e = cmd.InputData();
+				var f = cmd.InputData();
+				var g = cmd.InputData();
+				var h = cmd.InputData();
+
+				var tmp_1 = cmd.NewCommand(Sum, new[] { a, b });
+				var tmp_2 = cmd.NewCommand(Sum, new[] { c, d });
+				var tmp_3 = cmd.NewCommand(Sum, new[] { e, f });
+				var tmp_4 = cmd.NewCommand(Sum, new[] { g, h });
+
+				var tmp_5 = cmd.NewCommand(Sum, new[] { tmp_1, tmp_2 });
+				var tmp_6 = cmd.NewCommand(Sum, new[] { tmp_3, tmp_4 });
+
+				var tmp_7 = cmd.NewCommand(Sum, new[] { tmp_5, tmp_6 });
+
+				/*
+				var tmp_1 = cmd.NewCommand(Sum, new[] {a, b});
+				var tmp_2 = cmd.NewCommand(Mul, new[] {a, b});
+				var tmp_3 = cmd.NewCommand(Sum, new[] {tmp_1, tmp_2});
+				var tmp_4 = cmd.NewCommand(Sum, new[] { tmp_3, b });
+				var tmp_5 = cmd.NewCommand(Sum, new[] { tmp_4, b });*/
+				
+				/*var tmp_1 = cmd.NewCommand(Sum, new[] { a, b });
+				var tmp_2 = cmd.NewCommand(Mul, new[] { a, b });
+				var tmp_3 = cmd.NewCommand(Sum, new[] { tmp_1, tmp_2 });
+				var tmp_4 = cmd.NewCommand(Mul, new[] { tmp_1, tmp_2 });
+				var tmp_5 = cmd.NewCommand(Sum, new[] { tmp_3, tmp_4 });
+				var tmp_6 = cmd.NewCommand(Sum, new[] { tmp_5, b });
+				var tmp_7 = cmd.NewCommand(Sum, new[] { tmp_6, b });*/
+
+				cmd.Return(tmp_7);
+
+				return cmd;
+			});
 		/// <summary>
 		/// function(int a, int b)
 		/// {
@@ -95,38 +141,50 @@ namespace Core.Tests.Model.Computing
 		///		var x3 = CallFunction1(x1, x2);
 		///		return CallFunction1(x3, x2);
 		/// }
+		/// 
+		/// function(int a, int b)
+		/// {
+		///		var x2 = CallFunction2(a, b);
+		///		return CallFunction1(CallFunction1(CallFunction1(a, b), x2), x2);
+		/// }
+		/// 
+		/// function(int a, int b)
+		/// {
+		///		var x2 = (a * b);
+		///		return ((a + b) + x2) + x2);
+		/// }
 		/// </summary>
-		private static ControlFunction ControlCallFunction = new ControlFunction()
+		/*private static ControlFunction ControlCallFunction = new ControlFunction()
 		{
 			Commands = new List<CommandTemplate>()
 				{
 					new CommandTemplate()
 					{
-						InputDataIds = new [] { 1, 2 },
-						TriggeredCommandIds = new int[] { 1 },
+						InputDataIds = new List<int> { 1, 2 },
+						TriggeredCommandIds = new List<int> { 2 },
 						OutputDataId = 3,
-						FunctionHeader = (FunctionHeader)CallFunction1.Header
+						FunctionHeader = (FunctionHeader)Sum.Header
 					},
 					new CommandTemplate()
 					{
-						InputDataIds = new [] { 1, 2 },
-						TriggeredCommandIds = new int[]{},
+						InputDataIds = new List<int> { 1, 2 },
+						TriggeredCommandIds = new List<int>{ 2 },
 						OutputDataId = 4,
-						FunctionHeader = (FunctionHeader)CallFunction2.Header
+						FunctionHeader = (FunctionHeader)Mul.Header
 					},
 					new CommandTemplate()
 					{
-						InputDataIds = new [] { 3, 4 },
-						TriggeredCommandIds = new int[]{},
+						InputDataIds = new List<int> { 3, 4 },
+						TriggeredCommandIds = new List<int>{ 3 },
 						OutputDataId = 5,
-						FunctionHeader = (FunctionHeader)CallFunction1.Header
+						FunctionHeader = (FunctionHeader)Sum.Header
 					},
 					new CommandTemplate()
 					{
-						InputDataIds = new [] { 5, 2 },
-						TriggeredCommandIds = new int[]{},
+						InputDataIds = new List<int> { 5, 2 },
+						TriggeredCommandIds = new List<int>{},
 						OutputDataId = 0,
-						FunctionHeader = (FunctionHeader)CallFunction1.Header
+						FunctionHeader = (FunctionHeader)Sum.Header
 					}
 				},
 			Header = new ControlFunctionHeader()
@@ -136,8 +194,8 @@ namespace Core.Tests.Model.Computing
 				CallStack = new List<string>() { "User1", "Process1", "ControlCallFunction" },
 			}
 		};
-
-		private static DataCell a = new DataCell()
+		*/
+		/*private static DataCell a = new DataCell()
 		{
 			Data = 5,
 			HasValue = true,
@@ -159,7 +217,7 @@ namespace Core.Tests.Model.Computing
 				CallStack = new List<string>() { "User1", "Process1", "Data2" },
 				HasValue = new Dictionary<Owner, bool>()
 			}
-		};
+		};*/
 
 		[Test]
 		public void IntegrationTest()
@@ -170,6 +228,8 @@ namespace Core.Tests.Model.Computing
 				CallStack = new List<string>() { "User1", "Process1", "result" },
 				HasValue = new Dictionary<Owner, bool>()
 			};
+			var control_function = BuildedControlFunction;
+			var input_data = CommandBuilder.BuildInputData(new object[] {1, 2, 3, 4, 5, 6, 7, 8}, new List<string>() {"User1", "Process1" });
 
 			var command_headers = new List<CommandHeader>()
 			{
@@ -177,12 +237,8 @@ namespace Core.Tests.Model.Computing
 				{
 					CallStack = new List<string>() { "User1", "Process1" },
 					//Owners = new List<Owner>(),
-					FunctionHeader = (FunctionHeader)ControlCallFunction.Header,
-					InputDataHeaders = new List<DataCellHeader>()
-					{
-						(DataCellHeader)a.Header,
-						(DataCellHeader)b.Header
-					},
+					FunctionHeader = (FunctionHeader)control_function.Header,
+					InputDataHeaders = input_data.Select(x=>(DataCellHeader)x.Header).ToList(),
 					OutputDataHeader = output_data_header,
 					TriggeredCommands = new List<InvokeHeader>()
 				}
@@ -219,13 +275,12 @@ namespace Core.Tests.Model.Computing
 			var computing_core = new ComputingCore(
 				function_repository,
 				data_cell_repository,
-				job_manager,
 				command_repository, 
 				command_manager
 			);
 
-			function_repository.Add(new Function[] { CallFunction1, CallFunction2, ControlCallFunction });
-			computing_core.AddDataCell(new[] { a, b });
+			function_repository.Add(new Function[] { Sum, Mul, control_function });
+			computing_core.AddDataCell(input_data);
 
 			computing_core.AddCommandHeaders(command_headers);
 

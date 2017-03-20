@@ -9,8 +9,9 @@ using Core.Model.Headers.Functions;
 
 namespace Core.Model.Headers.Commands
 {
-	
-
+	/// <summary>
+	/// Заголовок команды.
+	/// </summary>
 	public class CommandHeader : InvokeHeader, IContainer
 	{
 		public InvokeHeader Header
@@ -26,7 +27,7 @@ namespace Core.Model.Headers.Commands
 			}
 		}
 
-		public virtual IEnumerable<DataCellHeader> InputDataHeaders { get; set; }
+		public virtual List<DataCellHeader> InputDataHeaders { get; set; }
 
 		public virtual DataCellHeader OutputDataHeader { get; set; }
 

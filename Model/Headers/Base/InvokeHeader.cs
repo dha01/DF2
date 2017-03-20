@@ -5,8 +5,9 @@ using System.Text;
 
 namespace Core.Model.Headers.Base
 {
-	
-
+	/// <summary>
+	/// Заголовок для исполнения.
+	/// </summary>
 	public class InvokeHeader : Header
 	{
 		public virtual IEnumerable<string> CallStack { get; set; }

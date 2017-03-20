@@ -8,6 +8,9 @@ using Core.Model.Bodies.Functions;
 
 namespace Core.Model.Execution
 {
+	/// <summary>
+	/// Сервис класса для управления исполняющими сервисами.
+	/// </summary>
 	public interface IExecutionManager : IExecutionService
 	{
 		void Execute(BasicFunction function, IEnumerable<DataCell> input_data, DataCell output);

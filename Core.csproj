@@ -42,7 +42,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="Model\Bodies\Base\Container.cs" />
     <Compile Include="Model\Bodies\Base\ContainerBase.cs" />
     <Compile Include="Model\Bodies\Commands\Command.cs" />
@@ -53,6 +52,7 @@
     <Compile Include="Model\Bodies\Functions\BasicFunction.cs" />
     <Compile Include="Model\Bodies\Functions\Function.cs" />
     <Compile Include="Model\Bodies\Functions\IFunction.cs" />
+    <Compile Include="Model\Commands\Build\CommandBuilder.cs" />
     <Compile Include="Model\Computing\CommandManager.cs" />
     <Compile Include="Model\Computing\CommandService.cs" />
     <Compile Include="Model\Computing\ComputingCore.cs" />
@@ -78,8 +78,8 @@
     <Compile Include="Model\Job\Job.cs" />
     <Compile Include="Model\Job\JobManager.cs" />
     <Compile Include="Model\Owner.cs" />
-    <Compile Include="Model\Repository\FunctionRepository.cs" />
     <Compile Include="Model\Repository\DataCellRepository.cs" />
+    <Compile Include="Model\Repository\FunctionRepository.cs" />
     <Compile Include="Model\Repository\CommandRepository.cs" />
     <Compile Include="Model\Repository\ContainerRepositoryBase.cs" />
     <Compile Include="Model\Repository\ICommandRepository.cs" />

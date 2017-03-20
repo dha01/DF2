@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Core.Model.Bodies.Commands;
 using Core.Model.Bodies.Data;
 using Core.Model.Execution;
@@ -10,13 +11,16 @@ using Core.Model.Repository;
 
 namespace Core.Model.Job
 {
+	/// <summary>
+	/// Класс для управления пулом исполнителей.
+	/// </summary>
 	public class JobManager : IJobManager
 	{
-		private const int MAX_JOB_COUNT = 1;
+		private const int MAX_JOB_COUNT = 4;
 
 		private ICommandRepository _commandRepository;
 
-		private IEnumerable<Job> _jobs;
+		private List<Job> _jobs;
 
 		private Action<Command> _onReliseJob;
 
@@ -39,7 +43,11 @@ namespace Core.Model.Job
 
 		public JobManager(IExecutionManager execution_manager)
 		{
-			_jobs = new List<Job>() { new Job(execution_manager) };
+			_jobs = new List<Job>();
+			for (int i = 0; i < MAX_JOB_COUNT; i++)
+			{
+				_jobs.Add(new Job(execution_manager){Id = i});
+			}
 		}
 
 		public bool HasFreeJob()
@@ -47,6 +55,7 @@ namespace Core.Model.Job
 			return true;
 		}
 
+		private static int index = 0;
 		/// <summary>
 		/// Добавляет команду в очередь на исполнение.
 		/// </summary>

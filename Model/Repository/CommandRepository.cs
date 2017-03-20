@@ -8,6 +8,9 @@ using Core.Model.Headers.Commands;
 
 namespace Core.Model.Repository
 {
+	/// <summary>
+	/// Репозиторий команд.
+	/// </summary>
 	public class CommandRepository : ContainerRepositoryBase<CommandHeader, InvokeHeader>, ICommandRepository
 	{
 	}

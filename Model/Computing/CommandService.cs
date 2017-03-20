@@ -13,7 +13,7 @@ using Core.Model.Repository;
 namespace Core.Model.Computing
 {
 	/// <summary>
-	/// Серфис команд. Выполняет операции с командами.
+	/// Сервис команд. Выполняет операции с командами.
 	/// </summary>
 	public class CommandService : ICommandService
 	{
@@ -97,7 +97,7 @@ namespace Core.Model.Computing
 			{
 				return not_ready_data;
 			}
-
+			
 			invoke_method(command);
 
 			return null;
@@ -132,6 +132,11 @@ namespace Core.Model.Computing
 						requested_data_cells.AddRange(not_ready_data.Item2);
 						var header = command_header;
 						_dataCellRepository.Subscribe(not_ready_data.Item2, (function_header) => { InvokeOrSendToWait(header, invoke_method); });
+
+						foreach (var h in not_ready_data.Item2)
+						{
+							Console.WriteLine(string.Format("CommandService.PrepareAndInvokeCommands отсутствуют данные для вычисления {0}. {1}", command_header.FunctionHeader.Name, string.Join("/", h.CallStack)));
+						}
 					}
 				}
 			}
