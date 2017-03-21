@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using Core.Model.Bodies.Commands;
 using Core.Model.Bodies.Data;
+using Core.Model.Headers.Base;
 using Core.Model.Headers.Commands;
 using Core.Model.Headers.Data;
 using Core.Model.Headers.Functions;
@@ -80,6 +81,10 @@ namespace Core.Model.Computing
 
 			return new Command()
 			{
+				Header = new InvokeHeader()
+				{
+					CallStack = command_header.CallStack
+				},
 				Function = function,
 				InputData = input_data,
 				OutputData = output_data
@@ -133,10 +138,10 @@ namespace Core.Model.Computing
 						var header = command_header;
 						_dataCellRepository.Subscribe(not_ready_data.Item2, (function_header) => { InvokeOrSendToWait(header, invoke_method); });
 
-						foreach (var h in not_ready_data.Item2)
+						/*foreach (var h in not_ready_data.Item2)
 						{
 							Console.WriteLine(string.Format("CommandService.PrepareAndInvokeCommands отсутствуют данные для вычисления {0}. {1}", command_header.FunctionHeader.Name, string.Join("/", h.CallStack)));
-						}
+						}*/
 					}
 				}
 			}

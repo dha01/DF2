@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Core.Model.Bodies.Data;
 using Core.Model.Bodies.Functions;
 using Core.Model.Headers.Commands;
 using Core.Model.Headers.Data;
+using Core.Model.Headers.Functions;
 using Core.Model.Repository;
 
 namespace Core.Model.Execution
@@ -37,8 +39,10 @@ namespace Core.Model.Execution
 			// Добавляем ячейки для всех остальных команд.
 			for (int i = 0; i < control_function.Commands.Count(); i++)
 			{
-				var callstack = function.Header.CallStack.ToList();
-				callstack.Add((i + count).ToString());
+				var call_stack_count = input_data.First().Header.CallStack.Count();
+				var callstack = input_data.First().Header.CallStack.Take(call_stack_count - 1).ToList();
+				callstack.Add(function.GetHeader<FunctionHeader>().CallstackToString("."));
+				callstack.Add(string.Format("tmp_var_{0}", i + count));
 				var data = new DataCell()
 				{
 					Header = new DataCellHeader()
@@ -59,9 +63,10 @@ namespace Core.Model.Execution
 			// Добаляем новые команды на исполнение
 			foreach (var command_template in command_list)
 			{
-				var callstack = function.Header.CallStack.ToList();
-				callstack.Add(string.Format("{0}_{1}", command_template.OutputDataId, command_template.FunctionHeader.Name));
-
+				var call_stack_count = input_data.First().Header.CallStack.Count();
+				var callstack = input_data.First().Header.CallStack.Take(call_stack_count - 1).ToList();
+				callstack.Add(function.GetHeader<FunctionHeader>().CallstackToString("."));
+				callstack.Add(String.Format("{0}<{1}>",command_template.FunctionHeader.CallstackToString("."), command_template.OutputDataId));
 				var new_command = new CommandHeader
 				{
 					Owners = new List<Owner>(),

@@ -9,6 +9,7 @@ using Core.Model.Bodies.Base;
 using Core.Model.Bodies.Commands;
 using Core.Model.Bodies.Data;
 using Core.Model.Bodies.Functions;
+using Core.Model.Commands.Logger;
 using Core.Model.Execution;
 using Core.Model.Headers.Commands;
 using Core.Model.Headers.Data;
@@ -58,10 +59,10 @@ namespace Core.Model.Job
 				{
 					while (true)
 					{
-					//	_eventReset.WaitOne();
+						_eventReset.WaitOne();
 						Invoke();
-					/*_eventReset.Reset();
-						Invoke();*/
+						_eventReset.Reset();
+						Invoke();
 
 						
 					}
@@ -80,18 +81,35 @@ namespace Core.Model.Job
 				//Console.WriteLine("Job.Invoke2 CommandQueue.Count={0}", CommandQueue.Count);
 			/*	try
 				{*/
-					Command command;
-					CommandQueue.TryDequeue(out command);
-					Console.WriteLine(string.Format("{2} Job.Invoke {0} начал выполнять функцию {1}", Id, string.Join("/", ((DataCellHeader)command.OutputData.Header).CallStack), DateTime.Now));
+				Command command;
+				CommandQueue.TryDequeue(out command);
+				//Console.WriteLine(string.Format("{2} Job.Invoke {0} начал выполнять функцию {1}", Id, string.Join("/", ((DataCellHeader)command.OutputData.Header).CallStack), DateTime.Now));
 				
-					_executionManager.Execute(command.Function, command.InputData, command.OutputData);
-					Interlocked.Decrement(ref _queueLength);
-					/*command.OutputData.Data
-					command.OutputData.HasValue = true;*/
-					//invoke
-					Console.WriteLine(string.Format("{2} Job.Invoke {0} выполнил функцию {1}", Id, string.Join("/", ((DataCellHeader)command.OutputData.Header).CallStack), DateTime.Now));
+				_executionManager.Execute(command.Function, command.InputData, command.OutputData);
+				Interlocked.Decrement(ref _queueLength);
+				/*command.OutputData.Data
+				command.OutputData.HasValue = true;*/
+				//invoke
 
-					Parallel.Invoke(()=> { Callback(command); });
+				StackTraceLogger.Write(command);
+
+				string str = "";
+
+				str += command.Header.CallstackToString() + " : ";
+				str += command.Function.GetHeader<FunctionHeader>().CallstackToString(".") + "(";
+
+				str += string.Join(", ", command.InputData.Select(x => x.GetHeader<DataCellHeader>().CallstackToString()));
+
+				str += ")";
+
+				str += " -> " + command.OutputData.Header.CallstackToString();
+				Console.WriteLine(str);
+
+				//Console.WriteLine(string.Format("{2} Job.Invoke {0} выполнил функцию {1}",  Id, string.Join("/", ((DataCellHeader)command.OutputData.Header).CallStack), DateTime.Now));
+					
+				//Console.WriteLine(string.Format("{2} Job.Invoke {0} выполнил функцию {1}", Id, string.Join("/", ((DataCellHeader)command.OutputData.Header).CallStack), DateTime.Now));
+
+				Parallel.Invoke(()=> { Callback(command); });
 				/*}
 				catch (Exception)
 				{

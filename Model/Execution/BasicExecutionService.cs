@@ -33,7 +33,7 @@ namespace Core.Model.Execution
 					throw new Exception(string.Format("Функция Id={0}, Name={1} не реализована.", basic_function.Id, ((FunctionHeader)basic_function.Header).Name));
 			}
 
-			Console.WriteLine(string.Format("BasicExecutionService.Execute Callstack={0}, Function={1}. OutputData.Callstack={2}", string.Join("/", function.Header.CallStack), ((FunctionHeader)function.Header).Name, string.Join("/", output.Header.CallStack)));
+			//Console.WriteLine(string.Format("BasicExecutionService.Execute Callstack={0}, Function={1}. OutputData.Callstack={2}", string.Join("/", function.Header.CallStack), ((FunctionHeader)function.Header).Name, string.Join("/", output.Header.CallStack)));
 		}
 
 	}

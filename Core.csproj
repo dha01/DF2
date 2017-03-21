@@ -53,6 +53,9 @@
     <Compile Include="Model\Bodies\Functions\Function.cs" />
     <Compile Include="Model\Bodies\Functions\IFunction.cs" />
     <Compile Include="Model\Commands\Build\CommandBuilder.cs" />
+    <Compile Include="Model\Commands\Logger\FunctionCall.cs" />
+    <Compile Include="Model\Commands\Logger\NewCommand.cs" />
+    <Compile Include="Model\Commands\Logger\StackTraceLogger.cs" />
     <Compile Include="Model\Computing\CommandManager.cs" />
     <Compile Include="Model\Computing\CommandService.cs" />
     <Compile Include="Model\Computing\ComputingCore.cs" />

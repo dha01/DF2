@@ -12,6 +12,11 @@ namespace Core.Model.Headers.Base
 	{
 		public virtual IEnumerable<string> CallStack { get; set; }
 
+		public string CallstackToString(string separator = "/")
+		{
+			return string.Join(separator, CallStack);
+		}
+
 		public bool Equals(InvokeHeader obj)
 		{
 			return CallStack.SequenceEqual(obj.CallStack);

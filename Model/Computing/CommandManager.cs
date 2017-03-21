@@ -54,7 +54,7 @@ namespace Core.Model.Computing
 			if (result.Function.GetType() != typeof(ControlFunction))
 			{
 				_dataCellRepository.Add(new[] { result.OutputData });
-				Console.WriteLine(string.Format("CommandManager.OnReliseJob _readyCommands.Count={0}, _commandHeaders.Count={1}", _readyCommands.Count, _commandHeaders.Count));
+				//Console.WriteLine(string.Format("CommandManager.OnReliseJob _readyCommands.Count={0}, _commandHeaders.Count={1}", _readyCommands.Count, _commandHeaders.Count));
 			}
 
 			if (_readyCommands.Count > 0)

@@ -8,6 +8,7 @@ using Core.Model;
 using Core.Model.Bodies.Data;
 using Core.Model.Bodies.Functions;
 using Core.Model.Commands.Build;
+using Core.Model.Commands.Logger;
 using Core.Model.Computing;
 using Core.Model.Execution;
 using Core.Model.Headers.Base;
@@ -88,9 +89,28 @@ namespace Core.Tests.Model.Computing
 			}
 		};
 
-		private ControlFunction BuildedControlFunction = CommandBuilder.Build(
+		private static ControlFunction BuildedControlFunction2 = CommandBuilder.Build(
 			"ControlCallFunction",
-			new List<string>() {"User1", "Process1", "ControlCallFunction"},
+			new List<string>() { "User1", "BasicFunctions", "ControlCallFunction2" },
+			() =>
+			{
+				var cmd = new CommandBuilder();
+
+				var a = cmd.InputData();
+				var b = cmd.InputData();
+
+				var tmp_1 = cmd.NewCommand(Sum, new[] { a, b });
+				var tmp_2 = cmd.NewCommand(Mul, new[] { a, b });
+				var tmp_3 = cmd.NewCommand(Mul, new[] { tmp_1, tmp_2 });
+				cmd.Return(tmp_3);
+
+				return cmd;
+			});
+
+
+		private static ControlFunction BuildedControlFunction = CommandBuilder.Build(
+			"ControlCallFunction",
+			new List<string>() { "User1", "BasicFunctions", "ControlCallFunction" },
 			() =>
 			{
 				var cmd = new CommandBuilder();
@@ -112,7 +132,7 @@ namespace Core.Tests.Model.Computing
 				var tmp_5 = cmd.NewCommand(Sum, new[] { tmp_1, tmp_2 });
 				var tmp_6 = cmd.NewCommand(Sum, new[] { tmp_3, tmp_4 });
 
-				var tmp_7 = cmd.NewCommand(Sum, new[] { tmp_5, tmp_6 });
+				var tmp_7 = cmd.NewCommand(BuildedControlFunction2, new[] { tmp_5, tmp_6 });
 
 				/*
 				var tmp_1 = cmd.NewCommand(Sum, new[] {a, b});
@@ -235,7 +255,7 @@ namespace Core.Tests.Model.Computing
 			{
 				new CommandHeader()
 				{
-					CallStack = new List<string>() { "User1", "Process1" },
+					CallStack = new List<string>() { "User1", "Process1", "User1.BasicFunctions.ControlCallFunction" },
 					//Owners = new List<Owner>(),
 					FunctionHeader = (FunctionHeader)control_function.Header,
 					InputDataHeaders = input_data.Select(x=>(DataCellHeader)x.Header).ToList(),
@@ -279,7 +299,7 @@ namespace Core.Tests.Model.Computing
 				command_manager
 			);
 
-			function_repository.Add(new Function[] { Sum, Mul, control_function });
+			function_repository.Add(new Function[] { Sum, Mul, BuildedControlFunction, BuildedControlFunction2 });
 			computing_core.AddDataCell(input_data);
 
 			computing_core.AddCommandHeaders(command_headers);
@@ -290,7 +310,10 @@ namespace Core.Tests.Model.Computing
 			{
 				r = computing_core.GetDataCell(new[] { output_data_header }).FirstOrDefault();
 			}
-			
+
+			Thread.Sleep(1000);
+
+			var log = StackTraceLogger.GetLog();
 
 			if (r == null)
 			{
