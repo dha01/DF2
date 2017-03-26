@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Core.Model.Bodies.Commands;
 using Core.Model.Bodies.Data;
 using Core.Model.Bodies.Functions;
+using Core.Model.DataFlowLogics.Logics.Service;
 using Core.Model.Headers.Commands;
 using Core.Model.Headers.Data;
 using Core.Model.Headers.Functions;
@@ -17,11 +18,22 @@ namespace Core.Model.Execution
 	/// </summary>
 	public class ControlExecutionService : IExecutionService
 	{
-		private ICommandRepository _commandRepository;
+		//private ICommandRepository _commandRepository;
 
-		public ControlExecutionService(ICommandRepository command_repository)
+		private IDataFlowLogicsService _dataFlowLogicsService;
+
+		public ControlExecutionService(/*ICommandRepository command_repository*/)
 		{
-			_commandRepository = command_repository;
+			//_commandRepository = command_repository;
+		}
+
+		/// <summary>
+		/// TODO: костыль, но лучшего решения пока не придумал.
+		/// </summary>
+		/// <param name="data_flow_logics_service"></param>
+		public void SetDataFlowLogicsService(IDataFlowLogicsService data_flow_logics_service)
+		{
+			_dataFlowLogicsService = data_flow_logics_service;
 		}
 
 		public virtual void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, CommandContext command_context = null)
@@ -68,7 +80,7 @@ namespace Core.Model.Execution
 				var callstack = command_context.Header.CallStack.ToList(); //input_data.First().Header.CallStack.Take(call_stack_count - 1).ToList();
 				//callstack.Add(function.GetHeader<FunctionHeader>().CallstackToString("."));
 				callstack.Add(String.Format("{0}<{1}>",command_template.FunctionHeader.CallstackToString("."), command_template.OutputDataId));
-				var new_command = new CommandHeader
+				var new_command_header = new CommandHeader
 				{
 					Owners = new List<Owner>(),
 					CallStack = callstack,
@@ -85,7 +97,11 @@ namespace Core.Model.Execution
 
 				//Console.WriteLine(string.Format("ControlExecutionService.Execute Callstack={0},  Function={1}", string.Join("/", function.Header.CallStack), ((FunctionHeader)function.Header).Name));
 
-				Parallel.Invoke(() => { _commandRepository.Add(new[] { new_command }, command_template.InputDataIds.Any(x => x <= input_data_count)); });
+				Parallel.Invoke(() =>
+				{
+					_dataFlowLogicsService.AddNewCommandHeader(new_command_header);
+						/* _commandRepository.Add(new[] { new_command }, command_template.InputDataIds.Any(x => x <= input_data_count));*/
+				});
 			}
 		}
 	}

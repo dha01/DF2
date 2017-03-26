@@ -13,9 +13,9 @@ namespace Core.Model.Bodies.Commands
 	{
 		public Function Function { get; set; }
 
-		public IEnumerable<CommandHeader> TriggeredCommands { get; set; }
+		public List<CommandHeader> TriggeredCommands { get; set; }
 
-		public IEnumerable<DataCell> InputData { get; set; }
+		public List<DataCell> InputData { get; set; }
 		public DataCell OutputData { get; set; }
 	}
 }

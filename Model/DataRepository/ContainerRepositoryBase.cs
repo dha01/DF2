@@ -19,13 +19,13 @@ namespace Core.Model.Repository
 		where T_conteiner : IContainer 
 		where T_header : InvokeHeader
 	{
-		private ConcurrentDictionary<string, T_conteiner> _items;
-		private ConcurrentDictionary<string, T_header> _itemHeaders;
+		protected ConcurrentDictionary<string, T_conteiner> _items;
+		protected ConcurrentDictionary<string, T_header> _itemHeaders;
 
-		private ConcurrentDictionary<string,  List<Action<T_header>>> _subscribes;
+		protected ConcurrentDictionary<string, List<Action<T_header>>> _subscribes;
 
 		//private Dictionary<T_header, List<Action<T_header>>> _subscribes;
-		private List<Action<T_header>> _unionSubscribe;
+		protected List<Action<T_header>> _unionSubscribe;
 
 
 		//private ConcurrentList<> 
@@ -38,6 +38,32 @@ namespace Core.Model.Repository
 			_unionSubscribe = new List<Action<T_header>>();
 		}
 
+		protected virtual void AddConteiner(T_conteiner conteiner)
+		{
+			var key = string.Join("/", conteiner.Header.CallStack);
+			if (_items.ContainsKey(key))
+			{
+				_items[key].Header.AddOwners(conteiner.Header.Owners);
+			}
+			else
+			{
+				_items[key] = conteiner;
+			}
+		}
+
+		protected virtual void AddHeader(T_header header)
+		{
+			var key = string.Join("/", header.CallStack);
+			if (_itemHeaders.ContainsKey(key))
+			{
+				_itemHeaders[key].AddOwners(header.Owners);
+			}
+			else
+			{
+				_itemHeaders[key] = header;
+			}
+		}
+
 		public virtual void Add(IEnumerable<T_conteiner> conteiners, bool send_subsctibers = true)
 		{
 			// AddRange(conteiners);
@@ -47,8 +73,8 @@ namespace Core.Model.Repository
 			foreach (var conteiner in conteiners)
 			{
 				var key = string.Join("/", conteiner.Header.CallStack);
-				_items[key] = conteiner;
-				_itemHeaders[key] = (T_header)conteiner.Header;
+				AddConteiner(conteiner);
+				AddHeader((T_header)conteiner.Header);
 
 				//if (send_subsctibers)
 				//{
@@ -90,6 +116,11 @@ namespace Core.Model.Repository
 			}
 		}
 
+		protected virtual bool IsItemExists(string key)
+		{
+			return _items.ContainsKey(key);
+		}
+
 		public virtual void Subscribe(IEnumerable<T_header> headers, Action<T_header> callback)
 		{
 			if (headers == null)
@@ -102,7 +133,7 @@ namespace Core.Model.Repository
 				{
 					var key = string.Join("/", header.CallStack);
 
-					if (_items.ContainsKey(key))
+					if (IsItemExists(key))
 					{
 						var local_header = header;
 						Parallel.Invoke(() => { callback.Invoke(local_header); });

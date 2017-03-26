@@ -11,6 +11,7 @@ using Core.Model.Bodies.Functions;
 using Core.Model.Commands.Build;
 using Core.Model.Commands.Logger;
 using Core.Model.Computing;
+using Core.Model.DataFlowLogics.Logics.Service;
 using Core.Model.Execution;
 using Core.Model.Headers.Base;
 using Core.Model.Headers.Commands;
@@ -38,6 +39,8 @@ namespace Core.Tests.Model.Computing
 
 		private ComputingCore _computingCore;
 
+		private IDataFlowLogicsService _dataFlowLogicsService;
+
 		[SetUp]
 		public void SetUp()
 		{
@@ -46,8 +49,8 @@ namespace Core.Tests.Model.Computing
 			_commandRepository = Mock.Of<ICommandRepository>();
 			_jobManager = Mock.Of<IJobManager>();
 			_commandManager = Mock.Of<ICommandManager>();
-
-			_computingCore = new ComputingCore(_functionRepository, _dataCellRepository, _commandRepository, _commandManager);
+			_dataFlowLogicsService = Mock.Of<IDataFlowLogicsService>();
+			_computingCore = new ComputingCore(_functionRepository, _dataCellRepository, _commandRepository/*, _commandManager*/, _dataFlowLogicsService);
 		}
 		
 		[Test]
@@ -418,36 +421,46 @@ namespace Core.Tests.Model.Computing
 			var function_repository = new FunctionRepository();
 			var data_cell_repository = new DataCellRepository();
 			var command_repository = new CommandRepository();
+
+			
+
+			var control_execution_service = new ControlExecutionService();
+
 			var execution_manager = new ExecutionManager(
 				new List<IExecutionService>()
 				{
 					new BasicExecutionService(),
-					new ControlExecutionService(command_repository),
+					control_execution_service,
 					new CSharpExecutionService()
 				}
 			);
 
 			var job_manager = new JobManager(execution_manager);
+			var preparation_command_service = new PreparationCommandService(data_cell_repository, function_repository);
+			var data_flow_logics_service = new DataFlowLogicsService(job_manager, preparation_command_service);
+
+			control_execution_service.SetDataFlowLogicsService(data_flow_logics_service);
 
 			var command_service = new CommandService(
 				function_repository,
 				data_cell_repository,
 				command_repository
 			);
-
+			/*
 			var command_manager = new CommandManager(
 				function_repository,
 				data_cell_repository,
 				job_manager,
 				command_repository,
 				command_service
-			);
+			);*/
 
 			var computing_core = new ComputingCore(
 				function_repository,
 				data_cell_repository,
 				command_repository, 
-				command_manager
+				//command_manager
+				data_flow_logics_service
 			);
 
 			function_repository.Add(new Function[] { Sum, Mul, BuildedControlFunction, BuildedControlFunction2 });
@@ -462,7 +475,7 @@ namespace Core.Tests.Model.Computing
 				r = computing_core.GetDataCell(new[] { output_data_header }).FirstOrDefault();
 			}
 
-			Thread.Sleep(1000);
+			//Thread.Sleep(1000);
 			StackTraceLogger.Wait();
 			var log = StackTraceLogger.GetLog();
 

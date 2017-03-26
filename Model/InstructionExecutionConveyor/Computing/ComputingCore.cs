@@ -6,6 +6,7 @@ using Core.Model.Bodies.Base;
 using Core.Model.Bodies.Commands;
 using Core.Model.Bodies.Data;
 using Core.Model.Bodies.Functions;
+using Core.Model.DataFlowLogics.Logics.Service;
 using Core.Model.Headers.Base;
 using Core.Model.Headers.Commands;
 using Core.Model.Headers.Data;
@@ -26,14 +27,17 @@ namespace Core.Model.Computing
 
 		private readonly ICommandRepository _commandRepository;
 
-		private readonly ICommandManager _commandManager;
+		//private readonly ICommandManager _commandManager;
 
-		public ComputingCore(IFunctionRepository function_repository, IDataCellRepository data_cell_repository, ICommandRepository command_repository, ICommandManager command_manager)
+		private readonly IDataFlowLogicsService _dataFlowLogicsService;
+
+		public ComputingCore(IFunctionRepository function_repository, IDataCellRepository data_cell_repository, ICommandRepository command_repository/*, ICommandManager command_manager*/, IDataFlowLogicsService data_flow_logics_service)
 		{
 			_functionRepository = function_repository;
 			_dataCellRepository = data_cell_repository;
 			_commandRepository = command_repository;
-			_commandManager = command_manager;
+			//_commandManager = command_manager;
+			_dataFlowLogicsService = data_flow_logics_service;
 		}
 
 		public virtual void Invoke(object first_command)
@@ -45,7 +49,8 @@ namespace Core.Model.Computing
 
 		public virtual void AddCommandHeaders(IEnumerable<CommandHeader> command_headers)
 		{
-			_commandManager.AddHeaders(command_headers);
+			//_commandManager.AddHeaders(command_headers);
+			_dataFlowLogicsService.AddNewCommandHeader(command_headers);
 		}
 
 		public IEnumerable<CommandHeader> GetCommandHeaders(IEnumerable<InvokeHeader> invoke_header)
