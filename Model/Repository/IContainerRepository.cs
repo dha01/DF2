@@ -10,7 +10,7 @@ namespace Core.Model.Repository
 
 	public interface IContainerRepository<T_conteiner, T_header>
 	{
-		void Add(IEnumerable<T_conteiner> conteiner);
+		void Add(IEnumerable<T_conteiner> conteiner, bool send_subscribes = true);
 
 		IEnumerable<T_conteiner> Get(IEnumerable<T_header> header);
 

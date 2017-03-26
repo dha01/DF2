@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Core.Model.Bodies.Commands;
 using Core.Model.Bodies.Data;
 using Core.Model.Bodies.Functions;
 using Core.Model.Headers.Commands;
@@ -23,10 +24,11 @@ namespace Core.Model.Execution
 			_commandRepository = command_repository;
 		}
 
-		public virtual void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output)
+		public virtual void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, CommandContext command_context = null)
 		{
 			var control_function = (ControlFunction)function;
-			var tmp_count = control_function.Commands.Count() + input_data.Count() + 1;
+			var input_data_count = input_data.Count();
+			var tmp_count = control_function.Commands.Count() + input_data_count + 1;
 
 			// Локальный массив временных данных функции. Добавляем выходные данные нулевым элементом.
 			var tmp_array = new List<DataCell>(tmp_count) { output };
@@ -39,8 +41,7 @@ namespace Core.Model.Execution
 			// Добавляем ячейки для всех остальных команд.
 			for (int i = 0; i < control_function.Commands.Count(); i++)
 			{
-				var call_stack_count = input_data.First().Header.CallStack.Count();
-				var callstack = input_data.First().Header.CallStack.Take(call_stack_count - 1).ToList();
+				var callstack = command_context.Header.CallStack.ToList();
 				callstack.Add(function.GetHeader<FunctionHeader>().CallstackToString("."));
 				callstack.Add(string.Format("tmp_var_{0}", i + count));
 				var data = new DataCell()
@@ -64,8 +65,8 @@ namespace Core.Model.Execution
 			foreach (var command_template in command_list)
 			{
 				var call_stack_count = input_data.First().Header.CallStack.Count();
-				var callstack = input_data.First().Header.CallStack.Take(call_stack_count - 1).ToList();
-				callstack.Add(function.GetHeader<FunctionHeader>().CallstackToString("."));
+				var callstack = command_context.Header.CallStack.ToList(); //input_data.First().Header.CallStack.Take(call_stack_count - 1).ToList();
+				//callstack.Add(function.GetHeader<FunctionHeader>().CallstackToString("."));
 				callstack.Add(String.Format("{0}<{1}>",command_template.FunctionHeader.CallstackToString("."), command_template.OutputDataId));
 				var new_command = new CommandHeader
 				{
@@ -76,10 +77,15 @@ namespace Core.Model.Execution
 					TriggeredCommands = command_template.TriggeredCommandIds.Select(x => command_list[x].Header).ToList(),
 					FunctionHeader = command_template.FunctionHeader
 				};
+				if (callstack.Last().StartsWith("User1.BasicFunctions.ControlCallFunction2")
+				|| callstack.Last().StartsWith("User1.BasicFunctions.CallFunction2<4>"))
+				{
+					var c = 2;
+				}
 
 				//Console.WriteLine(string.Format("ControlExecutionService.Execute Callstack={0},  Function={1}", string.Join("/", function.Header.CallStack), ((FunctionHeader)function.Header).Name));
-				
-				Parallel.Invoke(()=> { _commandRepository.Add(new[] {new_command}); });
+
+				Parallel.Invoke(() => { _commandRepository.Add(new[] { new_command }, command_template.InputDataIds.Any(x => x <= input_data_count)); });
 			}
 		}
 	}

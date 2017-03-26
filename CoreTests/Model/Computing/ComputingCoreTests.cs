@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -63,6 +64,156 @@ namespace Core.Tests.Model.Computing
 			_computingCore.AddCommandHeaders(command_headers);
 
 			Mock.Get(_commandManager).Verify(x => x.AddHeaders(command_headers));
+		}
+
+		[Test]
+		public void ThredTest()
+		{
+			
+			var x = 0;
+			var warning_count = 0;
+			var warning2_count = 0;
+			var try_count = 0;
+			long added = 0;
+
+			var in_process = 0;
+
+			var object_lock = new Object();
+			var object_lock_complited = new Object();
+
+			long length = 0;
+
+			long complited = 0;
+
+			var random = new Random(135);
+			/*
+			Action critical_action = () =>
+			{
+				while()
+					x++;
+					if (x > 1)
+					{
+						warning_count++;
+						Console.WriteLine("Warning {0} / {1}", warning_count, try_count);
+					}
+					x--;
+			};*/
+
+
+			ManualResetEvent event_reset = new ManualResetEvent(false);
+
+			var time_limit = DateTime.Now.AddSeconds(10);
+			Action action_p = () =>
+			{
+				while (time_limit > DateTime.Now)
+				{
+					var count = random.Next(0, 10000);
+					added += count;
+					try_count++;
+					
+					lock (object_lock)
+					{
+						Interlocked.Add(ref length, count);
+						event_reset.Set();
+					}
+					
+				//	Console.WriteLine("Set {0}", count);
+					
+					
+					//Thread.SpinWait(10000);
+					//Thread.Sleep(1);
+				}
+			};
+
+			Action invoke = () =>
+			{
+				while (true)
+				{
+					lock (object_lock)
+					{
+						if (length > 0)
+						{
+							Interlocked.Decrement(ref length);
+							Interlocked.Increment(ref in_process);
+
+							Console.WriteLine(in_process);
+						}
+						else
+						{
+							Console.WriteLine("break; {0}", Interlocked.Read(ref length));
+							break;
+						}
+					}
+					/*
+					var sl = length;
+					lock (object_lock)
+					{
+						length--;
+					}
+					if (sl - length < 1)
+					{
+						warning2_count++;
+						Console.WriteLine("Warning 2 {0} / {1}", warning2_count, try_count);
+					}*/
+
+					var sdt = DateTime.Now.AddMilliseconds(1000);
+
+					while (DateTime.Now < sdt)
+					{
+						var xx = 5 + 5;
+					}
+
+					Interlocked.Increment(ref complited);
+					Interlocked.Decrement(ref in_process);
+				}
+			};
+			
+
+			Action action_m = () =>
+			{
+				while (time_limit > DateTime.Now)
+				{
+					if (length > 0 && !event_reset.WaitOne(0))
+					{
+						warning_count++;
+						Console.WriteLine("Warning ! {0} / {1} {2}", warning_count, try_count, length);
+					}
+					
+					event_reset.WaitOne();
+					invoke();
+					lock (object_lock)
+					{
+						if (Interlocked.Read(ref length) == 0)
+						{
+							event_reset.Reset();
+						}
+					}
+				}
+			};
+
+			//Task.Factory.StartNew(action_m)
+
+			var task_list = new List<Task>();
+			var task_count = 16;
+
+			task_list.Add(new Task(action_p));
+
+			for (int i = 0; i < task_count; i++)
+			{
+				task_list.Add(new Task(action_m));
+			}
+
+			var process = Process.GetCurrentProcess();
+			Console.WriteLine("ProcessorCount {0} ", Environment.ProcessorCount);
+			Console.WriteLine("CurrentManagedThreadId {0} ", Environment.CurrentManagedThreadId);
+			task_list.ForEach(t => t.Start());
+
+			PerformanceCounter theCPUCounter = new PerformanceCounter("Process", "% Processor Time", Process.GetCurrentProcess().ProcessName);
+			
+			Task.WaitAll(task_list.ToArray(), 10000);
+			Console.WriteLine("Complited {0} / {1}", complited, added);
+
+			Console.WriteLine("theCPUCounter {0} ", process.TotalProcessorTime);
 		}
 
 		private static BasicFunction Sum = new BasicFunction()
@@ -312,8 +463,10 @@ namespace Core.Tests.Model.Computing
 			}
 
 			Thread.Sleep(1000);
-
+			StackTraceLogger.Wait();
 			var log = StackTraceLogger.GetLog();
+
+			var scheme = StackTraceLogger.GetLogScheme();
 
 			if (r == null)
 			{

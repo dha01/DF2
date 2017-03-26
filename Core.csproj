@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="Model\Bodies\Base\Container.cs" />
     <Compile Include="Model\Bodies\Base\ContainerBase.cs" />
+    <Compile Include="Model\Bodies\Commands\CommandContext.cs" />
     <Compile Include="Model\Bodies\Commands\Command.cs" />
     <Compile Include="Model\Bodies\Data\DataCell.cs" />
     <Compile Include="Model\Bodies\Functions\CommandTemplate.cs" />

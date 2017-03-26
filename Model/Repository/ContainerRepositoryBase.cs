@@ -37,8 +37,8 @@ namespace Core.Model.Repository
 			_subscribes = new ConcurrentDictionary<string, List<Action<T_header>>>();
 			_unionSubscribe = new List<Action<T_header>>();
 		}
-		
-		public virtual void Add(IEnumerable<T_conteiner> conteiners)
+
+		public virtual void Add(IEnumerable<T_conteiner> conteiners, bool send_subsctibers = true)
 		{
 			// AddRange(conteiners);
 			//_itemHeaders.AddRange(conteiners.Select(x => (T_header)x.Header));
@@ -50,14 +50,17 @@ namespace Core.Model.Repository
 				_items[key] = conteiner;
 				_itemHeaders[key] = (T_header)conteiner.Header;
 
-				List<Action<T_header>> actions;
-				_subscribes.TryRemove(key, out actions);
-				if (actions != null)
-				{
-					Parallel.Invoke(actions.Select(x => new Action(() => { x.Invoke((T_header) conteiner.Header); })).ToArray());
-				}
-				Parallel.Invoke(_unionSubscribe.Select(x => new Action(() => { x.Invoke((T_header)conteiner.Header); })).ToArray());
+				//if (send_subsctibers)
+				//{
+					List<Action<T_header>> actions;
+					_subscribes.TryRemove(key, out actions);
+					if (actions != null)
+					{
+						Parallel.Invoke(actions.Select(x => new Action(() => { x.Invoke((T_header) conteiner.Header); })).ToArray());
+					}
 
+					Parallel.Invoke(_unionSubscribe.Select(x => new Action(() => { x.Invoke((T_header)conteiner.Header); })).ToArray());
+				//}
 				//Console.WriteLine(string.Format("ContainerRepositoryBase Add Callstack={0}", string.Join("/", conteiner.Header.CallStack)));
 			}
 		}

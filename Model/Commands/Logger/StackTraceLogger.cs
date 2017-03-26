@@ -30,6 +30,53 @@ namespace Core.Model.Commands.Logger
 			return zeroLvl;
 		}
 
+
+		private static string PresentFuncName(string name)
+		{
+			return name.Split('.').Last().Replace("<", "_").Replace(">", "");
+		}
+
+		public static string GetLogScheme(FunctionCall function_call = null)
+		{
+			var result = function_call == null ? "digraph Diagram { \n" : "";
+						
+			var function = function_call ?? zeroLvl;
+			if(function.Childs != null && function.Childs.Any())
+			{
+				result += string.Format("subgraph cluster_{0} {{ label = \"{0}\"; \n", PresentFuncName(function.LvlName));
+			}
+			
+
+			if (function.Childs == null || !function.Childs.Any())
+			{
+				if (function.InputDataNames != null)
+				{
+					foreach (var name in function.InputDataNames)
+					{
+						result += string.Format("{1} -> {0};\n", PresentFuncName(function.LvlName), name);
+					}
+				}
+
+				result += string.Format("{0} -> {1};\n", PresentFuncName(function.LvlName), function.OutputDataName);
+			}
+			else
+			{
+				foreach (var child in function.Childs )
+				{
+					result += GetLogScheme(child) + "\n";
+				}
+			}
+			if (function.Childs != null && function.Childs.Any())
+			{
+				result += "}\n";
+			}
+			if (function_call == null)
+			{
+				result += "}\n";
+			}
+			return result;
+		}
+
 		private static ManualResetEvent _eventReset = new ManualResetEvent(false);
 
 		public static void Write(Command command)
@@ -42,21 +89,20 @@ namespace Core.Model.Commands.Logger
 			_eventReset.Set();
 		}
 
-		private static readonly Task _currentTask;
+
 
 		static StackTraceLogger()
 		{
-			_currentTask = new Task(() =>
+			Task.Factory.StartNew(() =>
 			{
 				while (true)
 				{
-					_eventReset.WaitOne();
-					Invoke();
+					//_eventReset.WaitOne();
+					Invoke(); /*
 					_eventReset.Reset();
-					Invoke();
+					Invoke();*/
 				}
-			});
-			_currentTask.Start();
+			}, TaskCreationOptions.AttachedToParent);
 		}
 
 		private static void Invoke()
@@ -72,7 +118,10 @@ namespace Core.Model.Commands.Logger
 
 		public static void Wait()
 		{
-			
+			while (_writeQueue.Count > 0)
+			{
+				Thread.Sleep(100);
+			}
 		}
 
 		private static void Write(NewCommand new_command, FunctionCall current = null)
@@ -87,19 +136,35 @@ namespace Core.Model.Commands.Logger
 				/*current.InputDataNames = command.InputData.Select(x => x.Header.CallStack.Last()).ToList();
 				current.OutputDataName = command.OutputData.Header.CallStack.Last();
 				current.FunctionName = command.Function.GetHeader<FunctionHeader>().CallstackToString(".");*/
-
-				var new_child = new FunctionCall()
+				if (command.GetHeader<InvokeHeader>().CallStack.Last().StartsWith("User1.BasicFunctions.ControlCallFunction2"))
 				{
-					Lvl = current.Lvl + 1,
-					CallStack = command.GetHeader<InvokeHeader>().CallStack.ToList(),
-					InputDataNames = command.InputData.Select(x => x.Header.CallStack.Last()).ToList(),
-					OutputDataName = command.OutputData.Header.CallStack.Last(),
-					FunctionName = command.Function.GetHeader<FunctionHeader>().CallstackToString("."),
-					LvlName = command.GetHeader<InvokeHeader>().CallStack.Last(),
-					Childs = new List<FunctionCall>()
-				};
-
-				current.Childs.Add(new_child);
+					var c = 2;
+				}
+				var exist = current.Childs.FirstOrDefault(x => x.LvlName.Equals(command.GetHeader<InvokeHeader>().CallStack.Last()));
+				FunctionCall new_child;
+				if(exist == null)
+				{
+					new_child = new FunctionCall()
+					{
+						Lvl = current.Lvl + 1,
+						CallStack = command.GetHeader<InvokeHeader>().CallStack.ToList(),
+						InputDataNames = command.InputData.Select(x => x.Header.CallStack.Last()).ToList(),
+						OutputDataName = command.OutputData.Header.CallStack.Last(),
+						FunctionName = command.Function.GetHeader<FunctionHeader>().CallstackToString("."),
+						LvlName = command.GetHeader<InvokeHeader>().CallStack.Last(),
+						Childs = new List<FunctionCall>()
+					};
+					current.Childs.Add(new_child);
+				}
+				else
+				{
+					new_child = exist;
+					new_child.FunctionName = command.Function.GetHeader<FunctionHeader>().CallstackToString(".");
+					new_child.InputDataNames = command.InputData.Select(x => x.Header.CallStack.Last()).ToList();
+					new_child.OutputDataName = command.OutputData.Header.CallStack.Last();
+					new_child.CallStack = command.GetHeader<InvokeHeader>().CallStack.ToList();
+				}
+				
 				/*
 				if (current.LvlName.Equals("Process1"))
 				{
@@ -118,6 +183,11 @@ namespace Core.Model.Commands.Logger
 			var lvl_name = command.Header.CallStack.Skip(current.Lvl).Take(1).FirstOrDefault();
 			var exists = current.Childs.FirstOrDefault(x => x.LvlName.Equals(lvl_name));
 
+			if (lvl_name.StartsWith("User1.BasicFunctions.ControlCallFunction2"))
+			{
+				var c = 2;
+			}
+
 			if (exists == null)
 			{
 				exists = new FunctionCall()
@@ -130,9 +200,7 @@ namespace Core.Model.Commands.Logger
 					Parent = null,
 					FunctionName = ""
 				};
-				current.Childs.Add(exists);
-
-				
+				current.Childs.Add(exists);				
 			}
 
 			Write(new_command, exists);

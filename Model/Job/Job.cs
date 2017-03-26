@@ -11,6 +11,7 @@ using Core.Model.Bodies.Data;
 using Core.Model.Bodies.Functions;
 using Core.Model.Commands.Logger;
 using Core.Model.Execution;
+using Core.Model.Headers.Base;
 using Core.Model.Headers.Commands;
 using Core.Model.Headers.Data;
 using Core.Model.Headers.Functions;
@@ -26,9 +27,9 @@ namespace Core.Model.Job
 	{
 		public int Id { get; set; }
 
-		private int _queueLength = 0;
+		private long _queueLength = 0;
 
-		public int QueueLength
+		public long QueueLength
 		{
 			get { return _queueLength; }
 		}
@@ -41,91 +42,88 @@ namespace Core.Model.Job
 
 		private IExecutionManager _executionManager;
 
-		private Task _currentTask;
+		//private Task _currentTask;
 
 		private ManualResetEvent _eventReset = new ManualResetEvent(false);
 
+		Object object_lock = new Object();
 		public Job(IExecutionManager execution_manager)
 		{
 			CommandQueue = new ConcurrentQueue<Command>();
 			_executionManager = execution_manager;
+
+			Task.Factory.StartNew(Invoke, TaskCreationOptions.AttachedToParent);
 		}
 
-		public void Start()
+		public void AddCommand(Command command)
 		{
-			if (_currentTask == null)
+			CommandQueue.Enqueue(command);
+			lock (object_lock)
 			{
-				_currentTask = new Task(() =>
-				{
-					while (true)
-					{
-						_eventReset.WaitOne();
-						Invoke();
-						_eventReset.Reset();
-						Invoke();
-
-						
-					}
-				});
-
-				_currentTask.Start();
+				Interlocked.Increment(ref _queueLength);
+				_eventReset.Set();
 			}
 		}
 
 		private void Invoke()
 		{
-			//Console.WriteLine("Job.Invoke1");
-
-			while (CommandQueue.Count > 0)
+			while (true)
 			{
-				//Console.WriteLine("Job.Invoke2 CommandQueue.Count={0}", CommandQueue.Count);
-			/*	try
-				{*/
-				Command command;
-				CommandQueue.TryDequeue(out command);
-				//Console.WriteLine(string.Format("{2} Job.Invoke {0} начал выполнять функцию {1}", Id, string.Join("/", ((DataCellHeader)command.OutputData.Header).CallStack), DateTime.Now));
-				
-				_executionManager.Execute(command.Function, command.InputData, command.OutputData);
-				Interlocked.Decrement(ref _queueLength);
-				/*command.OutputData.Data
-				command.OutputData.HasValue = true;*/
-				//invoke
-
-				StackTraceLogger.Write(command);
-
-				string str = "";
-
-				str += command.Header.CallstackToString() + " : ";
-				str += command.Function.GetHeader<FunctionHeader>().CallstackToString(".") + "(";
-
-				str += string.Join(", ", command.InputData.Select(x => x.GetHeader<DataCellHeader>().CallstackToString()));
-
-				str += ")";
-
-				str += " -> " + command.OutputData.Header.CallstackToString();
-				Console.WriteLine(str);
-
-				//Console.WriteLine(string.Format("{2} Job.Invoke {0} выполнил функцию {1}",  Id, string.Join("/", ((DataCellHeader)command.OutputData.Header).CallStack), DateTime.Now));
-					
-				//Console.WriteLine(string.Format("{2} Job.Invoke {0} выполнил функцию {1}", Id, string.Join("/", ((DataCellHeader)command.OutputData.Header).CallStack), DateTime.Now));
-
-				Parallel.Invoke(()=> { Callback(command); });
-				/*}
-				catch (Exception)
+				_eventReset.WaitOne();
+				lock (object_lock)
 				{
+					if (Interlocked.Read(ref _queueLength) > 0)
+					{
+						Interlocked.Decrement(ref _queueLength);
+					}
+					else
+					{
+						_eventReset.Reset();
+						continue;
+					}
+				}
+
+				try
+				{
+					Command command;
+					CommandQueue.TryDequeue(out command);
+					//Console.WriteLine(string.Format("{2} Job.Invoke {0} начал выполнять функцию {1}", Id, string.Join("/", ((DataCellHeader)command.OutputData.Header).CallStack), DateTime.Now));
+					//Parallel.Invoke(() => { Parallel.Invoke(() => { Parallel.Invoke(() => { throw new Exception("!"); }); }); });
+
+
+					_executionManager.Execute(command.Function, command.InputData, command.OutputData, new CommandContext() { Header = new InvokeHeader() { CallStack = command.Header.CallStack} });
+
+				//	Interlocked.Decrement(ref _queueLength);
+					/*command.OutputData.Data
+					command.OutputData.HasValue = true;*/
+					//invoke
+
+					StackTraceLogger.Write(command);
+
+					string str = "";
+
+					str += command.Header.CallstackToString() + " : ";
+					str += command.Function.GetHeader<FunctionHeader>().CallstackToString(".") + "(";
+
+					str += string.Join(", ", command.InputData.Select(x => x.GetHeader<DataCellHeader>().CallstackToString()));
+
+					str += ")";
+
+					str += " -> " + command.OutputData.Header.CallstackToString();
+					Console.WriteLine(str);
+
+					//Console.WriteLine(string.Format("{2} Job.Invoke {0} выполнил функцию {1}",  Id, string.Join("/", ((DataCellHeader)command.OutputData.Header).CallStack), DateTime.Now));
 					
-					throw;
-				}*/
+					//Console.WriteLine(string.Format("{2} Job.Invoke {0} выполнил функцию {1}", Id, string.Join("/", ((DataCellHeader)command.OutputData.Header).CallStack), DateTime.Now));
+
+					Parallel.Invoke(()=> { Callback(command); });
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine(e.Message);
+				}
 				//	Console.WriteLine("Job.Invoke");
 			}
-		}
-
-		public void AddCommand(Command command)
-		{
-			Interlocked.Increment(ref _queueLength);
-			CommandQueue.Enqueue(command);
-			_eventReset.Set();
-			Start();
 		}
 	}
 }

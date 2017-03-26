@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Core.Model.Bodies.Commands;
 using Core.Model.Bodies.Data;
 using Core.Model.Bodies.Functions;
 
@@ -22,21 +23,21 @@ namespace Core.Model.Execution
 			}
 		}
 
-		public void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output)
+		public void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, CommandContext command_context = null)
 		{
 			if (function.GetType() == typeof(BasicFunction))
 			{
-				Execute((BasicFunction)function, input_data, output);
+				Execute((BasicFunction)function, input_data, output, command_context);
 			}
 			else
 			if (function.GetType() == typeof(ControlFunction))
 			{
-				Execute((ControlFunction)function, input_data, output);
+				Execute((ControlFunction)function, input_data, output, command_context);
 			}
 			else
 			if (function.GetType() == typeof(CSharpFunction))
 			{
-				Execute((CSharpFunction)function, input_data, output);
+				Execute((CSharpFunction)function, input_data, output, command_context);
 			}
 			else
 			{
@@ -44,11 +45,11 @@ namespace Core.Model.Execution
 			}
 		}
 
-		public void Execute(BasicFunction function, IEnumerable<DataCell> input_data, DataCell output)
+		public void Execute(BasicFunction function, IEnumerable<DataCell> input_data, DataCell output, CommandContext command_context = null)
 		{
 			if (_availableExecutionServices.ContainsKey(typeof (BasicExecutionService)))
 			{
-				_availableExecutionServices[typeof(BasicExecutionService)].Execute(function, input_data, output);
+				_availableExecutionServices[typeof(BasicExecutionService)].Execute(function, input_data, output, command_context);
 			}
 			else
 			{
@@ -56,11 +57,11 @@ namespace Core.Model.Execution
 			}
 		}
 
-		public void Execute(ControlFunction function, IEnumerable<DataCell> input_data, DataCell output)
+		public void Execute(ControlFunction function, IEnumerable<DataCell> input_data, DataCell output, CommandContext command_context = null)
 		{
 			if (_availableExecutionServices.ContainsKey(typeof(BasicExecutionService)))
 			{
-				_availableExecutionServices[typeof(ControlExecutionService)].Execute(function, input_data, output);
+				_availableExecutionServices[typeof(ControlExecutionService)].Execute(function, input_data, output, command_context);
 			}
 			else
 			{
@@ -68,11 +69,11 @@ namespace Core.Model.Execution
 			}
 		}
 
-		public void Execute(CSharpFunction function, IEnumerable<DataCell> input_data, DataCell output)
+		public void Execute(CSharpFunction function, IEnumerable<DataCell> input_data, DataCell output, CommandContext command_context = null)
 		{
 			if (_availableExecutionServices.ContainsKey(typeof(BasicExecutionService)))
 			{
-				_availableExecutionServices[typeof(CSharpExecutionService)].Execute(function, input_data, output);
+				_availableExecutionServices[typeof(CSharpExecutionService)].Execute(function, input_data, output, command_context);
 			}
 			else
 			{

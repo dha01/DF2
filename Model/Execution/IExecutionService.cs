@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Core.Model.Bodies.Commands;
 using Core.Model.Bodies.Data;
 using Core.Model.Bodies.Functions;
 
@@ -9,7 +10,7 @@ namespace Core.Model.Execution
 	/// </summary>
 	public interface IExecutionService
 	{
-		void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output);
+		void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, CommandContext command_context = null);
 
 	}
 }

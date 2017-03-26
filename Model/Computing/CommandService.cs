@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using Core.Model.Bodies.Commands;
 using Core.Model.Bodies.Data;
+using Core.Model.Bodies.Functions;
 using Core.Model.Headers.Base;
 using Core.Model.Headers.Commands;
 using Core.Model.Headers.Data;
@@ -175,7 +176,7 @@ namespace Core.Model.Computing
 						break;
 					}
 				}
-				/*
+				
 				if (data_cell != null)
 				{
 					_dataCellRepository.Add(new[] { data_cell });
@@ -183,9 +184,12 @@ namespace Core.Model.Computing
 				}
 				else
 				{
-					// TODO: Нужно что то делать если ни у кого из владельцев нет нужных данных.
-					throw new NotImplementedException("Нужно что то делать если ни у кого из владельцев нет нужных данных.");
-				}*/
+					if (data_cell_header.Owners.Any())
+					{
+						// TODO: Нужно что то делать если ни у кого из владельцев нет нужных данных.
+						throw new Exception("Нужно что то делать если ни у кого из владельцев нет нужных данных.");
+					}
+				}
 			}
 		}
 
@@ -208,26 +212,29 @@ namespace Core.Model.Computing
 		{
 			foreach (var function_header in function_headers)
 			{
-				DataCell data_cell = null;
+				Function function = null;
 
 				foreach (var owner in function_header.Owners)
 				{
-					data_cell = GetFunctionRequest(function_header, owner.IpAddress);
-					if (data_cell != null)
+					function = GetFunctionRequest(function_header, owner.IpAddress);
+					if (function != null)
 					{
 						break;
 					}
 				}
 
-				if (data_cell != null)
+				if (function != null)
 				{
-					_dataCellRepository.Add(new[] { data_cell });
+					_functionRepository.Add(new[] { function });
 					break;
 				}
 				else
 				{
-					// TODO: Нужно что то делать если ни у кого из владельцев нет нужных данных.
-					throw new NotImplementedException("Нужно что то делать если ни у кого из владельцев нет нужных данных.");
+					if (function_header.Owners.Any())
+					{
+						// TODO: Нужно что то делать если ни у кого из владельцев нет нужных данных.
+						throw new NotImplementedException("Нужно что то делать если ни у кого из владельцев нет нужных данных.");
+					}
 				}
 			}
 		}
@@ -238,7 +245,7 @@ namespace Core.Model.Computing
 		/// <param name="function_header"></param>
 		/// <param name="ip_address"></param>
 		/// <returns></returns>
-		private DataCell GetFunctionRequest(FunctionHeader function_header, IPAddress ip_address)
+		private Function GetFunctionRequest(FunctionHeader function_header, IPAddress ip_address)
 		{
 			throw new NotImplementedException("Запрос функций у других узлов ещё не реализован.");
 		}
