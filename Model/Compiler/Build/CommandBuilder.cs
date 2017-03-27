@@ -19,7 +19,11 @@ namespace Core.Model.Commands.Build
 
 		private List<CommandTemplate> _commandTemplates = new List<CommandTemplate>();
 
+		private List<object> _constants = new List<object>();
+
 		private int _tmpDataCount = 0;
+
+		private int _inputDataCount;
 
 		#endregion
 
@@ -57,6 +61,7 @@ namespace Core.Model.Commands.Build
 		/// <returns></returns>
 		public int InputData()
 		{
+			_inputDataCount++;
 			return GetNewTmpDataId(-1);
 		}
 
@@ -98,10 +103,13 @@ namespace Core.Model.Commands.Build
 			// Добавляем срабатывемые команды для входных данных.
 			foreach (var data in input_data)
 			{
-				int sorce_command_id = _dataFromCommandIds[data];
-				if (sorce_command_id >= 0 && _commandTemplates.Count > sorce_command_id)
+				if (data > 0)
 				{
-					_commandTemplates[_dataFromCommandIds[data]].TriggeredCommandIds.Add(command_id);
+					int sorce_command_id = _dataFromCommandIds[data];
+					if (sorce_command_id >= 0 && _commandTemplates.Count > sorce_command_id)
+					{
+						_commandTemplates[_dataFromCommandIds[data]].TriggeredCommandIds.Add(command_id);
+					}
 				}
 			}
 
@@ -129,6 +137,12 @@ namespace Core.Model.Commands.Build
 			return NewCommand((FunctionHeader)fucntion.Header, input_data);
 		}
 
+		public int Constant(object data)
+		{
+			_constants.Add(data);
+			return -_constants.Count();
+		}
+
 		/// <summary>
 		/// Данные из указанной ячейки становятся возвращаемыми данными.
 		/// </summary>
@@ -144,6 +158,18 @@ namespace Core.Model.Commands.Build
 		/// <returns>Список команд.</returns>
 		public List<CommandTemplate> BuildCommands()
 		{
+			var const_shift = _commandTemplates.Count + _constants.Count + _inputDataCount + 1;
+			foreach (var command_template in _commandTemplates)
+			{
+				for (int i = 0; i < command_template.InputDataIds.Count; i++)
+				{
+					if (command_template.InputDataIds[i] < 0)
+					{
+						command_template.InputDataIds[i] += const_shift;
+					}
+				}
+			}
+			
 			return _commandTemplates;
 		}
 
@@ -158,6 +184,7 @@ namespace Core.Model.Commands.Build
 			return new ControlFunction()
 			{
 				Commands = BuildCommands(),
+				Constants = _constants,
 				Header = new ControlFunctionHeader()
 				{
 					Name = name,

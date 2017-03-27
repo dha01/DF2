@@ -287,7 +287,8 @@ namespace Core.Tests.Model.Computing
 				var tmp_6 = cmd.NewCommand(Sum, new[] { tmp_3, tmp_4 });
 
 				var tmp_7 = cmd.NewCommand(BuildedControlFunction2, new[] { tmp_5, tmp_6 });
-
+				var tmp_8 = cmd.NewCommand(Sum, new[] { tmp_7, cmd.Constant(5) });
+				
 				/*
 				var tmp_1 = cmd.NewCommand(Sum, new[] {a, b});
 				var tmp_2 = cmd.NewCommand(Mul, new[] {a, b});
@@ -303,7 +304,7 @@ namespace Core.Tests.Model.Computing
 				var tmp_6 = cmd.NewCommand(Sum, new[] { tmp_5, b });
 				var tmp_7 = cmd.NewCommand(Sum, new[] { tmp_6, b });*/
 
-				cmd.Return(tmp_7);
+				cmd.Return(tmp_8);
 
 				return cmd;
 			});
@@ -417,9 +418,9 @@ namespace Core.Tests.Model.Computing
 					TriggeredCommands = new List<InvokeHeader>()
 				}
 			};
-			
-			var function_repository = new FunctionRepository();
+
 			var data_cell_repository = new DataCellRepository();
+			var function_repository = new FunctionRepository(data_cell_repository);
 			var command_repository = new CommandRepository();
 
 			

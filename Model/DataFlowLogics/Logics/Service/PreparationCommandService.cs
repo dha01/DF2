@@ -25,7 +25,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 
 		private ConcurrentDictionary<string, Command> _preparingCommands { get; set; }
 
-		//private ConcurrentDictionary<string, List<string>>
+		private ConcurrentDictionary<string, List<string>> _dataLinksWithCommands = new ConcurrentDictionary<string, List<string>>();
 
 		public PreparationCommandService(IDataCellRepository data_cell_repository, IFunctionRepository function_repository)
 		{
@@ -34,27 +34,47 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			_functionRepository = function_repository;
 		}
 
-		public void PrepareCommand(CommandHeader command_header)
+		private void AddCommandToPreparing(Command new_command)
 		{
-			var key = command_header.CallstackToString();
-
-			if (_preparingCommands.ContainsKey(key))
+			if (_preparingCommands.TryAdd(new_command.Header.Token, new_command))
 			{
-				throw new NotImplementedException("PreparationCommandService.PrepareCommand Такая команда уже находится в подготовке");
+				//throw new NotImplementedException("PreparationCommandService.PrepareCommand не удалось добавить.");
 			}
 
-			// Получаем выходную ячейку данных.
-			var output_data = _dataCellRepository.Get(new[] { command_header.OutputDataHeader }).FirstOrDefault();
+			foreach (var input_data in new_command.InputData)
+			{
+				if (_dataLinksWithCommands.ContainsKey(input_data.Header.Token))
+				{
+					_dataLinksWithCommands[input_data.Header.Token].Add(new_command.Header.Token);
+				}
+				else
+				{
+					_dataLinksWithCommands[input_data.Header.Token] = new List<string>() { new_command.Header.Token };
+				}
+			}
+		}
+
+		private DataCell GetOutputData(DataCellHeader data_cell_header)
+		{
+			var output_data = _dataCellRepository.Get(new[] { data_cell_header }).FirstOrDefault();
 			if (output_data == null)
 			{
 				output_data = new DataCell()
 				{
-					Header = command_header.OutputDataHeader,
+					Header = data_cell_header,
 					HasValue = false,
 					Data = null
 				};
-				_dataCellRepository.Add(new [] { output_data });
+				_dataCellRepository.Add(new[] { output_data });
 			}
+
+			return output_data;
+		}
+
+		private Command CreateNewCommand(CommandHeader command_header)
+		{
+			// Получаем выходную ячейку данных.
+			var output_data = GetOutputData(command_header.OutputDataHeader);
 
 			// Подготавливае места для ячеек с выходными данными.
 			var count = command_header.InputDataHeaders.Count;
@@ -64,7 +84,6 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 				input_data.Add(null);
 			}
 
-			// Добавляем новую команду, находящуюся в процессе подготовки.
 			var new_command = new Command()
 			{
 				Header = new InvokeHeader()
@@ -78,21 +97,17 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			var all_ready = true;
 
 			// Получаем или подписываемся на получение входных параметров.
-			for (int i = 0; i < count; i++)
+			for (int i = 0; i < command_header.InputDataHeaders.Count; i++)
 			{
-				var data_cell_header = new[] { command_header.InputDataHeaders[i] };
-				var data_cell = _dataCellRepository.Get(data_cell_header).FirstOrDefault();
+				if (command_header.InputDataHeaders.Last().CallStack.Last().StartsWith("const"))
+				{
+					var p = 1;
+				}
+				var data_cell = _dataCellRepository.Get(new[] { command_header.InputDataHeaders[i] }).FirstOrDefault();
 				if (data_cell == null || !data_cell.HasValue)
 				{
-					if (all_ready)
-					{
-						all_ready = false;
-						if (_preparingCommands.TryAdd(key, new_command))
-						{
-							//throw new NotImplementedException("PreparationCommandService.PrepareCommand не удалось добавить.");
-						}
-					}
-					
+					all_ready = false;
+
 					var new_data = new DataCell()
 					{
 						Header = command_header.InputDataHeaders[i],
@@ -100,7 +115,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 						Data = null
 					};
 					new_command.InputData[i] = new_data;
-					_dataCellRepository.Add(new []{ new_data }, false);
+
 					//_dataCellRepository.Subscribe(data_cell_header, OnDataReady);
 					// TODO: нужно отправлять запросы за другие узлы для получения данных.
 				}
@@ -110,6 +125,12 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 				}
 			}
 
+			if (!all_ready)
+			{
+				AddCommandToPreparing(new_command);
+			}
+			_dataCellRepository.Add(new_command.InputData.Where(x => !x.HasValue), false);
+
 			// Получаем или подписываемся на получение функций.
 			var function_header = new[] { command_header.FunctionHeader };
 			var function = _functionRepository.Get(function_header).FirstOrDefault();
@@ -118,10 +139,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 				if (all_ready)
 				{
 					all_ready = false;
-					if (_preparingCommands.TryAdd(key, new_command))
-					{
-						throw new NotImplementedException("PreparationCommandService.PrepareCommand не удалось добавить.");
-					}
+					AddCommandToPreparing(new_command);
 				}
 				//_functionRepository.Subscribe(function_header, OnFunctionReady);
 				// TODO: нужно отправлять запросы за другие узлы для получения функции.
@@ -131,7 +149,27 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 				new_command.Function = function;
 			}
 
+			// Если команда готова, то возвращаем её.
 			if (all_ready)
+			{
+				return new_command;
+			}
+			else
+			{
+				return null;
+			}
+		}
+
+		public void PrepareCommand(CommandHeader command_header)
+		{
+			if (_preparingCommands.ContainsKey(command_header.Token))
+			{
+				throw new NotImplementedException("PreparationCommandService.PrepareCommand Такая команда уже находится в подготовке");
+			}
+			
+			// Добавляем новую команду, находящуюся в процессе подготовки.
+			var new_command = CreateNewCommand(command_header);
+			if (new_command != null)
 			{
 				OnPreparedCommand(new_command);
 			}
@@ -139,33 +177,32 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 
 		public void OnDataReady(DataCellHeader data_cell_header)
 		{
-			Console.WriteLine("! OnDataReady1 {0}", data_cell_header.CallstackToString());
-			
 			var data_cell_headers = new[] { data_cell_header };
 			var data_cell = _dataCellRepository.Get(data_cell_headers).FirstOrDefault();
-			if (data_cell == null || !data_cell.HasValue)
-			{
-				//_dataCellRepository.Subscribe(data_cell_headers, OnDataReady);
-			}
-			else
-			{
-				Console.WriteLine("! OnDataReady2 {0} {1}", data_cell_header.CallstackToString(), data_cell.Data);
-				
-				// TODO: нужно сделать нормальный словарь.
-				var command = _preparingCommands.Values.FirstOrDefault(x => x.InputData.Any(y => y !=null && y.Header.CallstackToString().Equals(data_cell_header.CallstackToString())));
 
-				if (/*_preparingCommands.ContainsKey(key)*/ command != null)
+			if (data_cell != null && data_cell.HasValue)
+			{
+				if (_dataLinksWithCommands.ContainsKey(data_cell_header.Token))
 				{
-					var key = command.Header.CallstackToString();
-					command.InputData = _dataCellRepository.Get(command.InputData.Select(x => (DataCellHeader) x.Header)).ToList();
-
-					if (command.InputData.All(x => x.HasValue) && command.Function != null)
+					var command_tokens = _dataLinksWithCommands[data_cell_header.Token].ToList();
+					foreach (var command_token in command_tokens)
 					{
-						if (!_preparingCommands.TryRemove(key, out command))
+						if (_preparingCommands.ContainsKey(command_token))
 						{
-							throw new NotImplementedException("PreparationCommandService.OnDataReady не удалось извлеч.");
+							var command = _preparingCommands[command_token];
+							command.InputData = _dataCellRepository.Get(command.InputData.Select(x => (DataCellHeader)x.Header)).ToList();
+
+							if (command.InputData.All(x => x.HasValue) && command.Function != null && _preparingCommands.TryRemove(command_token, out command))
+							{
+								_dataLinksWithCommands[data_cell_header.Token].Remove(command_token);
+								if (_dataLinksWithCommands[data_cell_header.Token].Count == 0)
+								{
+									List<string> str;
+									_dataLinksWithCommands.TryRemove(data_cell_header.Token, out str);
+								}
+								OnPreparedCommand(command);
+							}
 						}
-						OnPreparedCommand(command);
 					}
 				}
 			}
@@ -173,29 +210,23 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 
 		public void OnFunctionReady(FunctionHeader function_header)
 		{
-			Console.WriteLine("! OnFunctionReady {0}", function_header.CallstackToString());
-			
-			var function_headers = new[] { function_header };
-			var function = _functionRepository.Get(function_headers).FirstOrDefault();
+			var function = _functionRepository.Get(new[] { function_header }).FirstOrDefault();
 			if (function == null)
 			{
-				_functionRepository.Subscribe(function_headers, OnFunctionReady);
+				_functionRepository.Subscribe(new[] { function_header }, OnFunctionReady);
 			}
 			else
 			{
-				var key = function_header.CallstackToString();
-
-				if (_preparingCommands.ContainsKey(key))
+				if (_preparingCommands.ContainsKey(function_header.Token))
 				{
-					var command = _preparingCommands[key];
+					var command = _preparingCommands[function_header.Token];
 					command.Function = function;
 					if (command.InputData.All(x => x.HasValue) && command.Function != null)
 					{
-						if (_preparingCommands.TryRemove(key, out command))
+						if (_preparingCommands.TryRemove(function_header.Token, out command))
 						{
-							throw new NotImplementedException("PreparationCommandService.OnDataReady не удалось извлеч.");
+							OnPreparedCommand(command);
 						}
-						OnPreparedCommand(command);
 					}
 				}
 			}

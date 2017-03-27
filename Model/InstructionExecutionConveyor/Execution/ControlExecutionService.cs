@@ -70,16 +70,35 @@ namespace Core.Model.Execution
 				tmp_array.Add(data);
 			}
 
+			// Добавляем ячейки с константами.
+			for (int i = 0; i < control_function.Constants.Count; i++)
+			{
+				var callstack = new List<string>();
+				callstack.Add(function.GetHeader<FunctionHeader>().CallstackToString("."));
+				callstack.Add(string.Format("const_{0}", i));
+
+				var data = new DataCell()
+				{
+					Header = new DataCellHeader()
+					{
+						HasValue = new Dictionary<Owner, bool>(),
+						Owners = new List<Owner>(),
+						CallStack = callstack
+					},
+					Data = control_function.Constants[i],
+					HasValue = true
+				};
+				tmp_array.Add(data);
+			}
+
 			// Создаем список новых команд.
 			var command_list = control_function.Commands.ToList();
 
 			// Добаляем новые команды на исполнение
 			foreach (var command_template in command_list)
 			{
-				var call_stack_count = input_data.First().Header.CallStack.Count();
-				var callstack = command_context.Header.CallStack.ToList(); //input_data.First().Header.CallStack.Take(call_stack_count - 1).ToList();
-				//callstack.Add(function.GetHeader<FunctionHeader>().CallstackToString("."));
-				callstack.Add(String.Format("{0}<{1}>",command_template.FunctionHeader.CallstackToString("."), command_template.OutputDataId));
+				var callstack = command_context.Header.CallStack.ToList();
+				callstack.Add(string.Format("{0}<{1}>",command_template.FunctionHeader.CallstackToString("."), command_template.OutputDataId));
 				var new_command_header = new CommandHeader
 				{
 					Owners = new List<Owner>(),
@@ -89,19 +108,7 @@ namespace Core.Model.Execution
 					TriggeredCommands = command_template.TriggeredCommandIds.Select(x => command_list[x].Header).ToList(),
 					FunctionHeader = command_template.FunctionHeader
 				};
-				if (callstack.Last().StartsWith("User1.BasicFunctions.ControlCallFunction2")
-				|| callstack.Last().StartsWith("User1.BasicFunctions.CallFunction2<4>"))
-				{
-					var c = 2;
-				}
-
-				//Console.WriteLine(string.Format("ControlExecutionService.Execute Callstack={0},  Function={1}", string.Join("/", function.Header.CallStack), ((FunctionHeader)function.Header).Name));
-
-				Parallel.Invoke(() =>
-				{
-					_dataFlowLogicsService.AddNewCommandHeader(new_command_header);
-						/* _commandRepository.Add(new[] { new_command }, command_template.InputDataIds.Any(x => x <= input_data_count));*/
-				});
+				Parallel.Invoke(() => { _dataFlowLogicsService.AddNewCommandHeader(new_command_header); });
 			}
 		}
 	}

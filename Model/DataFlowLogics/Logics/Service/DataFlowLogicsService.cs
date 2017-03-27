@@ -117,7 +117,9 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 		}
 
-
+		/// <summary>
+		/// Выполняется при появлении свободного исполнителя.
+		/// </summary>
 		public void OnFreeJob()
 		{
 			var key = _awaitingExecutionCommands.Keys.FirstOrDefault();
@@ -161,6 +163,10 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 		}
 
+		/// <summary>
+		/// Вызывается в момент завершения исполнения команды на исполнителе.
+		/// </summary>
+		/// <param name="command">Команда, выполнение которой было завершено.</param>
 		public void OnExecutedCommand(Command command)
 		{
 			Console.WriteLine("! OnExecutedCommand {0}", command.Header.CallstackToString());
@@ -168,6 +174,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			var key = command.Header.CallstackToString();
 			_preparationCommandService.OnDataReady((DataCellHeader)command.OutputData.Header);
 			Command removed_command;
+
 			if (_executingCommands.TryRemove(key, out removed_command))
 			{
 				if (!_executedCommands.TryAdd(key, removed_command))
@@ -182,10 +189,13 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="command"></param>
 		public void OnPreparedCommand(Command command)
 		{
 			Console.WriteLine("! OnPreparedCommand {0}", command.Header.CallstackToString());
-			
 			var key = command.Header.CallstackToString();
 			CommandHeader removed_command_header;
 			if (_preparationCommandHeaders.TryRemove(key, out removed_command_header))
