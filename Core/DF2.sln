@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core.csproj", "{936CE633-C438-4C0E-AF56-F6818FF8F27A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Tests", "CoreTests\Core.Tests.csproj", "{6496C826-2794-4828-8F1C-84C8B8FE3546}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Tests", "..\Core.Tests\Core.Tests.csproj", "{6496C826-2794-4828-8F1C-84C8B8FE3546}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
