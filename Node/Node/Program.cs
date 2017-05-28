@@ -134,7 +134,7 @@ namespace Node
 					}
 				});*/
 
-				var newtwork_address = new NetworkAddress() { URI = "http://localhost", IPv4 = IPAddress.Any, Port = 6000 };
+				var newtwork_address = new NetworkAddress() { URI = "http://test", IPv4 = IPAddress.Any, Port = 5000 };
 
 
 				StaticVariables.NodeServer = new NodeServer(new ServerService(newtwork_address), new NodeRepository(new WebMethodRepository()));
