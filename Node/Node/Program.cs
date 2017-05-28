@@ -158,7 +158,7 @@ namespace Node
 				while (true)
 				{
 					var r = Console.ReadLine();
-					if (r.Equals("end"))
+					if (r != null && r.Equals("end"))
 					{
 						break;
 					}
