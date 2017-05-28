@@ -154,16 +154,28 @@ namespace Node
 				host.Run();*/
 				StaticVariables.NodeServer.Run();
 				Console.WriteLine("Running demo with Kestrel.");
-				Console.Read();
-				StaticVariables.NodeServer.Stop();
-				Console.WriteLine("Stop demo with Kestrel.");
-				Console.Read();
-				StaticVariables.NodeServer.Run();
-				Console.WriteLine("Running demo with Kestrel.");
-				Console.Read();
-				StaticVariables.NodeServer.Stop();
-				Console.WriteLine("Stop demo with Kestrel.");
-				Console.Read();
+
+				while (true)
+				{
+					var r = Console.ReadLine();
+					if (r.Equals("end"))
+					{
+						break;
+					}
+
+					/*
+					 
+					Console.Read();
+					StaticVariables.NodeServer.Stop();
+					Console.WriteLine("Stop demo with Kestrel.");
+					Console.Read();
+					StaticVariables.NodeServer.Run();
+					Console.WriteLine("Running demo with Kestrel.");
+					Console.Read();
+					StaticVariables.NodeServer.Stop();
+					Console.WriteLine("Stop demo with Kestrel.");
+					Console.Read();*/
+				}
 
 
 
