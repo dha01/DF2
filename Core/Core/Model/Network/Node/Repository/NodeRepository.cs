@@ -17,6 +17,18 @@ namespace Core.Model.Network.Node.Repository
 			_webMethodRepository = web_method_repository;
 		}
 
+		public DataModel.Node AddNode(DataModel.Node node, int timeout = 5000)
+		{
+			try
+			{
+				return _webMethodRepository.SendRequest<DataModel.Node>($"{node.NetworkAddress.URI}/{GetType().Name.Replace("Repository", "")}/{nameof(AddNode)}", timeout);
+			}
+			catch (Exception)
+			{
+				return null;
+			}
+		}
+
 		public DataModel.Node GetInfo(DataModel.Node node, int timeout = 5000)
 		{
 			try

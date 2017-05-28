@@ -10,25 +10,29 @@ namespace Core.Model.Network.Node
 	{
 		public static NodeRepository NodeRepository = new NodeRepository(new WebMethodRepository());
 
-		public static bool Ping(this DataModel.Node node, int timeout)
+		public static bool Ping(this DataModel.Node self, int timeout)
 		{
-			return NodeRepository.Ping(node, timeout);
+			return NodeRepository.Ping(self, timeout);
+		}
+		public static DataModel.Node AddNode(this DataModel.Node self, DataModel.Node node, int timeout = 5000)
+		{
+			return NodeRepository.AddNode(node, timeout);
 		}
 
-		public static DataModel.Node GetInfo(this DataModel.Node node, int timeout = 5000)
+		public static DataModel.Node GetInfo(this DataModel.Node self, int timeout = 5000)
 		{
-			var result = NodeRepository.GetInfo(node, timeout);
+			var result = NodeRepository.GetInfo(self, timeout);
 
 			if (result != null)
 			{
-				node.NetworkAddress = result.NetworkAddress;
-				node.Guid = result.Guid;
-				node.Index = result.Index;
-				node.WorkingСapacity = result.WorkingСapacity;
-				node.ProxyNodes = result.ProxyNodes;
+				self.NetworkAddress = result.NetworkAddress;
+				self.Guid = result.Guid;
+				self.Index = result.Index;
+				self.WorkingСapacity = result.WorkingСapacity;
+				self.ProxyNodes = result.ProxyNodes;
 			}
 			
-			return node;
+			return self;
 		}
 	}
 }
