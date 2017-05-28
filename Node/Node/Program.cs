@@ -138,7 +138,8 @@ namespace Node
 					}
 				});*/
 
-				var newtwork_address = new NetworkAddress() { URI = "http://test", IPv4 = GetLocalIp(), Port = 5000 };
+
+				var newtwork_address = new NetworkAddress() { URI = $"http://{GetLocalIp()}:{5000}", IPv4 = GetLocalIp(), Port = 5000 };
 
 				StaticVariables.NodeServer = new NodeServer(new ServerService(newtwork_address), new NodeRepository(new WebMethodRepository()));
 

@@ -17,14 +17,14 @@ namespace Node.Controllers
 		{
 		}
 
-		public NetworkAddress GetNetworkAddress()
+		public Core.Model.Network.Node.DataModel.Node GetInfo()
 		{
-			return StaticVariables.NodeServer.GetNetworkAddress();
+			return StaticVariables.NodeServer.GetInfo();
 		}
 
-		public bool AddNode(Core.Model.Network.Node.DataModel.Node node)
+		public Core.Model.Network.Node.DataModel.Node AddNode(string address)
 		{
-			return StaticVariables.NodeServer.AddNode(node);
+			return StaticVariables.NodeServer.AddNode(address);
 		}
 
 		public List<Core.Model.Network.Node.DataModel.Node> GetNodes()

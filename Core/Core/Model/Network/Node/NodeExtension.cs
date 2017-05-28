@@ -14,5 +14,21 @@ namespace Core.Model.Network.Node
 		{
 			return NodeRepository.Ping(node, timeout);
 		}
+
+		public static DataModel.Node GetInfo(this DataModel.Node node, int timeout = 5000)
+		{
+			var result = NodeRepository.GetInfo(node, timeout);
+
+			if (result != null)
+			{
+				node.NetworkAddress = result.NetworkAddress;
+				node.Guid = result.Guid;
+				node.Index = result.Index;
+				node.WorkingСapacity = result.WorkingСapacity;
+				node.ProxyNodes = result.ProxyNodes;
+			}
+			
+			return node;
+		}
 	}
 }

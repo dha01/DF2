@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Core.Model.Network.Node;
 using Core.Model.Network.Node.DataModel;
 using Core.Model.Network.Node.Repository;
 using Core.Model.Network.Server.Service;
@@ -16,13 +17,35 @@ namespace Core.Model
 		private INodeRepository _nodeRepository;
 		private IServerService _serverService;
 
+		/// <summary>
+		/// Информация о других известных узлах.
+		/// </summary>
 		private List<Node> _nodes = new List<Node>();
 
+		/// <summary>
+		/// Информация об этом узле.
+		/// </summary>
+		private Node _info;
 
 		public NodeServer(IServerService server_service, INodeRepository node_repository)
 		{
 			_nodeRepository = node_repository;
 			_serverService = server_service;
+
+			_info = new Node()
+			{
+				Guid = Guid.NewGuid(),
+				NetworkAddress = server_service.NetworkAddress,
+				WorkingСapacity = new WorkingСapacity()
+				{
+					CheckCount = -1,
+					FailCheckCount = 0,
+					IsOnline = true,
+					LastCheckDateTime = null
+				},
+				ProxyNodes = new List<Node>(),
+				Index = new List<int>() { 1 }
+			};
 			/*
 			Task.Factory.StartNew(() =>
 			{
@@ -39,10 +62,18 @@ namespace Core.Model
 
 		#region Web methods
 
-		public bool AddNode(Node node)
+		public Node AddNode(string address)
 		{
+			var node = new Node()
+			{
+				NetworkAddress = new NetworkAddress()
+				{
+					URI = address
+				}
+			}.GetInfo();
+
 			_nodes.Add(node);
-			return true;
+			return node;
 		}
 
 		public List<Node> GetNodes()
@@ -50,9 +81,9 @@ namespace Core.Model
 			return _nodes;
 		}
 
-		public NetworkAddress GetNetworkAddress()
+		public Node GetInfo()
 		{
-			return _serverService.NetworkAddress;
+			return _info;
 		}
 
 		public bool Ping()
