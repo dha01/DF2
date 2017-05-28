@@ -32,7 +32,7 @@ namespace Node
 						.UseContentRoot(Directory.GetCurrentDirectory())
 						.UseIISIntegration()
 						.UseStartup<Startup>()
-						.UseUrls(new[] { /*$"{NetworkAddress.URI}:{NetworkAddress.Port}",*/ $"http://{IPAddress.Any}:{NetworkAddress.Port}" } /*"http://localhost:4000"*/)
+						.UseUrls(new[] { /*$"{NetworkAddress.URI}:{NetworkAddress.Port}",*/ $"http://{NetworkAddress.IPv4}:{NetworkAddress.Port}" } /*"http://localhost:4000"*/)
 						.Build();
 					_host.Run();
 				}

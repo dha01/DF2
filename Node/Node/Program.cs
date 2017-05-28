@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using Core.Model.Network;
 using System.Net.Http;
@@ -118,7 +119,10 @@ namespace Node
 			}
 			throw new Exception("Local IP Address Not Found!");
 		}
-
+		public static IPAddress GetLocalIp()
+		{
+			return Dns.GetHostEntryAsync(Dns.GetHostName()).Result.AddressList.First(x => x.AddressFamily == AddressFamily.InterNetwork);
+		}
 		static void Main(string[] args)
 		{
 			try
@@ -134,8 +138,7 @@ namespace Node
 					}
 				});*/
 
-				var newtwork_address = new NetworkAddress() { URI = "http://test", IPv4 = IPAddress.Any, Port = 5000 };
-
+				var newtwork_address = new NetworkAddress() { URI = "http://test", IPv4 = GetLocalIp(), Port = 5000 };
 
 				StaticVariables.NodeServer = new NodeServer(new ServerService(newtwork_address), new NodeRepository(new WebMethodRepository()));
 
