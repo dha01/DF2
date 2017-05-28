@@ -16,6 +16,7 @@ namespace Core.Model
 		private INodeRepository _nodeRepository;
 		private IServerService _serverService;
 
+		private List<Node> _nodes = new List<Node>();
 
 
 		public NodeServer(IServerService server_service, INodeRepository node_repository)
@@ -36,6 +37,19 @@ namespace Core.Model
 
 		}
 
+		#region Web methods
+
+		public bool AddNode(Node node)
+		{
+			_nodes.Add(node);
+			return true;
+		}
+
+		public List<Node> GetNodes()
+		{
+			return _nodes;
+		}
+
 		public NetworkAddress GetNetworkAddress()
 		{
 			return _serverService.NetworkAddress;
@@ -46,6 +60,8 @@ namespace Core.Model
 			Console.WriteLine("Pinged");
 			return true;
 		}
+
+		#endregion
 
 		public void Run()
 		{
