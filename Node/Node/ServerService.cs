@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 using Core.Model.Network.Node.DataModel;
 using Core.Model.Network.Server.Service;
 using Microsoft.AspNetCore.Hosting;
@@ -37,13 +38,13 @@ namespace Node
 				}
 				catch (Exception e)
 				{
-					Console.WriteLine(e);
+					Console.WriteLine(e.Message);
 
-					if (e.Message.Contains("port already in use"))
+					if (e.Message.Contains("port already in use") || e.Message.Contains("address already in use"))
 					{
 						NetworkAddress.Port++;
+						Thread.Sleep(1000);
 						continue;
-
 					}
 				}
 				break;
