@@ -119,9 +119,9 @@ namespace Node
 			}
 			throw new Exception("Local IP Address Not Found!");
 		}
-		public static IPAddress GetLocalIp()
+		public static string GetLocalIp()
 		{
-			return Dns.GetHostEntryAsync(Dns.GetHostName()).Result.AddressList.First(x => x.AddressFamily == AddressFamily.InterNetwork);
+			return Dns.GetHostEntryAsync(Dns.GetHostName()).Result.AddressList.First(x => x.AddressFamily == AddressFamily.InterNetwork).ToString();
 		}
 		static void Main(string[] args)
 		{
