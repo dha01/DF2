@@ -29,7 +29,7 @@ namespace Core.Model.Commands.Build
 		#endregion
 
 		#region Methods / Static
-
+		
 		public static ControlFunctionHeader BuildHeader(string name, List<string> name_space)
 		{
 			name_space.Add(name);
@@ -148,10 +148,10 @@ namespace Core.Model.Commands.Build
 			return NewCommand((FunctionHeader)fucntion.Header, input_data);
 		}
 
-		public Var<int> Constant(object data)
+		public int Constant(object data)
 		{
 			_constants.Add(data);
-			return (Var<int>)(-_constants.Count());
+			return -_constants.Count();
 		}
 
 		/// <summary>

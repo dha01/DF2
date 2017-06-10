@@ -24,7 +24,7 @@ namespace Core.Model.Compiler.Code
 		public Var<TResult> Invoke(Var<T> item1, Var<T_2> item2)
 		{
 			var header = CommandBuilder.BuildHeader(_methodInfo.Name, $"{_methodInfo.DeclaringType.Namespace}.{_methodInfo.DeclaringType.Name}".Split('.').ToList());
-			return new Var<TResult>()
+			return new Var<TResult>(cmd)
 			{
 				Id = cmd.NewCommand(header, new int[] { item1, item2 })
 			};

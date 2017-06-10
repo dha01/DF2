@@ -35,7 +35,7 @@ namespace Core.Model.InstructionExecutionConveyor.Extractors
 					foreach (var method in methods)
 					{
 						// TODO: нужно сделать через атрибут
-						if (method.Name.Equals("_Main"))
+						if (method.Name.Equals("Main"))
 						{
 							var s = Activator.CreateInstance(type);
 							var input = new List<object>();
@@ -43,7 +43,7 @@ namespace Core.Model.InstructionExecutionConveyor.Extractors
 							var builder = (CommandBuilder)get_func_method.Invoke(s, null);
 							foreach (var param in method.GetParameters())
 							{
-								var in_var = Activator.CreateInstance(param.ParameterType);
+								var in_var = Activator.CreateInstance(param.ParameterType, builder);
 								param.ParameterType.GetProperty("Id").SetValue(in_var, builder.InputData());
 								input.Add(in_var);
 							}

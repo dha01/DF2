@@ -15,6 +15,8 @@ namespace Core.Model.Bodies.Commands
 
 		public List<CommandHeader> TriggeredCommands { get; set; }
 
+		public DataCell ConditionData { get; set; }
+
 		public List<DataCell> InputData { get; set; }
 		public DataCell OutputData { get; set; }
 	}

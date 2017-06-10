@@ -21,13 +21,28 @@ namespace Core.Model.Execution
 			switch (basic_function.Id)
 			{
 				case 1:
-					Thread.Sleep(100);
+					//Thread.Sleep(1000);
 					output.Data = (int)data_cell_list[0].Data + (int)data_cell_list[1].Data;
 					output.HasValue = true;
 					break;
 				case 2:
-					Thread.Sleep(100);
+					output.Data = (int)data_cell_list[0].Data - (int)data_cell_list[1].Data;
+					output.HasValue = true;
+					break;
+				case 3:
 					output.Data = (int)data_cell_list[0].Data * (int)data_cell_list[1].Data;
+					output.HasValue = true;
+					break;
+				case 4:
+					output.Data = (int)data_cell_list[0].Data / (int)data_cell_list[1].Data;
+					output.HasValue = true;
+					break;
+				case 5:
+					output.Data = (int)data_cell_list[0].Data == (int)data_cell_list[1].Data;
+					output.HasValue = true;
+					break;
+				case 6:
+					output.Data = (int)data_cell_list[0].Data != (int)data_cell_list[1].Data;
 					output.HasValue = true;
 					break;
 				default:

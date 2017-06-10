@@ -1,4 +1,7 @@
-﻿namespace Core.Model.Headers.Functions
+﻿using System.Linq;
+using Core.Model.Commands.Build;
+
+namespace Core.Model.Headers.Functions
 {
 	/// <summary>
 	/// Заголовок управляющей функции.

@@ -2,10 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Core.Model.Bodies.Base;
 using Core.Model.Bodies.Commands;
 using Core.Model.Bodies.Data;
 using Core.Model.Bodies.Functions;
+using Core.Model.Commands.Build;
+using Core.Model.Compiler.Build.DataModel;
+using Core.Model.Compiler.Code;
 using Core.Model.DataFlowLogics.Logics.Service;
 using Core.Model.Execution;
 using Core.Model.Headers.Base;
@@ -54,6 +58,14 @@ namespace Core.Model.Computing
 				command_repository,
 				data_flow_logics_service
 			);
+
+			function_repository.Add(new List<Function>()
+			{
+				BasicFunctions.Sum,
+				BasicFunctions.Sub,
+				BasicFunctions.Mul,
+				BasicFunctions.Div
+			});
 
 			return computing_core;
 		}
@@ -106,6 +118,47 @@ namespace Core.Model.Computing
 		public virtual void Invoke(object first_command)
 		{
 			throw new System.NotImplementedException();
+		}
+
+		public Task<DataCell> Exec(FunctionHeader function_header, params object[] param)
+		{
+			var output_data_header = new DataCellHeader()
+			{
+				Owners = new List<Owner>(),
+				CallStack = new List<string>() { "User1", "Process1", "result" },
+				HasValue = new Dictionary<Owner, bool>()
+			};
+
+
+			//var control_function = Simple.MainHeader;
+			var input_data = CommandBuilder.BuildInputData(new object[] { 1, 2, 3, 4, 5, 6, 7, 8 }, new List<string>() { "User1", "Process1" });
+			//computing_core.AddFuction(new List<Function>(){BuildedControlFunction});
+			var command_headers = new List<CommandHeader>()
+			{
+				new CommandHeader()
+				{
+					//CallStack = new List<string>() { "User1", "Process1", "User1.BasicFunctions.ControlCallFunction" },
+					CallStack = new List<string>() { "User1", "Process1" },
+					FunctionHeader = CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList()),//(FunctionHeader)BuildedControlFunction.Header,//CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList()), //SimpleMethods.Control.Simple.MainHeader,
+					InputDataHeaders = input_data.Select(x=>(DataCellHeader)x.Header).ToList(),
+					OutputDataHeader = output_data_header,
+					TriggeredCommands = new List<InvokeHeader>()
+				}
+			};
+
+
+			AddDataCell(input_data);
+			AddCommandHeaders(command_headers);
+
+			var result = GetDataCell(new[] {output_data_header}).First();
+			return Task.Factory.StartNew(() =>
+			{
+				while (!result.HasValue)
+				{
+
+				}
+				return result;
+			});
 		}
 
 		#region Команды

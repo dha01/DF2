@@ -367,8 +367,8 @@ namespace Core.Tests.Model.Computing
 
 			computing_core.AddAssembly(@"F:\Main Folder\Аспирантура\Диссертация\Program\DF2\SimpleMethods\bin\Debug\netcoreapp1.1\SimpleMethods.dll");
 			//computing_core.AddFuction(cs_assembly.CSharpClass.First().CSharpFunction);
-			computing_core.AddFuction(new Function[] { Sum, Mul, BuildedControlFunction, BuildedControlFunction2 });
-
+			//computing_core.AddFuction(new Function[] { Sum, Mul, BuildedControlFunction, BuildedControlFunction2 });
+			/*
 
 			var output_data_header = new DataCellHeader()
 			{
@@ -380,14 +380,14 @@ namespace Core.Tests.Model.Computing
 
 			//var control_function = Simple.MainHeader;
 			var input_data = CommandBuilder.BuildInputData(new object[] {1, 2, 3, 4, 5, 6, 7, 8}, new List<string>() {"User1", "Process1" });
-			computing_core.AddFuction(new List<Function>(){BuildedControlFunction});
+			//computing_core.AddFuction(new List<Function>(){BuildedControlFunction});
 			var command_headers = new List<CommandHeader>()
 			{
 				new CommandHeader()
 				{
 					//CallStack = new List<string>() { "User1", "Process1", "User1.BasicFunctions.ControlCallFunction" },
 					CallStack = new List<string>() { "User1", "Process1" },
-					FunctionHeader = CommandBuilder.BuildHeader("_Main", $"SimpleMethods.Control.Simple".Split('.').ToList()),//(FunctionHeader)BuildedControlFunction.Header,//CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList()), //SimpleMethods.Control.Simple.MainHeader,
+					FunctionHeader = CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList()),//(FunctionHeader)BuildedControlFunction.Header,//CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList()), //SimpleMethods.Control.Simple.MainHeader,
 					InputDataHeaders = input_data.Select(x=>(DataCellHeader)x.Header).ToList(),
 					OutputDataHeader = output_data_header,
 					TriggeredCommands = new List<InvokeHeader>()
@@ -400,10 +400,16 @@ namespace Core.Tests.Model.Computing
 
 
 			var r = computing_core.GetDataCell(new []{ output_data_header }).FirstOrDefault();
-			while (r == null || r.Data == null)
+
+			*/
+
+			var r = computing_core.Exec("SimpleMethods.Control.Simple.Main", 1, 2, 3, 4, 5, 6, 7, 8).Result;
+
+			//r.Wait();
+			/*while (r == null || r.Data == null)
 			{
-				r = computing_core.GetDataCell(new[] { output_data_header }).FirstOrDefault();
-			}
+				//r = computing_core.GetDataCell(new[] { output_data_header }).FirstOrDefault();
+			}*/
 
 			//Thread.Sleep(1000);
 			StackTraceLogger.Wait();
@@ -420,6 +426,18 @@ namespace Core.Tests.Model.Computing
 				Console.WriteLine(r.Data.ToString());
 				Assert.Fail(r.Data.ToString());
 			}
+		}
+
+
+		[TestMethod]
+		public void IntegrationSimpleTest()
+		{
+			var computing_core = ComputingCore.InitComputingCore();
+
+			computing_core.AddAssembly(@"F:\Main Folder\Аспирантура\Диссертация\Program\DF2\SimpleMethods\bin\Debug\netcoreapp1.1\SimpleMethods.dll");
+			var result = computing_core.Exec("SimpleMethods.Control.Simple.Main", 1, 2, 3, 4, 5, 6, 7, 8).Result;
+
+			Assert.Fail(result.Data.ToString());
 		}
 	}
 }

@@ -27,6 +27,8 @@ namespace Core.Model.Headers.Commands
 			}
 		}
 
+		public virtual List<DataCellHeader> ConditionDataHeaders { get; set; }
+
 		public virtual List<DataCellHeader> InputDataHeaders { get; set; }
 
 		public virtual DataCellHeader OutputDataHeader { get; set; }
