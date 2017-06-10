@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+//using SimpleMethods.CustomMethods;
 
 namespace Node.Controllers
 {
@@ -15,8 +16,10 @@ namespace Node.Controllers
 
 		[HttpPost]
 		public string GetValue([FromBody]Person person)
-        {
-            return "value!";
+		{
+			//var x = SimpleMethods.CustomMethods.Math
+			//var x = Math2.Sum;
+			return "value!";
 		}
 	}
 }

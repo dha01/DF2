@@ -17,14 +17,16 @@ using Core.Model.Headers.Base;
 using Core.Model.Headers.Commands;
 using Core.Model.Headers.Data;
 using Core.Model.Headers.Functions;
+using Core.Model.InstructionExecutionConveyor.Extractors;
 using Core.Model.Job;
 using Core.Model.Repository;
-using Moq;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+//using SimpleMethods.Simple;
 
 namespace Core.Tests.Model.Computing
 {
-	[TestFixture]
+	[TestClass]
 	public class ComputingCoreTests
 	{
 		private IFunctionRepository _functionRepository;
@@ -41,18 +43,20 @@ namespace Core.Tests.Model.Computing
 
 		private IDataFlowLogicsService _dataFlowLogicsService;
 
-		[SetUp]
-		public void SetUp()
+		[TestInitialize()]
+		public void Initialize()
 		{
-			_functionRepository = Mock.Of<IFunctionRepository>();
+			//Math2.Sum;
+			
+			/*_functionRepository = Mock.Of<IFunctionRepository>();
 			_dataCellRepository = Mock.Of<IDataCellRepository>();
 			_commandRepository = Mock.Of<ICommandRepository>();
 			_jobManager = Mock.Of<IJobManager>();
 			_commandManager = Mock.Of<ICommandManager>();
 			_dataFlowLogicsService = Mock.Of<IDataFlowLogicsService>();
-			_computingCore = new ComputingCore(_functionRepository, _dataCellRepository, _commandRepository/*, _commandManager*/, _dataFlowLogicsService);
+			*///_computingCore = new ComputingCore(_functionRepository, _dataCellRepository, _commandRepository/*, _commandManager*/, _dataFlowLogicsService);
 		}
-		
+		/*
 		[Test]
 		public void AddCommandHeaders_CommandAdded_Success()
 		{
@@ -67,9 +71,9 @@ namespace Core.Tests.Model.Computing
 			_computingCore.AddCommandHeaders(command_headers);
 
 			Mock.Get(_commandManager).Verify(x => x.AddHeaders(command_headers));
-		}
+		}*/
 
-		[Test]
+		[TestMethod]
 		public void ThredTest()
 		{
 			
@@ -211,7 +215,7 @@ namespace Core.Tests.Model.Computing
 			Console.WriteLine("CurrentManagedThreadId {0} ", Environment.CurrentManagedThreadId);
 			task_list.ForEach(t => t.Start());
 
-			PerformanceCounter theCPUCounter = new PerformanceCounter("Process", "% Processor Time", Process.GetCurrentProcess().ProcessName);
+			//PerformanceCounter theCPUCounter = new PerformanceCounter("Process", "% Processor Time", Process.GetCurrentProcess().ProcessName);
 			
 			Task.WaitAll(task_list.ToArray(), 10000);
 			Console.WriteLine("Complited {0} / {1}", complited, added);
@@ -243,230 +247,155 @@ namespace Core.Tests.Model.Computing
 			}
 		};
 
-		private static ControlFunction BuildedControlFunction2 = CommandBuilder.Build(
-			"ControlCallFunction",
-			new List<string>() { "User1", "BasicFunctions", "ControlCallFunction2" },
-			() =>
-			{
-				var cmd = new CommandBuilder();
-
-				var a = cmd.InputData();
-				var b = cmd.InputData();
-
-				var tmp_1 = cmd.NewCommand(Sum, new[] { a, b });
-				var tmp_2 = cmd.NewCommand(Mul, new[] { a, b });
-				var tmp_3 = cmd.NewCommand(Mul, new[] { tmp_1, tmp_2 });
-				cmd.Return(tmp_3);
-
-				return cmd;
-			});
-
-
-		private static ControlFunction BuildedControlFunction = CommandBuilder.Build(
-			"ControlCallFunction",
-			new List<string>() { "User1", "BasicFunctions", "ControlCallFunction" },
-			() =>
-			{
-				var cmd = new CommandBuilder();
-
-				var a = cmd.InputData();
-				var b = cmd.InputData();
-				var c = cmd.InputData();
-				var d = cmd.InputData();
-				var e = cmd.InputData();
-				var f = cmd.InputData();
-				var g = cmd.InputData();
-				var h = cmd.InputData();
-
-				var tmp_1 = cmd.NewCommand(Sum, new[] { a, b });
-				var tmp_2 = cmd.NewCommand(Sum, new[] { c, d });
-				var tmp_3 = cmd.NewCommand(Sum, new[] { e, f });
-				var tmp_4 = cmd.NewCommand(Sum, new[] { g, h });
-
-				var tmp_5 = cmd.NewCommand(Sum, new[] { tmp_1, tmp_2 });
-				var tmp_6 = cmd.NewCommand(Sum, new[] { tmp_3, tmp_4 });
-
-				var tmp_7 = cmd.NewCommand(BuildedControlFunction2, new[] { tmp_5, tmp_6 });
-				var tmp_8 = cmd.NewCommand(Sum, new[] { tmp_7, cmd.Constant(5) });
-				
-				/*
-				var tmp_1 = cmd.NewCommand(Sum, new[] {a, b});
-				var tmp_2 = cmd.NewCommand(Mul, new[] {a, b});
-				var tmp_3 = cmd.NewCommand(Sum, new[] {tmp_1, tmp_2});
-				var tmp_4 = cmd.NewCommand(Sum, new[] { tmp_3, b });
-				var tmp_5 = cmd.NewCommand(Sum, new[] { tmp_4, b });*/
-				
-				/*var tmp_1 = cmd.NewCommand(Sum, new[] { a, b });
-				var tmp_2 = cmd.NewCommand(Mul, new[] { a, b });
-				var tmp_3 = cmd.NewCommand(Sum, new[] { tmp_1, tmp_2 });
-				var tmp_4 = cmd.NewCommand(Mul, new[] { tmp_1, tmp_2 });
-				var tmp_5 = cmd.NewCommand(Sum, new[] { tmp_3, tmp_4 });
-				var tmp_6 = cmd.NewCommand(Sum, new[] { tmp_5, b });
-				var tmp_7 = cmd.NewCommand(Sum, new[] { tmp_6, b });*/
-
-				cmd.Return(tmp_8);
-
-				return cmd;
-			});
-		/// <summary>
-		/// function(int a, int b)
-		/// {
-		///		var x1 = CallFunction1(a, b);
-		///		var x2 = CallFunction2(a, b);
-		///		var x3 = CallFunction1(x1, x2);
-		///		return CallFunction1(x3, x2);
-		/// }
-		/// 
-		/// function(int a, int b)
-		/// {
-		///		var x2 = CallFunction2(a, b);
-		///		return CallFunction1(CallFunction1(CallFunction1(a, b), x2), x2);
-		/// }
-		/// 
-		/// function(int a, int b)
-		/// {
-		///		var x2 = (a * b);
-		///		return ((a + b) + x2) + x2);
-		/// }
-		/// </summary>
-		/*private static ControlFunction ControlCallFunction = new ControlFunction()
+		private static ControlFunction BuildedControlFunction2
 		{
-			Commands = new List<CommandTemplate>()
-				{
-					new CommandTemplate()
-					{
-						InputDataIds = new List<int> { 1, 2 },
-						TriggeredCommandIds = new List<int> { 2 },
-						OutputDataId = 3,
-						FunctionHeader = (FunctionHeader)Sum.Header
-					},
-					new CommandTemplate()
-					{
-						InputDataIds = new List<int> { 1, 2 },
-						TriggeredCommandIds = new List<int>{ 2 },
-						OutputDataId = 4,
-						FunctionHeader = (FunctionHeader)Mul.Header
-					},
-					new CommandTemplate()
-					{
-						InputDataIds = new List<int> { 3, 4 },
-						TriggeredCommandIds = new List<int>{ 3 },
-						OutputDataId = 5,
-						FunctionHeader = (FunctionHeader)Sum.Header
-					},
-					new CommandTemplate()
-					{
-						InputDataIds = new List<int> { 5, 2 },
-						TriggeredCommandIds = new List<int>{},
-						OutputDataId = 0,
-						FunctionHeader = (FunctionHeader)Sum.Header
-					}
-				},
-			Header = new ControlFunctionHeader()
+			get
 			{
-				Name = "ControlCallFunction",
-				Owners = new List<Owner>(),
-				CallStack = new List<string>() { "User1", "Process1", "ControlCallFunction" },
-			}
-		};
-		*/
-		/*private static DataCell a = new DataCell()
-		{
-			Data = 5,
-			HasValue = true,
-			Header = new DataCellHeader()
-			{
-				Owners = new List<Owner>(),
-				CallStack = new List<string>() { "User1", "Process1", "Data1" },
-				HasValue = new Dictionary<Owner, bool>()
-			}
-		};
+				return CommandBuilder.Build(
+					"ControlCallFunction",
+					new List<string>() {"User1", "BasicFunctions", "ControlCallFunction2"},
+					() =>
+					{
+						var cmd = new CommandBuilder();
 
-		private static DataCell b = new DataCell()
-		{
-			Data = 6,
-			HasValue = true,
-			Header = new DataCellHeader()
-			{
-				Owners = new List<Owner>(),
-				CallStack = new List<string>() { "User1", "Process1", "Data2" },
-				HasValue = new Dictionary<Owner, bool>()
-			}
-		};*/
+						var a = cmd.InputData();
+						var b = cmd.InputData();
 
-		[Test]
+						var tmp_1 = cmd.NewCommand(Sum, new[] {a, b});
+						var tmp_2 = cmd.NewCommand(Mul, new[] {a, b});
+						var tmp_3 = cmd.NewCommand(Mul, new[] {tmp_1, tmp_2});
+						cmd.Return(tmp_3);
+
+						return cmd;
+					});
+			}
+		}
+
+
+
+		private int ControlCallFunction(int a, int b)
+		{
+			return a + b;
+		}
+
+		private static ControlFunction BuildedControlFunction
+		{
+			get
+			{
+				return CommandBuilder.Build(
+					"ControlCallFunction",
+					new List<string>() { "User1", "BasicFunctions", "ControlCallFunction" },
+					() =>
+					{
+						var cmd = new CommandBuilder();
+
+						var a = cmd.InputData();
+						var b = cmd.InputData();
+						var c = cmd.InputData();
+						var d = cmd.InputData();
+						var e = cmd.InputData();
+						var f = cmd.InputData();
+						var g = cmd.InputData();
+						var h = cmd.InputData();
+
+						var x = cmd.NewCommand(new Function()
+						{
+							Header = CommandBuilder.BuildHeader("Sum", $"SimpleMethods.Simple.Math".Split('.').ToList())
+						}, new[] { a, b });
+						var y = cmd.NewCommand(new Function()
+						{
+							Header = CommandBuilder.BuildHeader("Sum", $"SimpleMethods.Simple.Math".Split('.').ToList())
+						}, new[] { c, d });
+						var z = cmd.NewCommand(new Function()
+						{
+							Header = CommandBuilder.BuildHeader("Sum", $"SimpleMethods.Simple.Math".Split('.').ToList())
+						}, new[] { x, y });
+						cmd.Return(z);
+						/*
+						var tmp_1 = cmd.NewCommand(Sum, new[] { a, b });
+						var tmp_2 = cmd.NewCommand(Sum, new[] { c, d });
+						var tmp_3 = cmd.NewCommand(Sum, new[] { e, f });
+						var tmp_4 = cmd.NewCommand(Sum, new[] { g, h });
+
+						var tmp_5 = cmd.NewCommand(Sum, new[] { tmp_1, tmp_2 });
+						var tmp_6 = cmd.NewCommand(Sum, new[] { tmp_3, tmp_4 });
+
+						var tmp_7 = cmd.NewCommand(BuildedControlFunction2, new[] { tmp_5, tmp_6 });
+						var tmp_8 = cmd.NewCommand(Sum, new[] { tmp_7, cmd.Constant(5) });
+						*/
+						/*
+						var tmp_1 = cmd.NewCommand(Sum, new[] {a, b});
+						var tmp_2 = cmd.NewCommand(Mul, new[] {a, b});
+						var tmp_3 = cmd.NewCommand(Sum, new[] {tmp_1, tmp_2});
+						var tmp_4 = cmd.NewCommand(Sum, new[] { tmp_3, b });
+						var tmp_5 = cmd.NewCommand(Sum, new[] { tmp_4, b });*/
+
+						/*var tmp_1 = cmd.NewCommand(Sum, new[] { a, b });
+						var tmp_2 = cmd.NewCommand(Mul, new[] { a, b });
+						var tmp_3 = cmd.NewCommand(Sum, new[] { tmp_1, tmp_2 });
+						var tmp_4 = cmd.NewCommand(Mul, new[] { tmp_1, tmp_2 });
+						var tmp_5 = cmd.NewCommand(Sum, new[] { tmp_3, tmp_4 });
+						var tmp_6 = cmd.NewCommand(Sum, new[] { tmp_5, b });
+						var tmp_7 = cmd.NewCommand(Sum, new[] { tmp_6, b });*/
+
+						//cmd.Return(tmp_8);
+
+						return cmd;
+					});
+			}
+		}
+
+
+		[TestMethod]
 		public void IntegrationTest()
 		{
+			/*var cs_assembly = CSharpFunctionExtractor.ExtractAssembly(
+				@"F:\Main Folder\Аспирантура\Диссертация\Program\DF2\SimpleMethods.dll"
+				//@"F:\Main Folder\Аспирантура\Диссертация\Program\DF2\Core\Core\bin\Debug\netcoreapp1.1\Core.dll"
+				);
+
+			var e1 = cs_assembly.CSharpClass.First();
+			var e2 = e1.CSharpFunction.First(x => x.FuncName.Equals("Sum"));
+
+
+			Sum = e2;*/
+
+
+			//var xx = SimpleMethods.Simple.Math.Sum;
+
+			var computing_core = ComputingCore.InitComputingCore();
+
+			computing_core.AddAssembly(@"F:\Main Folder\Аспирантура\Диссертация\Program\DF2\SimpleMethods\bin\Debug\netcoreapp1.1\SimpleMethods.dll");
+			//computing_core.AddFuction(cs_assembly.CSharpClass.First().CSharpFunction);
+			computing_core.AddFuction(new Function[] { Sum, Mul, BuildedControlFunction, BuildedControlFunction2 });
+
+
 			var output_data_header = new DataCellHeader()
 			{
 				Owners = new List<Owner>(),
 				CallStack = new List<string>() { "User1", "Process1", "result" },
 				HasValue = new Dictionary<Owner, bool>()
 			};
-			var control_function = BuildedControlFunction;
-			var input_data = CommandBuilder.BuildInputData(new object[] {1, 2, 3, 4, 5, 6, 7, 8}, new List<string>() {"User1", "Process1" });
 
+
+			//var control_function = Simple.MainHeader;
+			var input_data = CommandBuilder.BuildInputData(new object[] {1, 2, 3, 4, 5, 6, 7, 8}, new List<string>() {"User1", "Process1" });
+			computing_core.AddFuction(new List<Function>(){BuildedControlFunction});
 			var command_headers = new List<CommandHeader>()
 			{
 				new CommandHeader()
 				{
-					CallStack = new List<string>() { "User1", "Process1", "User1.BasicFunctions.ControlCallFunction" },
-					//Owners = new List<Owner>(),
-					FunctionHeader = (FunctionHeader)control_function.Header,
+					//CallStack = new List<string>() { "User1", "Process1", "User1.BasicFunctions.ControlCallFunction" },
+					CallStack = new List<string>() { "User1", "Process1" },
+					FunctionHeader = CommandBuilder.BuildHeader("_Main", $"SimpleMethods.Control.Simple".Split('.').ToList()),//(FunctionHeader)BuildedControlFunction.Header,//CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList()), //SimpleMethods.Control.Simple.MainHeader,
 					InputDataHeaders = input_data.Select(x=>(DataCellHeader)x.Header).ToList(),
 					OutputDataHeader = output_data_header,
 					TriggeredCommands = new List<InvokeHeader>()
 				}
 			};
 
-			var data_cell_repository = new DataCellRepository();
-			var function_repository = new FunctionRepository(data_cell_repository);
-			var command_repository = new CommandRepository();
-
 			
-
-			var control_execution_service = new ControlExecutionService();
-
-			var execution_manager = new ExecutionManager(
-				new List<IExecutionService>()
-				{
-					new BasicExecutionService(),
-					control_execution_service,
-					new CSharpExecutionService()
-				}
-			);
-
-			var job_manager = new JobManager(execution_manager);
-			var preparation_command_service = new PreparationCommandService(data_cell_repository, function_repository);
-			var data_flow_logics_service = new DataFlowLogicsService(job_manager, preparation_command_service);
-
-			control_execution_service.SetDataFlowLogicsService(data_flow_logics_service);
-
-			var command_service = new CommandService(
-				function_repository,
-				data_cell_repository,
-				command_repository
-			);
-			/*
-			var command_manager = new CommandManager(
-				function_repository,
-				data_cell_repository,
-				job_manager,
-				command_repository,
-				command_service
-			);*/
-
-			var computing_core = new ComputingCore(
-				function_repository,
-				data_cell_repository,
-				command_repository, 
-				//command_manager
-				data_flow_logics_service
-			);
-
-			function_repository.Add(new Function[] { Sum, Mul, BuildedControlFunction, BuildedControlFunction2 });
 			computing_core.AddDataCell(input_data);
-
 			computing_core.AddCommandHeaders(command_headers);
 
 
@@ -488,7 +417,8 @@ namespace Core.Tests.Model.Computing
 			}
 			else
 			{
-				Console.WriteLine(r.Data);
+				Console.WriteLine(r.Data.ToString());
+				Assert.Fail(r.Data.ToString());
 			}
 		}
 	}

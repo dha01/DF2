@@ -91,6 +91,11 @@ namespace Core.Model.Repository
 			}
 		}
 
+		public virtual IEnumerable<T> Get<T>(IEnumerable<T_header> headers) where T : T_conteiner
+		{
+			return Get(headers).Cast<T>();
+		}
+
 		public virtual IEnumerable<T_conteiner> Get(IEnumerable<T_header> headers)
 		{
 			var list = new List<T_conteiner>();

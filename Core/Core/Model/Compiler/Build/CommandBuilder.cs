@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Core.Model.Bodies.Data;
 using Core.Model.Bodies.Functions;
+using Core.Model.Compiler.Build.DataModel;
 using Core.Model.Headers.Data;
 using Core.Model.Headers.Functions;
 
@@ -28,6 +29,17 @@ namespace Core.Model.Commands.Build
 		#endregion
 
 		#region Methods / Static
+
+		public static ControlFunctionHeader BuildHeader(string name, List<string> name_space)
+		{
+			name_space.Add(name);
+			return new ControlFunctionHeader()
+			{
+				Name = name,
+				Owners = new List<Owner>(),
+				CallStack = name_space,
+			};
+		}
 
 		public static ControlFunction Build(string name, List<string> name_space, Func<CommandBuilder> build_func)
 		{
@@ -136,10 +148,10 @@ namespace Core.Model.Commands.Build
 			return NewCommand((FunctionHeader)fucntion.Header, input_data);
 		}
 
-		public int Constant(object data)
+		public Var<int> Constant(object data)
 		{
 			_constants.Add(data);
-			return -_constants.Count();
+			return (Var<int>)(-_constants.Count());
 		}
 
 		/// <summary>
@@ -184,12 +196,7 @@ namespace Core.Model.Commands.Build
 			{
 				Commands = BuildCommands(),
 				Constants = _constants,
-				Header = new ControlFunctionHeader()
-				{
-					Name = name,
-					Owners = new List<Owner>(),
-					CallStack = name_space,
-				}
+				Header = BuildHeader(name, name_space)
 			};
 		} 
 	}

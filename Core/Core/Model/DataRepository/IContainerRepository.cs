@@ -12,6 +12,8 @@ namespace Core.Model.Repository
 	{
 		void Add(IEnumerable<T_conteiner> conteiner, bool send_subscribes = true);
 
+		IEnumerable<T> Get<T>(IEnumerable<T_header> header) where T : T_conteiner;
+
 		IEnumerable<T_conteiner> Get(IEnumerable<T_header> header);
 
 		void AddHeaders(IEnumerable<T_header> header);

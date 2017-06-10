@@ -28,6 +28,8 @@ namespace Core.Model.Computing
 
 		void AddFunctions(IEnumerable<Function> function);
 
+		void AddAssembly(string path);
+
 		IEnumerable<Function> GetFunctions(IEnumerable<FunctionHeader> functions);
 
 	}

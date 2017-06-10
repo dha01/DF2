@@ -21,12 +21,12 @@ namespace Core.Model.Execution
 			switch (basic_function.Id)
 			{
 				case 1:
-					//Thread.Sleep(1000);
+					Thread.Sleep(100);
 					output.Data = (int)data_cell_list[0].Data + (int)data_cell_list[1].Data;
 					output.HasValue = true;
 					break;
 				case 2:
-					//Thread.Sleep(2000);
+					Thread.Sleep(100);
 					output.Data = (int)data_cell_list[0].Data * (int)data_cell_list[1].Data;
 					output.HasValue = true;
 					break;

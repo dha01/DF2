@@ -7,10 +7,12 @@ using Core.Model.Bodies.Commands;
 using Core.Model.Bodies.Data;
 using Core.Model.Bodies.Functions;
 using Core.Model.DataFlowLogics.Logics.Service;
+using Core.Model.Execution;
 using Core.Model.Headers.Base;
 using Core.Model.Headers.Commands;
 using Core.Model.Headers.Data;
 using Core.Model.Headers.Functions;
+using Core.Model.InstructionExecutionConveyor.Extractors;
 using Core.Model.Job;
 using Core.Model.Repository;
 
@@ -21,6 +23,67 @@ namespace Core.Model.Computing
 	/// </summary>
 	public class ComputingCore : IComputingCore
 	{
+		public static ComputingCore InitComputingCore()
+		{
+			var data_cell_repository = new DataCellRepository();
+			var function_repository = new FunctionRepository(data_cell_repository);
+			var command_repository = new CommandRepository();
+			var control_execution_service = new ControlExecutionService();
+
+			var execution_manager = new ExecutionManager(
+				new List<IExecutionService>()
+				{
+					new BasicExecutionService(),
+					control_execution_service,
+					new CSharpExecutionService(function_repository)
+				}
+			);
+
+			var job_manager = new JobManager(execution_manager);
+			var preparation_command_service = new PreparationCommandService(data_cell_repository, function_repository);
+			var data_flow_logics_service = new DataFlowLogicsService(job_manager, preparation_command_service);
+			control_execution_service.SetDataFlowLogicsService(data_flow_logics_service);
+			var command_service = new CommandService(
+				function_repository,
+				data_cell_repository,
+				command_repository
+			);
+			var computing_core = new ComputingCore(
+				function_repository,
+				data_cell_repository,
+				command_repository,
+				data_flow_logics_service
+			);
+
+			return computing_core;
+		}
+
+		//public DataCell Invoke() { }
+
+		public void AddFuction(IEnumerable<Function> conteiner, bool send_subscribes = true)
+		{
+			_functionRepository.Add(conteiner, send_subscribes);
+		}
+
+		public void AddAssembly(string path)
+		{
+			var cs_assembly = CSharpFunctionExtractor.ExtractAssembly(path);
+
+			var e1 = cs_assembly.CSharpClass.First();
+			var e2 = e1.CSharpFunction.First(x => x.FuncName.Equals("Sum"));
+
+			var funcs = new List<Function>();
+
+			foreach (var cl in cs_assembly.CSharpClass)
+			{
+				funcs.AddRange(cl.CSharpFunction);
+				//cl.CSharpFunction.Select(x=>x.)
+			}
+
+			_functionRepository.Add(funcs);
+			_functionRepository.Add(cs_assembly.ControlFunctions);
+		}
+
 		private readonly IFunctionRepository _functionRepository;
 
 		private readonly IDataCellRepository _dataCellRepository;
