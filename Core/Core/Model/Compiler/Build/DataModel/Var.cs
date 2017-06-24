@@ -9,11 +9,16 @@ using Core.Model.Headers.Functions;
 
 namespace Core.Model.Compiler.Build.DataModel
 {
-	public class Var<T>
+	public interface VarInterface
+	{
+		TemplateFunctionRow Id { get; set; }
+	}
+
+	public class Var<T> : VarInterface
 	{
 		private CommandBuilder _commandBuilder;
 
-		public int Id { get; set; }
+		public TemplateFunctionRow Id { get; set; }
 
 		/*public Var()
 		{
@@ -45,7 +50,7 @@ namespace Core.Model.Compiler.Build.DataModel
 			return new Var<T>() { Id = var };
 		}*/
 
-		public static implicit operator int(Var<T> var)
+		public static implicit operator TemplateFunctionRow(Var<T> var)
 		{
 			return var.Id;
 		}
@@ -56,7 +61,7 @@ namespace Core.Model.Compiler.Build.DataModel
 		{
 			return new Var<T>(a._commandBuilder)
 			{
-				Id = a._commandBuilder.NewCommand(BasicFunctions.Sum, new List<int>{a , b})
+				Id = a._commandBuilder.NewCommand(BasicFunctions.Sum, new List<TemplateFunctionRow> {a , b})
 			};
 		}
 
@@ -64,7 +69,7 @@ namespace Core.Model.Compiler.Build.DataModel
 		{
 			return new Var<T>(a._commandBuilder)
 			{
-				Id = a._commandBuilder.NewCommand(BasicFunctions.Sum, new List<int> { a, a._commandBuilder.Constant(b) })
+				Id = a._commandBuilder.NewCommand(BasicFunctions.Sum, new List<TemplateFunctionRow> { a, a._commandBuilder.Constant(b) })
 			};
 		}
 
@@ -72,7 +77,7 @@ namespace Core.Model.Compiler.Build.DataModel
 		{
 			return new Var<T>(b._commandBuilder)
 			{
-				Id = b._commandBuilder.NewCommand(BasicFunctions.Sum, new List<int> { b._commandBuilder.Constant(a), b })
+				Id = b._commandBuilder.NewCommand(BasicFunctions.Sum, new List<TemplateFunctionRow> { b._commandBuilder.Constant(a), b })
 			};
 		}
 
@@ -82,7 +87,7 @@ namespace Core.Model.Compiler.Build.DataModel
 		{
 			return new Var<T>(a._commandBuilder)
 			{
-				Id = a._commandBuilder.NewCommand(BasicFunctions.Sub, new List<int> { a, b })
+				Id = a._commandBuilder.NewCommand(BasicFunctions.Sub, new List<TemplateFunctionRow> { a, b })
 			};
 		}
 
@@ -90,7 +95,7 @@ namespace Core.Model.Compiler.Build.DataModel
 		{
 			return new Var<T>(a._commandBuilder)
 			{
-				Id = a._commandBuilder.NewCommand(BasicFunctions.Sub, new List<int> { a._commandBuilder.Constant(0), a })
+				Id = a._commandBuilder.NewCommand(BasicFunctions.Sub, new List<TemplateFunctionRow> { a._commandBuilder.Constant(0), a })
 			};
 		}
 
@@ -98,7 +103,7 @@ namespace Core.Model.Compiler.Build.DataModel
 		{
 			return new Var<T>(a._commandBuilder)
 			{
-				Id = a._commandBuilder.NewCommand(BasicFunctions.Mul, new List<int> { a, b })
+				Id = a._commandBuilder.NewCommand(BasicFunctions.Mul, new List<TemplateFunctionRow> { a, b })
 			};
 		}
 
@@ -106,7 +111,7 @@ namespace Core.Model.Compiler.Build.DataModel
 		{
 			return new Var<T>(a._commandBuilder)
 			{
-				Id = a._commandBuilder.NewCommand(BasicFunctions.Div, new List<int> { a, b })
+				Id = a._commandBuilder.NewCommand(BasicFunctions.Div, new List<TemplateFunctionRow> { a, b })
 			};
 		}
 
@@ -116,7 +121,7 @@ namespace Core.Model.Compiler.Build.DataModel
 		{
 			return new Var<bool>(a._commandBuilder)
 			{
-				Id = a._commandBuilder.NewCommand(BasicFunctions.Equal, new List<int> { a, b })
+				Id = a._commandBuilder.NewCommand(BasicFunctions.Equal, new List<TemplateFunctionRow> { a, b })
 			};
 		}
 
@@ -124,7 +129,7 @@ namespace Core.Model.Compiler.Build.DataModel
 		{
 			return new Var<bool>(a._commandBuilder)
 			{
-				Id = a._commandBuilder.NewCommand(BasicFunctions.Equal, new List<int> { a, a._commandBuilder.Constant(b) })
+				Id = a._commandBuilder.NewCommand(BasicFunctions.Equal, new List<TemplateFunctionRow> { a, a._commandBuilder.Constant(b) })
 			};
 		}
 
@@ -132,7 +137,7 @@ namespace Core.Model.Compiler.Build.DataModel
 		{
 			return new Var<bool>(b._commandBuilder)
 			{
-				Id = b._commandBuilder.NewCommand(BasicFunctions.Equal, new List<int> { b._commandBuilder.Constant(a), b })
+				Id = b._commandBuilder.NewCommand(BasicFunctions.Equal, new List<TemplateFunctionRow> { b._commandBuilder.Constant(a), b })
 			};
 		}
 
@@ -144,7 +149,7 @@ namespace Core.Model.Compiler.Build.DataModel
 		{
 			return new Var<bool>(a._commandBuilder)
 			{
-				Id = a._commandBuilder.NewCommand(BasicFunctions.NotEqual, new List<int> { a, b })
+				Id = a._commandBuilder.NewCommand(BasicFunctions.NotEqual, new List<TemplateFunctionRow> { a, b })
 			};
 		}
 
@@ -153,7 +158,7 @@ namespace Core.Model.Compiler.Build.DataModel
 		{
 			return new Var<bool>(a._commandBuilder)
 			{
-				Id = a._commandBuilder.NewCommand(BasicFunctions.NotEqual, new List<int> { a, a._commandBuilder.Constant(b) })
+				Id = a._commandBuilder.NewCommand(BasicFunctions.NotEqual, new List<TemplateFunctionRow> { a, a._commandBuilder.Constant(b) })
 			};
 		}
 
@@ -161,7 +166,7 @@ namespace Core.Model.Compiler.Build.DataModel
 		{
 			return new Var<bool>(b._commandBuilder)
 			{
-				Id = b._commandBuilder.NewCommand(BasicFunctions.NotEqual, new List<int> { b._commandBuilder.Constant(a), b })
+				Id = b._commandBuilder.NewCommand(BasicFunctions.NotEqual, new List<TemplateFunctionRow> { b._commandBuilder.Constant(a), b })
 			};
 		}
 
@@ -171,7 +176,7 @@ namespace Core.Model.Compiler.Build.DataModel
 		{
 			return new Var<bool>(b._commandBuilder)
 			{
-				Id = b._commandBuilder.NewCommand(BasicFunctions.Not, new List<int> { b })
+				Id = b._commandBuilder.NewCommand(BasicFunctions.Not, new List<TemplateFunctionRow> { b })
 			};
 		}
 
@@ -179,7 +184,7 @@ namespace Core.Model.Compiler.Build.DataModel
 		{
 			return new Var<bool>(a._commandBuilder)
 			{
-				Id = b._commandBuilder.NewCommand(BasicFunctions.And, new List<int> { a._commandBuilder.Constant(a), a._commandBuilder.Constant(b) })
+				Id = b._commandBuilder.NewCommand(BasicFunctions.And, new List<TemplateFunctionRow> { a._commandBuilder.Constant(a), a._commandBuilder.Constant(b) })
 			};
 		}
 		/*

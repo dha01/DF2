@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Core.Model.Bodies.Base;
@@ -64,7 +65,9 @@ namespace Core.Model.Computing
 				BasicFunctions.Sum,
 				BasicFunctions.Sub,
 				BasicFunctions.Mul,
-				BasicFunctions.Div
+				BasicFunctions.Div,
+				BasicFunctions.Set,
+				BasicFunctions.Any
 			});
 
 			return computing_core;
@@ -77,19 +80,30 @@ namespace Core.Model.Computing
 			_functionRepository.Add(conteiner, send_subscribes);
 		}
 
-		public void AddAssembly(string path)
+		public void AddAssembly(Assembly assembly)
 		{
-			var cs_assembly = CSharpFunctionExtractor.ExtractAssembly(path);
-
-			var e1 = cs_assembly.CSharpClass.First();
-			var e2 = e1.CSharpFunction.First(x => x.FuncName.Equals("Sum"));
+			var cs_assembly = CSharpFunctionExtractor.ExtractAssembly(assembly);
 
 			var funcs = new List<Function>();
 
 			foreach (var cl in cs_assembly.CSharpClass)
 			{
 				funcs.AddRange(cl.CSharpFunction);
-				//cl.CSharpFunction.Select(x=>x.)
+			}
+
+			_functionRepository.Add(funcs);
+			_functionRepository.Add(cs_assembly.ControlFunctions);
+		}
+
+		public void AddAssembly(string path)
+		{
+			var cs_assembly = CSharpFunctionExtractor.ExtractAssembly(path);
+
+			var funcs = new List<Function>();
+
+			foreach (var cl in cs_assembly.CSharpClass)
+			{
+				funcs.AddRange(cl.CSharpFunction);
 			}
 
 			_functionRepository.Add(funcs);
@@ -120,26 +134,26 @@ namespace Core.Model.Computing
 			throw new System.NotImplementedException();
 		}
 
+		private static int index = 0;
 		public Task<DataCell> Exec(FunctionHeader function_header, params object[] param)
 		{
+			string root = "User1.Process" + index++;
+
 			var output_data_header = new DataCellHeader()
 			{
 				Owners = new List<Owner>(),
-				CallStack = new List<string>() { "User1", "Process1", "result" },
+				CallStack = $"{root}.result".Split('.').ToList(),
 				HasValue = new Dictionary<Owner, bool>()
 			};
 
+			var input_data = CommandBuilder.BuildInputData(param, $"{root}".Split('.').ToList());
 
-			//var control_function = Simple.MainHeader;
-			var input_data = CommandBuilder.BuildInputData(new object[] { 1, 2, 3, 4, 5, 6, 7, 8 }, new List<string>() { "User1", "Process1" });
-			//computing_core.AddFuction(new List<Function>(){BuildedControlFunction});
 			var command_headers = new List<CommandHeader>()
 			{
 				new CommandHeader()
 				{
-					//CallStack = new List<string>() { "User1", "Process1", "User1.BasicFunctions.ControlCallFunction" },
-					CallStack = new List<string>() { "User1", "Process1" },
-					FunctionHeader = CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList()),//(FunctionHeader)BuildedControlFunction.Header,//CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList()), //SimpleMethods.Control.Simple.MainHeader,
+					CallStack = $"{root}".Split('.').ToList(),
+					FunctionHeader = function_header,//CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList()),//(FunctionHeader)BuildedControlFunction.Header,//CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList()), //SimpleMethods.Control.Simple.MainHeader,
 					InputDataHeaders = input_data.Select(x=>(DataCellHeader)x.Header).ToList(),
 					OutputDataHeader = output_data_header,
 					TriggeredCommands = new List<InvokeHeader>()

@@ -21,7 +21,6 @@ namespace Core.Model.Execution
 			switch (basic_function.Id)
 			{
 				case 1:
-					//Thread.Sleep(1000);
 					output.Data = (int)data_cell_list[0].Data + (int)data_cell_list[1].Data;
 					output.HasValue = true;
 					break;
@@ -43,6 +42,14 @@ namespace Core.Model.Execution
 					break;
 				case 6:
 					output.Data = (int)data_cell_list[0].Data != (int)data_cell_list[1].Data;
+					output.HasValue = true;
+					break;
+				case 9:
+					output.Data = data_cell_list[0].Data;
+					output.HasValue = true;
+					break;
+				case 10:
+					output.Data = data_cell_list.First(x=>x.HasValue).Data;
 					output.HasValue = true;
 					break;
 				default:

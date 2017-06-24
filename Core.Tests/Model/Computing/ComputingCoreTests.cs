@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Metadata;
+using System.Runtime.Loader;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -438,6 +442,169 @@ namespace Core.Tests.Model.Computing
 			var result = computing_core.Exec("SimpleMethods.Control.Simple.Main", 1, 2, 3, 4, 5, 6, 7, 8).Result;
 
 			Assert.Fail(result.Data.ToString());
+		}
+
+		private static ComputingCore computing_core = ComputingCore.InitComputingCore();
+
+		private static Assembly assembly = CommandBuilder.CreateFunctionFromSourceCode(@"
+using Core.Model.Compiler.Build.Attributes;
+using Core.Model.Compiler.Build.DataModel;
+using Core.Model.Compiler.Code;
+
+namespace CustomNamespace
+{
+	public class CustomClass : ControlFunctionBase
+	{
+		[ControlFunction]
+		public void MyFunction(Var<int> a, Var<int> b, Var<int> c)
+		{
+			
+			var x2 = a + b;
+			var x1 = b * c;
+			//var x3 = Any(x1, x2);
+
+			Return(Any(x1, x2));
+
+
+			//var x1 = (a + b) * (b + c);
+
+			
+			//var x2 = x1 * x1;
+			//var x3 = x1 + x2;
+			//var x4 = x2 + x3;
+
+			//var result = x2 - x3 + 1 + x4;
+			/*
+
+			var x1 = Null();
+			If(a == 1);
+			{
+				x1.Value = a + b;
+			}
+			Else();
+			{
+				x1.Value = b + c;
+			}
+			EndIf();
+
+
+			//Return(Any(x1, x1', x1'));
+			Return(x1);
+			*/
+	    }
+	}
+}");
+		[ClassInitialize]
+		public static void ComputingCoreTestsInit(TestContext tc)
+		{
+			computing_core.AddAssembly(assembly);
+		}
+
+		[TestMethod]
+		public void IntegrationSCustomCodeTest2()
+		{
+
+			//	computing_core.AddAssembly(@"F:\Main Folder\Аспирантура\Диссертация\Program\DF2\SimpleMethods\bin\Debug\netcoreapp1.1\SimpleMethods.dll");
+
+
+			var text = GetText(assembly, "CustomNamespace.CustomClass.MyFunction");
+			//var new_text = GetNewText(assembly, "CustomNamespace.CustomClass.MyFunction");
+
+
+			var result = computing_core.Exec("CustomNamespace.CustomClass.MyFunction", 1, 2, 3);
+			result.Wait(10000);
+			var x = result.Result;
+
+			Assert.Fail(result.Result.Data.ToString());
+		}
+
+		[TestMethod]
+		public void IntegrationSCustomCodeTest()
+		{
+
+		//	computing_core.AddAssembly(@"F:\Main Folder\Аспирантура\Диссертация\Program\DF2\SimpleMethods\bin\Debug\netcoreapp1.1\SimpleMethods.dll");
+
+			
+			var text = GetText(assembly, "CustomNamespace.CustomClass.MyFunction");
+			//var new_text = GetNewText(assembly, "CustomNamespace.CustomClass.MyFunction");
+
+
+			var result = computing_core.Exec("CustomNamespace.CustomClass.MyFunction", 1, 2, 3);
+			result.Wait(10000);
+			var x = result.Result;
+
+			Assert.Fail(result.Result.Data.ToString());
+		}
+
+		public string GetText(ControlFunction code)
+		{
+			var max = Math.Max(code.Commands.Max(x => x.OutputDataId), code.Commands.Max(y => y.InputDataIds.Max(x=>x)))  + code.Constants.Count + 1;
+
+			string[] arr = new string[max];
+
+			arr[0] = "[0] out OutputData";
+
+			var index = 0;
+			foreach (var row in code.Commands)
+			{
+				arr[row.OutputDataId] = $@"[{row.OutputDataId}]	{(row.OutputDataId == 0 ? "out" : "tmp")}	= {row.FunctionHeader.CallstackToString(".")}<{index}>({string.Join(",", row.InputDataIds.Select(y => $"[{y}]"))}) {string.Join("|", row.TriggeredCommandIds.Select(y => $"<{y}>"))}";
+
+				foreach (var val in row.InputDataIds)
+				{
+					if (string.IsNullOrEmpty(arr[val]))
+					{
+						arr[val] = $"[{val}]	in	InputData{val}";
+					}
+				}
+				index++;
+			}
+
+			for (int i = 0; i < code.Constants.Count; i++)
+			{
+				var ind = arr.Length - i - 1;
+				arr[ind] = $"[{ind}]	tmp	Const{code.Constants.Count - i}";
+			}
+
+			for (int i = 0; i < arr.Length; i++)
+			{
+				if (string.IsNullOrEmpty(arr[i]))
+				{
+					arr[i] = $"[{i}]	not use";
+				}
+			}
+
+			var in_index = 0;
+			var text = $@"{code.Header.CallstackToString(".")}({string.Join(", ", arr.Where(x => x.Contains("InputData")).Select(y => $"InputData{in_index++}"))})
+{{
+	{string.Join("\n	", arr)}
+}}";
+
+			return text;
+		}
+
+		public string GetText(Assembly myAssembly, string full_name)
+		{
+			var code = CommandBuilder.CompileMethodFromAssembly(myAssembly, full_name);
+
+			return GetText(code);
+		}
+
+		public string GetNewText(Assembly myAssembly, string full_name)
+		{
+			var new_code = CommandBuilder.CompileMethodFromAssembly(myAssembly, full_name);
+
+			return GetText(new_code);
+		}
+
+		[TestMethod]
+		public void Command()
+		{
+			//CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList())
+			var fs = new FileStream(@"F:\Main Folder\Аспирантура\Диссертация\Program\DF2\SimpleMethods\bin\Debug\netcoreapp1.1\SimpleMethods.dll", FileMode.Open);
+			var myAssembly = AssemblyLoadContext.Default.LoadFromStream(fs);
+
+			var t = GetText(myAssembly, "SimpleMethods.Control.Simple.Main");
+
 		}
 	}
 }

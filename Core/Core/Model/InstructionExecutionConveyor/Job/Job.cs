@@ -82,9 +82,9 @@ namespace Core.Model.Job
 						continue;
 					}
 				}
-				/*
+				
 				try
-				{*/
+				{
 					CommandQueue.TryDequeue(out Command command);
 					//Console.WriteLine(string.Format("{2} Job.Invoke {0} начал выполнять функцию {1}", Id, string.Join("/", ((DataCellHeader)command.OutputData.Header).CallStack), DateTime.Now));
 					//Parallel.Invoke(() => { Parallel.Invoke(() => { Parallel.Invoke(() => { throw new Exception("!"); }); }); });
@@ -116,11 +116,11 @@ namespace Core.Model.Job
 					//Console.WriteLine(string.Format("{2} Job.Invoke {0} выполнил функцию {1}", Id, string.Join("/", ((DataCellHeader)command.OutputData.Header).CallStack), DateTime.Now));
 
 					Parallel.Invoke(()=> { Callback(command); });
-				/*}
+				}
 				catch (Exception e)
 				{
 					Console.WriteLine(e.Message);
-				}*/
+				}
 				//	Console.WriteLine("Job.Invoke");
 			}
 		}

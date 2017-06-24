@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Core.Model.Bodies.Commands;
 using Core.Model.Bodies.Data;
+using Core.Model.Bodies.Functions;
 using Core.Model.Headers.Base;
 using Core.Model.Headers.Commands;
 using Core.Model.Headers.Data;
@@ -95,26 +96,23 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			};
 
 			var all_ready = true;
+			var any_ready = false;
 
 			// Получаем или подписываемся на получение входных параметров.
 			for (int i = 0; i < command_header.InputDataHeaders.Count; i++)
 			{
-				if (command_header.InputDataHeaders.Last().CallStack.Last().StartsWith("const"))
-				{
-					//var p = 1;
-				}
 				var data_cell = _dataCellRepository.Get(new[] { command_header.InputDataHeaders[i] }).FirstOrDefault();
 				if (data_cell == null || !data_cell.HasValue)
 				{
 					all_ready = false;
+					any_ready = true;
 
-					var new_data = new DataCell()
+					new_command.InputData[i] = new DataCell()
 					{
 						Header = command_header.InputDataHeaders[i],
 						HasValue = false,
 						Data = null
 					};
-					new_command.InputData[i] = new_data;
 
 					//_dataCellRepository.Subscribe(data_cell_header, OnDataReady);
 					// TODO: нужно отправлять запросы за другие узлы для получения данных.
@@ -142,7 +140,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 					AddCommandToPreparing(new_command);
 				}
 				//_functionRepository.Subscribe(function_header, OnFunctionReady);
-				// TODO: нужно отправлять запросы за другие узлы для получения функции.
+				// TODO: нужно отправлять запросы на другие узлы для получения функции.
 			}
 			else
 			{
@@ -192,14 +190,35 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 							var command = _preparingCommands[command_token];
 							command.InputData = _dataCellRepository.Get(command.InputData.Select(x => (DataCellHeader)x.Header)).ToList();
 
-							if (command.InputData.All(x => x.HasValue) && command.Function != null && _preparingCommands.TryRemove(command_token, out command))
+							if (command.Function != null)
 							{
-								_dataLinksWithCommands[data_cell_header.Token].Remove(command_token);
-								if (_dataLinksWithCommands[data_cell_header.Token].Count == 0)
+								switch (command.Function.Condition)
 								{
-									_dataLinksWithCommands.TryRemove(data_cell_header.Token, out List<string> str);
+									case InputParamCondition.All:
+										if (command.InputData.All(x => x.HasValue))
+										{
+											break;
+										}
+										return;
+									case InputParamCondition.Any:
+										if (command.InputData.Any(x => x.HasValue))
+										{
+											break;
+										}
+										return;
+									default:
+										throw new Exception($"OnDataReady Неизвестный тип: {command.Function.Condition}");
 								}
-								OnPreparedCommand(command);
+
+								if (_preparingCommands.TryRemove(command_token, out command))
+								{
+									_dataLinksWithCommands[data_cell_header.Token].Remove(command_token);
+									if (_dataLinksWithCommands[data_cell_header.Token].Count == 0)
+									{
+										_dataLinksWithCommands.TryRemove(data_cell_header.Token, out List<string> str);
+									}
+									OnPreparedCommand(command);
+								}
 							}
 						}
 					}

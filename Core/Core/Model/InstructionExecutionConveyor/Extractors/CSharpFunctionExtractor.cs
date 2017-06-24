@@ -29,15 +29,16 @@ namespace Core.Model.InstructionExecutionConveyor.Extractors
 				var methods = type.GetMethods();
 
 				// TODO: нужно сделать через атрибут
-				if (type.Name.Equals("Simple"))
-				{
+			//	if (type.Name.Equals("Simple"))
+			//	{
 					var get_func_method = type.GetMethod("GetFunc");
 					foreach (var method in methods)
 					{
 						// TODO: нужно сделать через атрибут
-						if (method.Name.Equals("Main"))
+						if (method.Name.Equals("Main") || method.GetParameters().Any(x => x.ParameterType.Name.StartsWith("Var")))
 						{
-							var s = Activator.CreateInstance(type);
+							cs_assembly.ControlFunctions.Add(CommandBuilder.CompileMethodFromAssembly(assembly, type, get_func_method, method));
+							/*var s = Activator.CreateInstance(type);
 							var input = new List<object>();
 
 							var builder = (CommandBuilder)get_func_method.Invoke(s, null);
@@ -51,10 +52,10 @@ namespace Core.Model.InstructionExecutionConveyor.Extractors
 							method.Invoke(s, input.ToArray());
 							//s._Main((Var<int>)builder.InputData(), (Var<int>)builder.InputData(), (Var<int>)builder.InputData(), (Var<int>)builder.InputData(), (Var<int>)builder.InputData(), (Var<int>)builder.InputData(), (Var<int>)builder.InputData(), (Var<int>)builder.InputData());
 							var control_func = CommandBuilder.Build(method.Name, $"{type.Namespace}.{type.Name}".Split('.').ToList(), () => builder);
-							cs_assembly.ControlFunctions.Add(control_func);
+							cs_assembly.ControlFunctions.Add(control_func);*/
 						}
 					}
-				}
+				/*}
 				else
 				{
 					var cs_class = new CSharpClass()
@@ -88,7 +89,7 @@ namespace Core.Model.InstructionExecutionConveyor.Extractors
 					cs_assembly.CSharpClass.Add(cs_class);
 				}
 				
-				
+				*/
 			}
 
 			return cs_assembly;
@@ -104,10 +105,7 @@ namespace Core.Model.InstructionExecutionConveyor.Extractors
 		public static CSharpAssembly ExtractAssembly(string path)
 		{
 			var fs = new FileStream(path, FileMode.Open);
-			//var x = fs.ReadByte();
-			var myAssembly = AssemblyLoadContext.Default.LoadFromStream(fs); //AssemblyLoadContext.Default.LoadFromAssemblyPath(path/*@"C:\MyDirectory\bin\Custom.Thing.dll"*/);
-			//var myTypes = myAssembly.GetTypes(); // GetType("Custom.Thing.SampleClass");
-
+			var myAssembly = AssemblyLoadContext.Default.LoadFromStream(fs); 
 			return ExtractAssembly(myAssembly);
 		}
 	}

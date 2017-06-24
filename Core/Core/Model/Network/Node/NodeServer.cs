@@ -4,6 +4,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Core.Model.Commands.Build;
+using Core.Model.Computing;
 using Core.Model.Network.Node;
 using Core.Model.Network.Node.DataModel;
 using Core.Model.Network.Node.Repository;
@@ -16,6 +18,9 @@ namespace Core.Model
 	{
 		private INodeRepository _nodeRepository;
 		private IServerService _serverService;
+
+		// TODO: сделать интерфейсом.
+		private ComputingCore _computingCore;
 
 		/// <summary>
 		/// Информация о других известных узлах.
@@ -58,6 +63,7 @@ namespace Core.Model
 				}
 			});*/
 
+			_computingCore = ComputingCore.InitComputingCore();
 		}
 
 		#region Web methods
@@ -90,6 +96,30 @@ namespace Core.Model
 		{
 			Console.WriteLine("Pinged");
 			return true;
+		}
+
+		private static int index = 0;
+		public string InvokeCode(string code)
+		{
+			index++;
+			//var computing_core = ComputingCore.InitComputingCore();
+			//	computing_core.AddAssembly(@"F:\Main Folder\Аспирантура\Диссертация\Program\DF2\SimpleMethods\bin\Debug\netcoreapp1.1\SimpleMethods.dll");
+
+			var assembly = CommandBuilder.CreateFunctionFromSourceCode(@"
+using Core.Model.Compiler.Build.DataModel;
+using Core.Model.Compiler.Code;
+
+namespace CustomNamespace" + index.ToString() + @"
+{
+	public class CustomClass : ControlFunctionBase
+	{
+		" + code + @"
+	}
+}");
+			_computingCore.AddAssembly(assembly);
+			var result = _computingCore.Exec($"CustomNamespace{index}.CustomClass.Main", 1, 2, 3);
+			result.Wait(10000);
+			return JsonConvert.SerializeObject(result.Result.Data);
 		}
 
 		#endregion
