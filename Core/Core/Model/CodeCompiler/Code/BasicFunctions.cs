@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Core.Model.Bodies.Functions;
-using Core.Model.Headers.Functions;
+﻿using System.Collections.Generic;
+using Core.Model.CodeExecution.DataModel.Bodies.Functions;
+using Core.Model.CodeExecution.DataModel.Headers.Functions;
+using Core.Model.NetworkLogic;
 
-namespace Core.Model.Compiler.Code
+namespace Core.Model.CodeCompiler.Code
 {
 	public static class BasicFunctions
 	{

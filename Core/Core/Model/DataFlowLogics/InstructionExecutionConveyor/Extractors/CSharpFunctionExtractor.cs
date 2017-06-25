@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using Core.Model.InstructionExecutionConveyor.Extractors.DataModel;
-
 using System.Runtime.Loader;
-using Core.Model.Bodies.Functions;
-using Core.Model.Commands.Build;
-using Core.Model.Compiler.Build.DataModel;
-using Core.Model.Headers.Functions;
+using Core.Model.CodeCompiler.Build;
+using Core.Model.CodeExecution.DataModel.Bodies.Functions;
+using Core.Model.DataFlowLogics.InstructionExecutionConveyor.Extractors.DataModel;
 
-namespace Core.Model.InstructionExecutionConveyor.Extractors
+namespace Core.Model.DataFlowLogics.InstructionExecutionConveyor.Extractors
 {
 	public class CSharpFunctionExtractor
 	{

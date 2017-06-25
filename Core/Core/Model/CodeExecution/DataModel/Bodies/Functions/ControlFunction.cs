@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Core.Model.Headers.Functions;
+﻿using System.Collections.Generic;
 
-namespace Core.Model.Bodies.Functions
+namespace Core.Model.CodeExecution.DataModel.Bodies.Functions
 {
 	public class ControlFunction : Function
 	{

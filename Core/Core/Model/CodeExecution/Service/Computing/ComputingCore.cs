@@ -1,27 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
-using Core.Model.Bodies.Base;
-using Core.Model.Bodies.Commands;
-using Core.Model.Bodies.Data;
-using Core.Model.Bodies.Functions;
-using Core.Model.Commands.Build;
-using Core.Model.Compiler.Build.DataModel;
-using Core.Model.Compiler.Code;
+using Core.Model.CodeCompiler.Build;
+using Core.Model.CodeCompiler.Code;
+using Core.Model.CodeExecution.DataModel.Bodies.Data;
+using Core.Model.CodeExecution.DataModel.Bodies.Functions;
+using Core.Model.CodeExecution.DataModel.Headers.Base;
+using Core.Model.CodeExecution.DataModel.Headers.Commands;
+using Core.Model.CodeExecution.DataModel.Headers.Data;
+using Core.Model.CodeExecution.DataModel.Headers.Functions;
+using Core.Model.CodeExecution.Repository;
+using Core.Model.CodeExecution.Service.Execution;
+using Core.Model.DataFlowLogics.InstructionExecutionConveyor.Extractors;
+using Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job;
 using Core.Model.DataFlowLogics.Logics.Service;
-using Core.Model.Execution;
-using Core.Model.Headers.Base;
-using Core.Model.Headers.Commands;
-using Core.Model.Headers.Data;
-using Core.Model.Headers.Functions;
-using Core.Model.InstructionExecutionConveyor.Extractors;
-using Core.Model.Job;
-using Core.Model.Repository;
+using Core.Model.NetworkLogic;
 
-namespace Core.Model.Computing
+namespace Core.Model.CodeExecution.Service.Computing
 {
 	/// <summary>
 	/// Вычислительное ядро.

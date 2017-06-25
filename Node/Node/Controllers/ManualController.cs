@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Core.Model;
-using Core.Model.Network.Node;
-using Core.Model.Network.Node.DataModel;
-using Core.Model.Network.Node.Repository;
-using Core.Model.Network.WebMethod.Repository;
+﻿using Core.Model.OpenInterfaces.Node;
+using Core.Model.OpenInterfaces.Node.DataModel;
 using Microsoft.AspNetCore.Mvc;
 using Node.Static;
 
@@ -18,9 +11,9 @@ namespace Node.Controllers
 		{
 		}
 
-		public Core.Model.Network.Node.DataModel.Node JoinToNode(string address)
+		public Core.Model.OpenInterfaces.Node.DataModel.Node JoinToNode(string address)
 		{
-			return new Core.Model.Network.Node.DataModel.Node()
+			return new Core.Model.OpenInterfaces.Node.DataModel.Node()
 			{
 				NetworkAddress = new NetworkAddress()
 				{

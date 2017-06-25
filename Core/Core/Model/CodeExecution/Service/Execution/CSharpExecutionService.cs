@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Core.Model.Bodies.Commands;
-using Core.Model.Bodies.Data;
-using Core.Model.Bodies.Functions;
-using Core.Model.Headers.Functions;
-using Core.Model.Repository;
+using Core.Model.CodeExecution.DataModel.Bodies.Commands;
+using Core.Model.CodeExecution.DataModel.Bodies.Data;
+using Core.Model.CodeExecution.DataModel.Bodies.Functions;
+using Core.Model.CodeExecution.DataModel.Headers.Functions;
+using Core.Model.CodeExecution.Repository;
 
-namespace Core.Model.Execution
+namespace Core.Model.CodeExecution.Service.Execution
 {
 	/// <summary>
 	/// Исполняющий сервис функций C#.

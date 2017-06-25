@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace Core.Model.Network.Net.DataModel
+namespace Core.Model.NetworkLogic.Net.DataModel
 {
-    public class Demension
-    {
-	    public List<Axis> AxisList { get; set; }
-    }
+	public class Demension
+	{
+		public List<Axis> AxisList { get; set; }
+	}
 }

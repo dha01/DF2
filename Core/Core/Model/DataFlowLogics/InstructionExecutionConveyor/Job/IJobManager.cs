@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Core.Model.Bodies.Commands;
-using Core.Model.Bodies.Data;
-using Core.Model.Headers.Commands;
+using Core.Model.CodeExecution.DataModel.Bodies.Commands;
 
-namespace Core.Model.Job
+namespace Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job
 {
 	
 

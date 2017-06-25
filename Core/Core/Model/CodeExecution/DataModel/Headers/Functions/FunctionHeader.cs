@@ -1,8 +1,8 @@
 ﻿using System.Linq;
-using Core.Model.Commands.Build;
-using Core.Model.Headers.Base;
+using Core.Model.CodeCompiler.Build;
+using Core.Model.CodeExecution.DataModel.Headers.Base;
 
-namespace Core.Model.Headers.Functions
+namespace Core.Model.CodeExecution.DataModel.Headers.Functions
 {
 	/// <summary>
 	/// Заголовок функции.

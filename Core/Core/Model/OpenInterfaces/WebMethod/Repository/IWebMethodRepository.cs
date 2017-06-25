@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Core.Model.Network.WebMethod.Repository
+﻿namespace Core.Model.OpenInterfaces.WebMethod.Repository
 {
-    public interface IWebMethodRepository
-    {
-	    TOut SendRequest<TIn, TOut>(string uri, TIn input, int timeout = 1000) where TIn : class;
+	public interface IWebMethodRepository
+	{
+		TOut SendRequest<TIn, TOut>(string uri, TIn input, int timeout = 1000) where TIn : class;
 
-	    TOut SendRequest<TOut>(string uri, int timeout = 1000);
-    }
+		TOut SendRequest<TOut>(string uri, int timeout = 1000);
+	}
 }

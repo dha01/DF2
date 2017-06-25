@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Diagnostics;
-using Core.Model.Bodies.Functions;
-using Core.Model.Commands.Build;
-using Core.Model.Compiler.Code;
-using Core.Model.Headers.Functions;
+﻿using System.Collections.Generic;
+using Core.Model.CodeCompiler.Code;
 
-namespace Core.Model.Compiler.Build.DataModel
+namespace Core.Model.CodeCompiler.Build.DataModel
 {
 	public interface VarInterface
 	{

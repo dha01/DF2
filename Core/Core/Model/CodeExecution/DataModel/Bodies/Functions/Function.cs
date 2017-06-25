@@ -1,5 +1,4 @@
-﻿
-namespace Core.Model.Bodies.Functions
+﻿namespace Core.Model.CodeExecution.DataModel.Bodies.Functions
 {
 	public enum InputParamCondition
 	{

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Core.Model.Network.Node.DataModel
+namespace Core.Model.OpenInterfaces.Node.DataModel
 {
 	public class WorkingСapacity
 	{

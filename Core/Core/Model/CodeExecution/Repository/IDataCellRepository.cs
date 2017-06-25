@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Core.Model.Bodies.Data;
-using Core.Model.Headers.Data;
+﻿using Core.Model.CodeExecution.DataModel.Bodies.Data;
+using Core.Model.CodeExecution.DataModel.Headers.Data;
 
-namespace Core.Model.Repository
+namespace Core.Model.CodeExecution.Repository
 {
 	
 

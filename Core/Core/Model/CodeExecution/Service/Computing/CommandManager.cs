@@ -2,14 +2,14 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using Core.Model.Bodies.Commands;
-using Core.Model.Bodies.Functions;
-using Core.Model.Headers.Base;
-using Core.Model.Headers.Commands;
-using Core.Model.Job;
-using Core.Model.Repository;
+using Core.Model.CodeExecution.DataModel.Bodies.Commands;
+using Core.Model.CodeExecution.DataModel.Bodies.Functions;
+using Core.Model.CodeExecution.DataModel.Headers.Base;
+using Core.Model.CodeExecution.DataModel.Headers.Commands;
+using Core.Model.CodeExecution.Repository;
+using Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job;
 
-namespace Core.Model.Computing
+namespace Core.Model.CodeExecution.Service.Computing
 {
 	/// <summary>
 	/// Управляет потоком команд и решает нужно ли их исполнять на этом узле или ищет другой подходящий узел и отправляет на исполнение на него.

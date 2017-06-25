@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Core.Model.Commands.Build;
-using Core.Model.Compiler.Build.DataModel;
-using Core.Model.Headers.Functions;
-using Core.Model.InstructionExecutionConveyor.Extractors;
+using Core.Model.CodeCompiler.Build;
+using Core.Model.CodeCompiler.Build.DataModel;
 
-namespace Core.Model.Compiler.Code
+namespace Core.Model.CodeCompiler.Code
 {
 	public class InvokedControlFunction<T, T_2, TResult>
 	{

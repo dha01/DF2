@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Core.Model.Bodies.Commands;
-using Core.Model.Bodies.Data;
-using Core.Model.Bodies.Functions;
+﻿using System.Collections.Generic;
+using Core.Model.CodeExecution.DataModel.Bodies.Commands;
+using Core.Model.CodeExecution.DataModel.Bodies.Data;
+using Core.Model.CodeExecution.DataModel.Bodies.Functions;
 
-namespace Core.Model.Execution
+namespace Core.Model.CodeExecution.Service.Execution
 {
 	/// <summary>
 	/// Сервис класса для управления исполняющими сервисами.

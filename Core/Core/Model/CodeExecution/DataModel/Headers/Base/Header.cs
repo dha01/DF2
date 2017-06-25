@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Core.Model.NetworkLogic;
 
-namespace Core.Model.Headers.Base
+namespace Core.Model.CodeExecution.DataModel.Headers.Base
 {
 	/// <summary>
 	/// Базоывй заголовок.

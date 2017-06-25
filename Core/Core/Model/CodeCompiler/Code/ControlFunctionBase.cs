@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Core.Model.Commands.Build;
-using Core.Model.Compiler.Build.DataModel;
-using Core.Model.Headers.Functions;
+using Core.Model.CodeCompiler.Build;
+using Core.Model.CodeCompiler.Build.DataModel;
+using Core.Model.CodeExecution.DataModel.Headers.Functions;
 
-namespace Core.Model.Compiler.Code
+namespace Core.Model.CodeCompiler.Code
 {
 	public class ControlFunctionBase
 	{

@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-namespace Core.Model.Headers.Base
+namespace Core.Model.CodeExecution.DataModel.Headers.Base
 {
 	/// <summary>
 	/// Заголовок для исполнения.

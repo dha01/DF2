@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Core.Model.Headers.Functions;
-
-namespace Core.Model.Bodies.Functions
+﻿namespace Core.Model.CodeExecution.DataModel.Bodies.Functions
 {
 	public class BasicFunction : Function
 	{

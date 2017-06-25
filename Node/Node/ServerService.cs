@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Net;
-using System.Text;
 using System.Threading;
-using Core.Model.Network.Node.DataModel;
-using Core.Model.Network.Server.Service;
+using Core.Model.OpenInterfaces.Node.DataModel;
+using Core.Model.OpenInterfaces.Server.Service;
 using Microsoft.AspNetCore.Hosting;
 
 namespace Node

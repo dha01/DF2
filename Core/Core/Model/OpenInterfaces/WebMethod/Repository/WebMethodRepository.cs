@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace Core.Model.Network.WebMethod.Repository
+namespace Core.Model.OpenInterfaces.WebMethod.Repository
 {
-    public class WebMethodRepository : IWebMethodRepository
+	public class WebMethodRepository : IWebMethodRepository
 	{
 		public Task<HttpResponseMessage> SendRequest(HttpClient http_client, string uri, string input_json)
 		{

@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Core.Model.OpenInterfaces.Node.DataModel;
 
-namespace Core.Model.Network.Net.DataModel
+namespace Core.Model.NetworkLogic.Net.DataModel
 {
-    public class Axis
-    {
+	public class Axis
+	{
 		public int Index { get; set; }
-		public Node.DataModel.Node Prev { get; set; }
-	    public Node.DataModel.Node Next { get; set; }
+		public Node Prev { get; set; }
+		public Node Next { get; set; }
 
 		public int Length { get; set; }
 	}

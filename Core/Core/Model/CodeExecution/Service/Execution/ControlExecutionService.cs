@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Core.Model.Bodies.Commands;
-using Core.Model.Bodies.Data;
-using Core.Model.Bodies.Functions;
+using Core.Model.CodeExecution.DataModel.Bodies.Commands;
+using Core.Model.CodeExecution.DataModel.Bodies.Data;
+using Core.Model.CodeExecution.DataModel.Bodies.Functions;
+using Core.Model.CodeExecution.DataModel.Headers.Commands;
+using Core.Model.CodeExecution.DataModel.Headers.Data;
+using Core.Model.CodeExecution.DataModel.Headers.Functions;
 using Core.Model.DataFlowLogics.Logics.Service;
-using Core.Model.Headers.Commands;
-using Core.Model.Headers.Data;
-using Core.Model.Headers.Functions;
-using Core.Model.Repository;
+using Core.Model.NetworkLogic;
 
-namespace Core.Model.Execution
+namespace Core.Model.CodeExecution.Service.Execution
 {
 	/// <summary>
 	/// Исполняющий сервис управляющих функций.

@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Core.Model.Network.Node.Repository;
-using Core.Model.Network.WebMethod.Repository;
+﻿using Core.Model.OpenInterfaces.Node.Repository;
+using Core.Model.OpenInterfaces.WebMethod.Repository;
 
-namespace Core.Model.Network.Node
+namespace Core.Model.OpenInterfaces.Node
 {
 	public static class NodeExtension
 	{

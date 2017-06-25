@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
-using Core.Model.Headers.Base;
+using Core.Model.CodeExecution.DataModel.Headers.Base;
+using Core.Model.NetworkLogic;
 
-namespace Core.Model.Headers.Data
+namespace Core.Model.CodeExecution.DataModel.Headers.Data
 {
 	/// <summary>
 	/// Заголовок ячейки данных.

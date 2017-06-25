@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Core.Model.Bodies.Commands;
-using Core.Model.Headers.Commands;
-using Core.Model.Headers.Data;
-using Core.Model.Headers.Functions;
+using Core.Model.CodeExecution.DataModel.Bodies.Commands;
+using Core.Model.CodeExecution.DataModel.Headers.Commands;
+using Core.Model.CodeExecution.DataModel.Headers.Data;
+using Core.Model.CodeExecution.DataModel.Headers.Functions;
 
-namespace Core.Model.Computing
+namespace Core.Model.CodeExecution.Service.Computing
 {
 	public interface ICommandService
 	{

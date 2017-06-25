@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Core.Model.Network.WebMethod.Service
+﻿namespace Core.Model.OpenInterfaces.WebMethod.Service
 {
 	public class WebMethodService : IWebMethodService
-    {
-    }
+	{
+	}
 }

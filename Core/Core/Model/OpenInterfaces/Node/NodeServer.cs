@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Core.Model.Commands.Build;
-using Core.Model.Computing;
-using Core.Model.Network.Node;
-using Core.Model.Network.Node.DataModel;
-using Core.Model.Network.Node.Repository;
-using Core.Model.Network.Server.Service;
+using Core.Model.CodeCompiler.Build;
+using Core.Model.CodeExecution.Service.Computing;
+using Core.Model.OpenInterfaces.Node.DataModel;
+using Core.Model.OpenInterfaces.Node.Repository;
+using Core.Model.OpenInterfaces.Server.Service;
 using Newtonsoft.Json;
 
-namespace Core.Model
+namespace Core.Model.OpenInterfaces.Node
 {
 	public class NodeServer
 	{
@@ -25,19 +21,19 @@ namespace Core.Model
 		/// <summary>
 		/// Информация о других известных узлах.
 		/// </summary>
-		private List<Node> _nodes = new List<Node>();
+		private List<DataModel.Node> _nodes = new List<DataModel.Node>();
 
 		/// <summary>
 		/// Информация об этом узле.
 		/// </summary>
-		private Node _info;
+		private DataModel.Node _info;
 
 		public NodeServer(IServerService server_service, INodeRepository node_repository)
 		{
 			_nodeRepository = node_repository;
 			_serverService = server_service;
 
-			_info = new Node()
+			_info = new DataModel.Node()
 			{
 				Guid = Guid.NewGuid(),
 				NetworkAddress = server_service.NetworkAddress,
@@ -48,7 +44,7 @@ namespace Core.Model
 					IsOnline = true,
 					LastCheckDateTime = null
 				},
-				ProxyNodes = new List<Node>(),
+				ProxyNodes = new List<DataModel.Node>(),
 				Index = new List<int>() { 1 }
 			};
 			/*
@@ -68,9 +64,9 @@ namespace Core.Model
 
 		#region Web methods
 
-		public Node AddNode(string address)
+		public DataModel.Node AddNode(string address)
 		{
-			var node = new Node()
+			var node = new DataModel.Node()
 			{
 				NetworkAddress = new NetworkAddress()
 				{
@@ -82,12 +78,12 @@ namespace Core.Model
 			return node;
 		}
 
-		public List<Node> GetNodes()
+		public List<DataModel.Node> GetNodes()
 		{
 			return _nodes;
 		}
 
-		public Node GetInfo()
+		public DataModel.Node GetInfo()
 		{
 			return _info;
 		}

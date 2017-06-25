@@ -1,7 +1,6 @@
-﻿using System;
-using Core.Model.Compiler.Build.Attributes;
-using Core.Model.Compiler.Build.DataModel;
-using Core.Model.Compiler.Code;
+﻿using Core.Model.CodeCompiler.Build.Attributes;
+using Core.Model.CodeCompiler.Build.DataModel;
+using Core.Model.CodeCompiler.Code;
 
 namespace SimpleMethods.Control
 {

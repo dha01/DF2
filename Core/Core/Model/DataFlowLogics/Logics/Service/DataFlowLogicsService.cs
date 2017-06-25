@@ -2,13 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Core.Model.Bodies.Commands;
-using Core.Model.Headers.Base;
-using Core.Model.Headers.Commands;
-using Core.Model.Headers.Data;
-using Core.Model.Job;
+using Core.Model.CodeExecution.DataModel.Bodies.Commands;
+using Core.Model.CodeExecution.DataModel.Headers.Commands;
+using Core.Model.CodeExecution.DataModel.Headers.Data;
+using Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job;
 
 namespace Core.Model.DataFlowLogics.Logics.Service
 {

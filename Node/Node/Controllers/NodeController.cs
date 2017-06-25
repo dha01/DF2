@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Core.Model;
-using Core.Model.Network.Node.DataModel;
-using Core.Model.Network.Node.Repository;
-using Core.Model.Network.WebMethod.Repository;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Node.Static;
 
@@ -17,17 +10,17 @@ namespace Node.Controllers
 		{
 		}
 
-		public Core.Model.Network.Node.DataModel.Node GetInfo()
+		public Core.Model.OpenInterfaces.Node.DataModel.Node GetInfo()
 		{
 			return StaticVariables.NodeServer.GetInfo();
 		}
 
-		public Core.Model.Network.Node.DataModel.Node AddNode(string address)
+		public Core.Model.OpenInterfaces.Node.DataModel.Node AddNode(string address)
 		{
 			return StaticVariables.NodeServer.AddNode(address);
 		}
 
-		public List<Core.Model.Network.Node.DataModel.Node> GetNodes()
+		public List<Core.Model.OpenInterfaces.Node.DataModel.Node> GetNodes()
 		{
 			return StaticVariables.NodeServer.GetNodes();
 		}

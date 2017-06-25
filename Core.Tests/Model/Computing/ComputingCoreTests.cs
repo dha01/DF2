@@ -4,26 +4,19 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Metadata;
 using System.Runtime.Loader;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Core.Model;
-using Core.Model.Bodies.Data;
-using Core.Model.Bodies.Functions;
-using Core.Model.Commands.Build;
-using Core.Model.Commands.Logger;
-using Core.Model.Computing;
+using Core.Model.CodeCompiler.Build;
+using Core.Model.CodeExecution.DataModel.Bodies.Functions;
+using Core.Model.CodeExecution.DataModel.Headers.Functions;
+using Core.Model.CodeExecution.Repository;
+using Core.Model.CodeExecution.Service.Computing;
+using Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job;
+using Core.Model.DataFlowLogics.Logger;
 using Core.Model.DataFlowLogics.Logics.Service;
-using Core.Model.Execution;
-using Core.Model.Headers.Base;
-using Core.Model.Headers.Commands;
-using Core.Model.Headers.Data;
-using Core.Model.Headers.Functions;
-using Core.Model.InstructionExecutionConveyor.Extractors;
-using Core.Model.Job;
-using Core.Model.Repository;
+using Core.Model.NetworkLogic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 //using SimpleMethods.Simple;
@@ -447,9 +440,9 @@ namespace Core.Tests.Model.Computing
 		private static ComputingCore computing_core = ComputingCore.InitComputingCore();
 
 		private static Assembly assembly = CommandBuilder.CreateFunctionFromSourceCode(@"
-using Core.Model.Compiler.Build.Attributes;
-using Core.Model.Compiler.Build.DataModel;
-using Core.Model.Compiler.Code;
+using Core.Model.CodeCompiler.Build.Attributes;
+using Core.Model.CodeCompiler.Build.DataModel;
+using Core.Model.CodeCompiler.Code;
 
 namespace CustomNamespace
 {

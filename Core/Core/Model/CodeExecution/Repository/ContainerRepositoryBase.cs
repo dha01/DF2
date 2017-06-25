@@ -2,13 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
-using Core.Model.Bodies.Base;
-using Core.Model.Headers.Base;
+using Core.Model.CodeExecution.DataModel.Bodies.Base;
+using Core.Model.CodeExecution.DataModel.Headers.Base;
 
-namespace Core.Model.Repository
+namespace Core.Model.CodeExecution.Repository
 {
 	/// <summary>
 	/// Базовый репозиторий контейнеров.

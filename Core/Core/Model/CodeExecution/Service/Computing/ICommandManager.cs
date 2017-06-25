@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Core.Model.Headers.Commands;
-using Core.Model.Headers.Data;
-using Core.Model.Headers.Functions;
+﻿using System.Collections.Generic;
+using Core.Model.CodeExecution.DataModel.Headers.Commands;
 
-namespace Core.Model.Computing
+namespace Core.Model.CodeExecution.Service.Computing
 {
 	
 

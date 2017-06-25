@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Core.Model.Bodies.Commands;
-using Core.Model.Bodies.Data;
-using Core.Model.Bodies.Functions;
+using Core.Model.CodeExecution.DataModel.Bodies.Commands;
+using Core.Model.CodeExecution.DataModel.Bodies.Data;
+using Core.Model.CodeExecution.DataModel.Bodies.Functions;
 
-namespace Core.Model.Execution
+namespace Core.Model.CodeExecution.Service.Execution
 {
 	/// <summary>
 	/// Класс для управления исполняющими сервисами.

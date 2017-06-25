@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Core.Model;
-using Core.Model.Bodies.Functions;
-using Core.Model.Headers.Functions;
-
-namespace SimpleMethods.Simple
+﻿namespace SimpleMethods.Simple
 {
 	public class Math
 	{

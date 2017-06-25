@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using Core.Model.Headers.Functions;
+﻿using System.Reflection;
 
-namespace Core.Model.Bodies.Functions
+namespace Core.Model.CodeExecution.DataModel.Bodies.Functions
 {
 	public class CSharpFunction : Function
 	{

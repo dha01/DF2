@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Core.Model.Headers.Base;
+﻿using Core.Model.CodeExecution.DataModel.Headers.Base;
 
-namespace Core.Model.Bodies.Base
+namespace Core.Model.CodeExecution.DataModel.Bodies.Base
 {
 	public class ContainerBase : IContainer
 	{

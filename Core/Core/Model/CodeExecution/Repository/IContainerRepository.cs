@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Core.Model.Headers.Base;
-using Core.Model.Headers.Data;
 
-namespace Core.Model.Repository
+namespace Core.Model.CodeExecution.Repository
 {
 
 	public interface IContainerRepository<T_conteiner, T_header>

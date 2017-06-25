@@ -1,4 +1,4 @@
-﻿namespace Core.Model.Headers.Functions
+﻿namespace Core.Model.CodeExecution.DataModel.Headers.Functions
 {
 	/// <summary>
 	/// Заголовок базовой функции.

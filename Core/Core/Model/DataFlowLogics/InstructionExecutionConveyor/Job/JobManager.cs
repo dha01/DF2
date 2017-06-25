@@ -1,15 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using Core.Model.Bodies.Commands;
-using Core.Model.Bodies.Data;
-using Core.Model.Execution;
-using Core.Model.Headers.Commands;
-using Core.Model.Repository;
+using Core.Model.CodeExecution.DataModel.Bodies.Commands;
+using Core.Model.CodeExecution.Service.Execution;
 
-namespace Core.Model.Job
+namespace Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job
 {
 	/// <summary>
 	/// Класс для управления пулом исполнителей.

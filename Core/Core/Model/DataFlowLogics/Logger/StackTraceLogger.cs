@@ -2,14 +2,13 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Core.Model.Bodies.Commands;
-using Core.Model.Headers.Base;
-using Core.Model.Headers.Functions;
+using Core.Model.CodeExecution.DataModel.Bodies.Commands;
+using Core.Model.CodeExecution.DataModel.Headers.Base;
+using Core.Model.CodeExecution.DataModel.Headers.Functions;
 
-namespace Core.Model.Commands.Logger
+namespace Core.Model.DataFlowLogics.Logger
 {
 	public static class StackTraceLogger
 	{

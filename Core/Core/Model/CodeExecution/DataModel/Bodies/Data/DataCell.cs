@@ -1,5 +1,4 @@
-﻿
-namespace Core.Model.Bodies.Data
+﻿namespace Core.Model.CodeExecution.DataModel.Bodies.Data
 {
 	public class DataCell : Base.ContainerBase
 	{

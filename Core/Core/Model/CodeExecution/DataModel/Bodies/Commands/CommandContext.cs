@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Core.Model.Bodies.Base;
-using Core.Model.Bodies.Data;
-using Core.Model.Bodies.Functions;
-using Core.Model.Headers.Commands;
+﻿using Core.Model.CodeExecution.DataModel.Bodies.Base;
 
-namespace Core.Model.Bodies.Commands
+namespace Core.Model.CodeExecution.DataModel.Bodies.Commands
 {
 	public class CommandContext : ContainerBase
 	{

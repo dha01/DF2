@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Core.Model.Bodies.Functions;
+﻿using System.Collections.Generic;
+using Core.Model.CodeExecution.DataModel.Bodies.Functions;
 
-namespace Core.Model.InstructionExecutionConveyor.Extractors.DataModel
+namespace Core.Model.DataFlowLogics.InstructionExecutionConveyor.Extractors.DataModel
 {
 	public class CSharpAssembly
 	{

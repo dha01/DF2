@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Core.Model.Compiler.Build.Attributes
+namespace Core.Model.CodeCompiler.Build.Attributes
 {
 
 	[AttributeUsage(AttributeTargets.Method)]

@@ -1,12 +1,8 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.IO;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Core.Model.Network
+namespace Core.Model.NetworkLogic
 {
 	public class Client
 	{

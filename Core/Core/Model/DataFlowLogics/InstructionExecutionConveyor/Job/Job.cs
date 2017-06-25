@@ -1,23 +1,16 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Core.Model.Bodies.Base;
-using Core.Model.Bodies.Commands;
-using Core.Model.Bodies.Data;
-using Core.Model.Bodies.Functions;
-using Core.Model.Commands.Logger;
-using Core.Model.Execution;
-using Core.Model.Headers.Base;
-using Core.Model.Headers.Commands;
-using Core.Model.Headers.Data;
-using Core.Model.Headers.Functions;
-using Core.Model.Repository;
+using Core.Model.CodeExecution.DataModel.Bodies.Commands;
+using Core.Model.CodeExecution.DataModel.Headers.Base;
+using Core.Model.CodeExecution.DataModel.Headers.Data;
+using Core.Model.CodeExecution.DataModel.Headers.Functions;
+using Core.Model.CodeExecution.Service.Execution;
+using Core.Model.DataFlowLogics.Logger;
 
-namespace Core.Model.Job
+namespace Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job
 {
 	
 	/// <summary>

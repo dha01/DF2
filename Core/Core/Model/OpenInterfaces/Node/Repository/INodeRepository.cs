@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Core.Model.Network.Node.Repository
+﻿namespace Core.Model.OpenInterfaces.Node.Repository
 {
-    public interface INodeRepository
-    {
-	    bool Ping(DataModel.Node node, int timeout = 5000);
-    }
+	public interface INodeRepository
+	{
+		bool Ping(DataModel.Node node, int timeout = 5000);
+	}
 }

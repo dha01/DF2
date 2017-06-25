@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Core.Model.Bodies.Commands;
-using Core.Model.Headers.Base;
-using Core.Model.Headers.Commands;
+using Core.Model.CodeExecution.DataModel.Headers.Base;
+using Core.Model.CodeExecution.DataModel.Headers.Commands;
 
-namespace Core.Model.Repository
+namespace Core.Model.CodeExecution.Repository
 {
 	/// <summary>
 	/// Репозиторий команд.

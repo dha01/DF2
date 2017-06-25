@@ -4,17 +4,18 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
-using Core.Model.Bodies.Data;
-using Core.Model.Bodies.Functions;
-using Core.Model.Compiler.Build.Attributes;
-using Core.Model.Compiler.Build.DataModel;
-using Core.Model.Compiler.Code;
-using Core.Model.Headers.Data;
-using Core.Model.Headers.Functions;
+using Core.Model.CodeCompiler.Build.Attributes;
+using Core.Model.CodeCompiler.Build.DataModel;
+using Core.Model.CodeCompiler.Code;
+using Core.Model.CodeExecution.DataModel.Bodies.Data;
+using Core.Model.CodeExecution.DataModel.Bodies.Functions;
+using Core.Model.CodeExecution.DataModel.Headers.Data;
+using Core.Model.CodeExecution.DataModel.Headers.Functions;
+using Core.Model.NetworkLogic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Core.Model.Commands.Build
+namespace Core.Model.CodeCompiler.Build
 {
 	/// <summary>
 	/// Класс для подготовки и сборки управляющих команд.

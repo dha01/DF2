@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 
-namespace Core.Model.Compiler.Code
+namespace Core.Model.CodeCompiler.Code
 {
 	public static class SymbolExtensions
 	{

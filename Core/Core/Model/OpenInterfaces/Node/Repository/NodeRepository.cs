@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
-using Core.Model.Network.Node.DataModel;
-using Core.Model.Network.WebMethod.Repository;
-using Newtonsoft.Json;
+using Core.Model.OpenInterfaces.WebMethod.Repository;
 
-namespace Core.Model.Network.Node.Repository
+namespace Core.Model.OpenInterfaces.Node.Repository
 {
 	public class NodeRepository : INodeRepository
 	{
