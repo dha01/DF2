@@ -213,6 +213,17 @@ namespace Core.Model.CodeCompiler.Build
 			return NewCommand((FunctionHeader)fucntion.Header, input_data);
 		}
 
+		/// <summary>
+		/// Подгатавливает команду и возвращает её идентификатор.
+		/// </summary>
+		/// <param name="fucntion">Функция.</param>
+		/// <param name="input_data">Входные данные.</param>
+		/// <returns>Идентификатор команды.</returns>
+		public TemplateFunctionRow NewCommand(BasicFunctionModel fucntion, IEnumerable<TemplateFunctionRow> input_data)
+		{
+			return NewCommand((FunctionHeader)fucntion.BasicFunction.Header, input_data);
+		}
+
 		public TemplateFunctionRow Constant(object data)
 		{
 			var row = new TemplateFunctionRow
@@ -240,7 +251,7 @@ namespace Core.Model.CodeCompiler.Build
 
 			if (result.Type == TemplateFunctionRowType.Input)
 			{
-				result = NewCommand(BasicFunctions.Set, new List<TemplateFunctionRow> {output_data_id});
+				result = NewCommand(BasicFunctionModel.Set, new List<TemplateFunctionRow> {output_data_id});
 			}
 
 			result.Type = TemplateFunctionRowType.Output;
@@ -255,22 +266,23 @@ namespace Core.Model.CodeCompiler.Build
 		/// <returns>Список команд.</returns>
 		public List<CommandTemplate> BuildCommands()
 		{
-
 			
-			var input = _rows.Where(x => x.Type == TemplateFunctionRowType.Input).ToList();
-			var funcs = _rows.Where(x => x.Type == TemplateFunctionRowType.Func || x.Type == TemplateFunctionRowType.Output).OrderBy(x => x.Type).ToList();
 
 			_rows = _rows.OrderBy(x => x.Type).ToList();
 			//var const_shift = _commandTemplates.Count + _constants.Count + _inputDataCount + 1;
 
 			List<CommandTemplate> command_templates = new List<CommandTemplate>();
 
-			var output = _rows.FirstOrDefault(x => x.IsOutput);
-			if (output == null)
+			var outputs = _rows.Where(x => x.IsOutput).ToList();
+			if (outputs == null || !outputs.Any())
 			{
 				throw new Exception("BuildCommands Не найдено возвращаемое значение.");
 			}
 
+			var output = outputs.Count > 1 ? NewCommand(BasicFunctionModel.Any, outputs) : outputs.First();
+			
+			var funcs = _rows.Where(x => x.Type == TemplateFunctionRowType.Func || x.Type == TemplateFunctionRowType.Output).OrderBy(x => x.Type).ToList();
+			
 			command_templates.Add(new CommandTemplate()
 			{
 				InputDataIds = output.Input.Select(x => _rows.IndexOf(x)).ToList(),
@@ -281,7 +293,10 @@ namespace Core.Model.CodeCompiler.Build
 
 			foreach (var func in funcs)
 			{
-				//var i = 1;
+				if (func.IsOutput)
+				{
+					continue;
+				}
 				var command = new CommandTemplate()
 				{
 					InputDataIds = func.Input.Select(x => _rows.IndexOf(x)).ToList(),
@@ -308,7 +323,8 @@ namespace Core.Model.CodeCompiler.Build
 			{
 				Commands = BuildCommands(),
 				Constants = constants.Select(x => x.Value).ToList(),
-				Header = BuildHeader(name, name_space)
+				Header = BuildHeader(name, name_space),
+				InputDataCount = _rows.Count(x => x.Type == TemplateFunctionRowType.Input)
 			};
 		} 
 	}

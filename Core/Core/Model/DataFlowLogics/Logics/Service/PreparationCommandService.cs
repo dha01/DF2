@@ -70,6 +70,27 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			return output_data;
 		}
 
+		private DataCell GetDataCell(DataCellHeader data_cell_header)
+		{
+			var data_cell = _dataCellRepository.Get(new[] { data_cell_header }).FirstOrDefault();
+			if (data_cell == null || !data_cell.HasValue)
+			{
+				return new DataCell()
+				{
+					Header = data_cell_header,
+					HasValue = false,
+					Data = null
+				};
+
+				//_dataCellRepository.Subscribe(data_cell_header, OnDataReady);
+				// TODO: нужно отправлять запросы за другие узлы для получения данных.
+			}
+			else
+			{
+				return data_cell;
+			}
+		}
+
 		private Command CreateNewCommand(CommandHeader command_header)
 		{
 			// Получаем выходную ячейку данных.
@@ -96,29 +117,58 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			var all_ready = true;
 			var any_ready = false;
 
-			// Получаем или подписываемся на получение входных параметров.
-			for (int i = 0; i < command_header.InputDataHeaders.Count; i++)
+			switch (command_header.FunctionHeader.Condition)
 			{
-				var data_cell = _dataCellRepository.Get(new[] { command_header.InputDataHeaders[i] }).FirstOrDefault();
-				if (data_cell == null || !data_cell.HasValue)
-				{
-					all_ready = false;
-					any_ready = true;
-
-					new_command.InputData[i] = new DataCell()
+				case InputParamCondition.All:
+					// Получаем или подписываемся на получение входных параметров.
+					for (int i = 0; i < command_header.InputDataHeaders.Count; i++)
 					{
-						Header = command_header.InputDataHeaders[i],
-						HasValue = false,
-						Data = null
-					};
+						var result = GetDataCell(command_header.InputDataHeaders[i]);
+						new_command.InputData[i] = result;
 
-					//_dataCellRepository.Subscribe(data_cell_header, OnDataReady);
-					// TODO: нужно отправлять запросы за другие узлы для получения данных.
-				}
-				else
-				{
-					new_command.InputData[i] = data_cell;
-				}
+						if (!result.HasValue)
+						{
+							all_ready = false;
+						}
+					}
+					break;
+				case InputParamCondition.Any:
+					var any = false;
+					// Получаем или подписываемся на получение входных параметров.
+					for (int i = 0; i < command_header.InputDataHeaders.Count; i++)
+					{
+						var result = GetDataCell(command_header.InputDataHeaders[i]);
+						new_command.InputData[i] = result;
+
+						if (result.HasValue)
+						{
+							any = true;
+						}
+					}
+
+					if (!any)
+					{
+						all_ready = false;
+					}
+					break;
+				case InputParamCondition.Iif:
+					var condition = GetDataCell(command_header.InputDataHeaders[0]);
+					var if_true = GetDataCell(command_header.InputDataHeaders[1]);
+					var if_false = GetDataCell(command_header.InputDataHeaders[2]);
+
+					new_command.InputData[0] = condition;
+					new_command.InputData[1] = if_true;
+					new_command.InputData[2] = if_false;
+
+					if (!condition.HasValue ||
+						(bool)condition.Data && !if_true.HasValue ||
+						!(bool)condition.Data && !if_false.HasValue)
+					{
+						all_ready = false;
+					}
+					break;
+				default:
+					throw new Exception($"CreateNewCommand Неизвестный тип: {command_header.FunctionHeader.Condition}");
 			}
 
 			if (!all_ready)
@@ -190,7 +240,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 
 							if (command.Function != null)
 							{
-								switch (command.Function.Condition)
+								switch (((FunctionHeader)command.Function.Header).Condition)
 								{
 									case InputParamCondition.All:
 										if (command.InputData.All(x => x.HasValue))
@@ -204,8 +254,16 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 											break;
 										}
 										return;
+									case InputParamCondition.Iif:
+										if (command.InputData[0].HasValue &&
+											((bool)command.InputData[0].Data && command.InputData[1].HasValue
+											|| !(bool)command.InputData[0].Data && command.InputData[2].HasValue))
+										{
+											break;
+										}
+										return;
 									default:
-										throw new Exception($"OnDataReady Неизвестный тип: {command.Function.Condition}");
+										throw new Exception($"OnDataReady Неизвестный тип: {((FunctionHeader)command.Function.Header).Condition}");
 								}
 
 								if (_preparingCommands.TryRemove(command_token, out command))

@@ -452,11 +452,11 @@ namespace CustomNamespace
 		public void MyFunction(Var<int> a, Var<int> b, Var<int> c)
 		{
 			
-			var x2 = a + b;
-			var x1 = b * c;
+			var x2 = a + b + 1;
+			var x1 = b * c + 1;
 			//var x3 = Any(x1, x2);
-
-			Return(Any(x1, x2));
+			//Iif(x2 == 0, x2, x3)
+			Return(Iif(a == 1, x2, x1));
 
 
 			//var x1 = (a + b) * (b + c);
@@ -470,6 +470,8 @@ namespace CustomNamespace
 			/*
 
 			var x1 = Null();
+
+			x1.Value = Iif(a == 1, a + b, b + c);
 			If(a == 1);
 			{
 				x1.Value = a + b;
@@ -522,7 +524,7 @@ namespace CustomNamespace
 			//var new_text = GetNewText(assembly, "CustomNamespace.CustomClass.MyFunction");
 
 
-			var result = computing_core.Exec("CustomNamespace.CustomClass.MyFunction", 1, 2, 3);
+			var result = computing_core.Exec("CustomNamespace.CustomClass.MyFunction", 0, 2, 3);
 			result.Wait(10000);
 			var x = result.Result;
 
@@ -531,7 +533,9 @@ namespace CustomNamespace
 
 		public string GetText(ControlFunction code)
 		{
-			var max = Math.Max(code.Commands.Max(x => x.OutputDataId), code.Commands.Max(y => y.InputDataIds.Max(x=>x)))  + code.Constants.Count + 1;
+			//var max = Math.Max(code.Commands.Max(x => x.OutputDataId), code.Commands.Max(y => y.InputDataIds.Max(x=>x)))  + code.Constants.Count;
+
+			var max = code.InputDataCount + code.Constants.Count + code.Commands.Count();
 
 			string[] arr = new string[max];
 
@@ -566,7 +570,7 @@ namespace CustomNamespace
 				}
 			}
 
-			var in_index = 0;
+			var in_index = 1;
 			var text = $@"{code.Header.CallstackToString(".")}({string.Join(", ", arr.Where(x => x.Contains("InputData")).Select(y => $"InputData{in_index++}"))})
 {{
 	{string.Join("\n	", arr)}

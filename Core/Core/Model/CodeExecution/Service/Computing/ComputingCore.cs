@@ -55,16 +55,8 @@ namespace Core.Model.CodeExecution.Service.Computing
 				command_repository,
 				data_flow_logics_service
 			);
-
-			function_repository.Add(new List<Function>()
-			{
-				BasicFunctions.Sum,
-				BasicFunctions.Sub,
-				BasicFunctions.Mul,
-				BasicFunctions.Div,
-				BasicFunctions.Set,
-				BasicFunctions.Any
-			});
+			
+			function_repository.Add(BasicFunctionModel.AllMethods.Select(x => (Function)x.Value.BasicFunction).ToList());
 
 			return computing_core;
 		}

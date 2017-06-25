@@ -18,11 +18,11 @@ namespace SimpleMethods.Control
 			var x3 = x1 + x2;
 			var x4 = Exec<int>("Second", a, b);
 
-			var result = x2 - x3 + 1 + x4;
+			var result = Iif(x2 == 0, x2, x3);
 			//Exec(BasicFunctions.Any, x2, x3);
 			Return(Any(x2, x3));
 			Return(result);
-	    }
+		}
 
 		[ControlFunction]
 		public void Second(Var<int> a, Var<int> b)

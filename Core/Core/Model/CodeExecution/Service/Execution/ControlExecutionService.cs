@@ -39,7 +39,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 		{
 			var control_function = (ControlFunction)function;
 			var input_data_count = input_data.Count();
-			var tmp_count = control_function.Commands.Count() + input_data_count + 1;
+			var tmp_count = control_function.Commands.Count() + input_data_count/* + 1*/;
 
 			// Локальный массив временных данных функции. Добавляем выходные данные нулевым элементом.
 			var tmp_array = new List<DataCell>(tmp_count) { output };
@@ -50,7 +50,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 			int count = input_data.Count() + 1;
 
 			// Добавляем ячейки для всех остальных команд.
-			for (int i = 0; i < control_function.Commands.Count(); i++)
+			for (int i = 0; i < control_function.Commands.Count() - 1; i++)
 			{
 				var callstack = command_context.Header.CallStack.ToList();
 				callstack.Add(function.GetHeader<FunctionHeader>().CallstackToString("."));

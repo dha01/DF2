@@ -1,9 +1,17 @@
 ﻿using System.Linq;
 using Core.Model.CodeCompiler.Build;
+using Core.Model.CodeExecution.DataModel.Bodies.Functions;
 using Core.Model.CodeExecution.DataModel.Headers.Base;
 
 namespace Core.Model.CodeExecution.DataModel.Headers.Functions
 {
+	public enum InputParamCondition
+	{
+		All,
+		Any,
+		Iif
+	}
+
 	/// <summary>
 	/// Заголовок функции.
 	/// </summary>
@@ -16,6 +24,8 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Functions
 		}
 
 		public string Name { get; set; }
+
+		public InputParamCondition Condition { get; set; } = InputParamCondition.All;
 	}
 }
 

@@ -21,9 +21,12 @@ namespace Core.Model.CodeCompiler.Code
 		{
 		}
 
-		protected Var<T> Iif<T>(Var<bool> a, Var<T> val)
+		protected Var<T> Iif<T>(Var<bool> condition, Var<T> val_falce, Var<T> val_true)
 		{
-			throw new NotImplementedException();
+			return new Var<T>(cmd)
+			{
+				Id = cmd.NewCommand(BasicFunctionModel.Iif, new TemplateFunctionRow[] { condition, val_falce, val_true })
+			};
 		}
 
 		protected Var<T> Iif<T>(Var<bool> a, T val)
@@ -48,7 +51,7 @@ namespace Core.Model.CodeCompiler.Code
 		{
 			return new Var<T>(cmd)
 			{
-				Id = cmd.NewCommand(BasicFunctions.Any, ids.Select(id => (TemplateFunctionRow)id))
+				Id = cmd.NewCommand(BasicFunctionModel.Any, ids.Select(id => (TemplateFunctionRow)id))
 			};
 		}
 
