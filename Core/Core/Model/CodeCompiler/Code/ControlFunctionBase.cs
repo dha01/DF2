@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Core.Model.CodeCompiler.Build;
 using Core.Model.CodeCompiler.Build.DataModel;
@@ -8,6 +6,9 @@ using Core.Model.CodeExecution.DataModel.Headers.Functions;
 
 namespace Core.Model.CodeCompiler.Code
 {
+	/// <summary>
+	/// Класс для возможности создания управляющих функций в коде C#.
+	/// </summary>
 	public class ControlFunctionBase
 	{
 		protected CommandBuilder cmd = new CommandBuilder();
@@ -21,7 +22,7 @@ namespace Core.Model.CodeCompiler.Code
 		{
 		}
 
-		private void AddCondition(TemplateFunctionRow condition, IEnumerable<TemplateFunctionRow> vals)
+		private void AddCondition(TemplateFunctionRow condition, params TemplateFunctionRow[] vals)
 		{
 			foreach (var inp in vals)
 			{
@@ -31,87 +32,33 @@ namespace Core.Model.CodeCompiler.Code
 				}
 				if (inp.Type == TemplateFunctionRowType.Func)
 				{
-					AddCondition(condition, inp.Input);
+					AddCondition(condition, inp.Input.ToArray());
 				}
 			}
 		}
 
+		/// <summary>
+		/// Условный оператор.
+		/// </summary>
+		/// <typeparam name="T">Возвращаемый тип.</typeparam>
+		/// <param name="condition">Условие.</param>
+		/// <param name="val_true">Возвращаемой значение, если условие истинно.</param>
+		/// <param name="val_false">Вовзращаемое значение, если условие ложно.</param>
+		/// <returns>Результат.</returns>
 		protected Var<T> Iif<T>(Var<bool> condition, Var<T> val_true, Var<T> val_false)
 		{
-			/*var result = new Var<T>(cmd)
-			{
-				Id = cmd.NewCommand(BasicFunctionModel.Iif, new TemplateFunctionRow[] {condition, val_true, val_false})
-			};*/
-			var true_func = new Var<T>(cmd)
-			{
-				Id = cmd.NewCommand(BasicFunctionModel.IsTrue, new TemplateFunctionRow[] { condition })
-			};
+			var true_func = new Var<T>(cmd).NewCommand(BasicFunctionModel.IsTrue, condition);
+			var false_func = new Var<T>(cmd).NewCommand(BasicFunctionModel.IsFalse, condition);
+			var resolved_val_true = new Var<T>(cmd).NewCommand(BasicFunctionModel.Set, val_true);
+			var resolved_val_false = new Var<T>(cmd).NewCommand(BasicFunctionModel.Set, val_false);
 
-			var false_func = new Var<T>(cmd)
-			{
-				Id = cmd.NewCommand(BasicFunctionModel.IsFalse, new TemplateFunctionRow[] { condition })
-			};
-
-			var resolved_val_true = new Var<T>(cmd)
-			{
-				Id = cmd.NewCommand(BasicFunctionModel.Set, new TemplateFunctionRow[] { val_true })
-			};
-			//resolved_val_true.Id.Conditions.Add(true_func);
-
-			var resolved_val_false = new Var<T>(cmd)
-			{
-				Id = cmd.NewCommand(BasicFunctionModel.Set, new TemplateFunctionRow[] { val_false })
-			};
-			//resolved_val_false.Id.Conditions.Add(false_func);
-
-			AddCondition(true_func, new List<TemplateFunctionRow>{ resolved_val_true });
-			AddCondition(false_func, new List<TemplateFunctionRow> { resolved_val_false });
-			//val_false.Id.Conditions.Add(false_func);
+			AddCondition(true_func, resolved_val_true);
+			AddCondition(false_func, resolved_val_false);
 
 			true_func.Id.Triggered.Add(resolved_val_true);
 			false_func.Id.Triggered.Add(resolved_val_false);
 
-			/*switch (val_false.Id.Type)
-			{
-				case TemplateFunctionRowType.Const:
-				case TemplateFunctionRowType.Input:
-					false_func.Id.Triggered.Add(new Var<T>(cmd)
-					{
-						Id = cmd.NewCommand(BasicFunctionModel.Set, new TemplateFunctionRow[] { condition })
-					});
-					break;
-				case TemplateFunctionRowType.Func:
-					false_func.Id.Triggered.Add(val_false);
-					break;
-				default:
-					throw new NotImplementedException("Не предусмотрено.");
-			}
-
-			switch (val_true.Id.Type)
-			{
-				case TemplateFunctionRowType.Const:
-				case TemplateFunctionRowType.Input:
-					true_func.Id.Triggered.Add(new Var<T>(cmd)
-					{
-						Id = cmd.NewCommand(BasicFunctionModel.Set, new TemplateFunctionRow[] { condition })
-					});
-					break;
-				case TemplateFunctionRowType.Func:
-					true_func.Id.Triggered.Add(val_true);
-					break;
-				default:
-					throw new NotImplementedException("Не предусмотрено.");
-			}*/
-
-			return new Var<T>(cmd)
-			{
-				Id = cmd.NewCommand(BasicFunctionModel.Any, new TemplateFunctionRow[] { resolved_val_true, resolved_val_false })
-			};
-		}
-
-		protected Var<T> Iif<T>(Var<bool> a, T val)
-		{
-			return Iif(a, new Var<T>(cmd) { Id = cmd.Constant(val) });
+			return new Var<T>(cmd).NewCommand(BasicFunctionModel.Any, resolved_val_true, resolved_val_false);
 		}
 
 		protected void Else()
@@ -127,64 +74,56 @@ namespace Core.Model.CodeCompiler.Code
 			cmd.Return(id);
 		}
 
-		protected Var<T> Any<T>(params Var<T>[] ids)
+		/// <summary>
+		/// Возращает любое значение из списка. Все остальные значения могут быть без результатаэ
+		/// </summary>
+		/// <typeparam name="T">Возвращаемый тип.</typeparam>
+		/// <param name="vals">Значения.</param>
+		/// <returns>Возвращенное значение.</returns>
+		protected Var<T> Any<T>(params Var<T>[] vals)
 		{
-			return new Var<T>(cmd)
-			{
-				Id = cmd.NewCommand(BasicFunctionModel.Any, ids.Select(id => (TemplateFunctionRow)id))
-			};
+			return new Var<T>(cmd).NewCommand(BasicFunctionModel.Any, vals);// {Id = cmd.NewCommand(BasicFunctionModel.Any, vals.Select(id => (TemplateFunctionRow)id))};
 		}
 
-		/*
-		protected InvokedControlFunction<T, T_2, TResult> Get<T, T_2, TResult>(Func<T, T_2, TResult> func)
-		{
-			var method_info = SymbolExtensions.GetMethodInfo((T a, T_2 b) => func(a, b));
-
-			return new InvokedControlFunction<T, T_2, TResult>(cmd, method_info);
-		}*/
-
+		/// <summary>
+		/// Исполняет функцию от двух входных значений.
+		/// </summary>
+		/// <typeparam name="T">Тип первого входного значения.</typeparam>
+		/// <typeparam name="T_2">Тип второго входного значения.</typeparam>
+		/// <typeparam name="TResult">Тип возвращщаемого значения.</typeparam>
+		/// <param name="func">Функция.</param>
+		/// <param name="input1">Первое входное значение.</param>
+		/// <param name="input2">Второе входное значение.</param>
+		/// <returns>Возвращенное значение.</returns>
 		protected Var<TResult> Exec<T, T_2, TResult>(Func<T, T_2, TResult> func, Var<T> input1, Var<T_2> input2)
 		{
-			var method_info = func.GetMethodInfo();// SymbolExtensions.GetMethodInfo((T a, T_2 b) => func(a, b));
-		//	var method_info = SymbolExtensions.GetMethodInfo(func);
-			//return new InvokedControlFunction<T, T_2, TResult>(cmd, method_info).Invoke(input1, input2);
-
+			var method_info = func.GetMethodInfo();
 			var header = CommandBuilder.BuildHeader(method_info.Name, $"{method_info.DeclaringType.Namespace}.{method_info.DeclaringType.Name}".Split('.'));
-			return new Var<TResult>(cmd)
-			{
-				Id = cmd.NewCommand(header, new TemplateFunctionRow[] { input1, input2 })
-			};
+			return new Var<TResult>(cmd).NewCommand(header, input1, input2);
 		}
 
-		protected Var<TResult> Exec<TResult>(string func, params VarInterface[] param)
+		/// <summary>
+		/// Исполняет функцию от произвольного числа входных значений.
+		/// </summary>
+		/// <typeparam name="TResult">Тип возвращщаемого значения.</typeparam>
+		/// <param name="func">Функция.</param>
+		/// <param name="param">Входные значения.</param>
+		/// <returns>Возвращаемое значение.</returns>
+		protected Var<TResult> Exec<TResult>(string func, params IVarInterface[] param)
 		{
 			var type = GetType();
-			//var method_info = func.GetMethodInfo();// SymbolExtensions.GetMethodInfo((T a, T_2 b) => func(a, b));
-			//	var method_info = SymbolExtensions.GetMethodInfo(func);
-			//return new InvokedControlFunction<T, T_2, TResult>(cmd, method_info).Invoke(input1, input2);
-
 			var header = CommandBuilder.BuildHeader(func, $"{type.Namespace}.{type.Name}".Split('.'));
-			var par = param.Select(x => x.Id).ToList();
-			return new Var<TResult>(cmd)
-			{
-				Id = cmd.NewCommand(header, par)
-			};
+			return new Var<TResult>(cmd).NewCommand(header, param);
 		}
 
 		protected Var<TResult> Exec<T, T_2, TResult>(FunctionHeader func, Var<T> input1, Var<T_2> input2)
 		{
-			return new Var<TResult>(cmd)
-			{
-				Id = cmd.NewCommand(func, new TemplateFunctionRow[] { input1, input2 })
-			};
+			return new Var<TResult>(cmd).NewCommand(func, input1, input2);
 		}
 
 		protected Var<T> Const<T>(T value)
 		{
-			return new Var<T>(cmd)
-			{
-				Id = cmd.Constant(value)
-			}; 
+			return new Var<T>(cmd).Constant(value);
 		}
 
 		public CommandBuilder GetFunc()

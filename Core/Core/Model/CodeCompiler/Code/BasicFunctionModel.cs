@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using Core.Model.CodeExecution.DataModel.Bodies.Data;
 using Core.Model.CodeExecution.DataModel.Bodies.Functions;
 using Core.Model.CodeExecution.DataModel.Headers.Functions;
@@ -10,6 +9,9 @@ using Core.Model.NetworkLogic;
 
 namespace Core.Model.CodeCompiler.Code
 {
+	/// <summary>
+	/// Модель исполнения базовых методов.
+	/// </summary>
 	public class BasicFunctionModel
 	{
 		#region Fields
@@ -24,6 +26,9 @@ namespace Core.Model.CodeCompiler.Code
 
 		private static Dictionary<string, BasicFunctionModel> _allMethods;
 
+		/// <summary>
+		/// Все базовые методы.
+		/// </summary>
 		public static Dictionary<string, BasicFunctionModel> AllMethods
 		{
 			get
@@ -35,47 +40,34 @@ namespace Core.Model.CodeCompiler.Code
 				return _allMethods;
 			}
 		}
-		private static Random _rand = new Random(Guid.NewGuid().GetHashCode());
 
 		public static BasicFunctionModel Sum = new BasicFunctionModel
 		{
 			BasicFunction = GetBase("Sum", 1),
-			Invoke = obj =>
+			Invoke = obj => new DataCell
 			{
-				//Thread.Sleep(_rand.Next(0,1000));
-				return new DataCell
-				{
-					Data = (int)obj[0].Data + (int)obj[1].Data,
-					HasValue = true
-				};
+				Data = (int)obj[0].Data + (int)obj[1].Data,
+				HasValue = true
 			}
 		};
 
 		public static BasicFunctionModel Sub = new BasicFunctionModel
 		{
 			BasicFunction = GetBase("Sub", 2),
-			Invoke = obj =>
+			Invoke = obj => new DataCell
 			{
-				var x = (int) obj[0].Data - (int) obj[1].Data;
-				return new DataCell
-				{
-					Data = x,
-					HasValue = true
-				};
+				Data = (int)obj[0].Data - (int)obj[1].Data,
+				HasValue = true
 			}
 		};
 
 		public static BasicFunctionModel Mul = new BasicFunctionModel
 		{
 			BasicFunction = GetBase("Mul", 3),
-			Invoke = obj =>
+			Invoke = obj =>new DataCell
 			{
-				//Thread.Sleep(10000);
-				return new DataCell
-				{
-					Data = (int) obj[0].Data * (int) obj[1].Data,
-					HasValue = true
-				};
+				Data = (int) obj[0].Data * (int) obj[1].Data,
+				HasValue = true
 			}
 		};
 
@@ -92,17 +84,11 @@ namespace Core.Model.CodeCompiler.Code
 		public static BasicFunctionModel Equal = new BasicFunctionModel
 		{
 			BasicFunction = GetBase("Equal", 5),
-			Invoke = obj =>
+			Invoke = obj => new DataCell
 			{
-				//Thread.Sleep(10000);
-				var result = obj[0].Data.Equals(obj[1].Data);
-				return new DataCell
-				{
-					Data = result,
-					HasValue = true
-				};
+				Data = obj[0].Data.Equals(obj[1].Data),
+				HasValue = true
 			}
-			
 		};
 
 		public static BasicFunctionModel NotEqual = new BasicFunctionModel
@@ -145,13 +131,10 @@ namespace Core.Model.CodeCompiler.Code
 		public static BasicFunctionModel Set = new BasicFunctionModel
 		{
 			BasicFunction = GetBase("Set", 9),
-			Invoke = obj =>
+			Invoke = obj => new DataCell
 			{
-				return new DataCell
-				{
-					Data = obj[0].Data,
-					HasValue = true
-				};
+				Data = obj[0].Data,
+				HasValue = true
 			}
 		};
 

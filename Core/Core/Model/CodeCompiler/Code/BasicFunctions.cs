@@ -1,16 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Core.Model.CodeExecution.DataModel.Bodies.Data;
 using Core.Model.CodeExecution.DataModel.Bodies.Functions;
 using Core.Model.CodeExecution.DataModel.Headers.Functions;
-using Core.Model.NetworkLogic;
 
 namespace Core.Model.CodeCompiler.Code
 {
 	public static class BasicFunctions
 	{
+		/// <summary>
+		/// Возвращает модель исполнения базовой функции.
+		/// </summary>
+		/// <param name="basic_function"></param>
+		/// <returns></returns>
 		public static BasicFunctionModel GetModel(this BasicFunction basic_function)
 		{
 			var name = ((BasicFunctionHeader) basic_function.Header).Name;

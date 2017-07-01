@@ -24,23 +24,20 @@ namespace Core.Model.CodeCompiler.Build
 	{
 		#region Fields
 
-		private List<int> _dataFromCommandIds = new List<int>() { -2 };
-
-		private List<CommandTemplate> _commandTemplates = new List<CommandTemplate>();
-
-		private List<object> _constants = new List<object>();
-
-		//private int _tmpDataCount = 0;
-
-		private int _inputDataCount;
-
-
+		/// <summary>
+		/// Список строк шаблонов функций.
+		/// </summary>
 		private List<TemplateFunctionRow> _rows = new List<TemplateFunctionRow>();
 
 		#endregion
 
 		#region Methods / Static
 
+		/// <summary>
+		/// Компилирует функцию из исходного кода C#.
+		/// </summary>
+		/// <param name="code">Исходный код C#.</param>
+		/// <returns>Библиотека.</returns>
 		public static Assembly CreateFunctionFromSourceCode(string code)
 		{
 			var dd = typeof(Enumerable).GetTypeInfo().Assembly.Location;
@@ -63,6 +60,12 @@ namespace Core.Model.CodeCompiler.Build
 			return AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.GetFullPath(fileName));
 		}
 
+		/// <summary>
+		/// Создает заголовок функции.
+		/// </summary>
+		/// <param name="name">Название функции.</param>
+		/// <param name="name_space">Пространство имен.</param>
+		/// <returns>Заголовок функции.</returns>
 		public static ControlFunctionHeader BuildHeader(string name, IEnumerable<string> name_space)
 		{
 			var list = new List<string>(name_space);
@@ -76,12 +79,25 @@ namespace Core.Model.CodeCompiler.Build
 			};
 		}
 
+		/// <summary>
+		/// Выполняет сборку управляющей функции из метода C#.
+		/// </summary>
+		/// <param name="name">Название функции.</param>
+		/// <param name="name_space">Пространство имен.</param>
+		/// <param name="build_func">Метод C# в котором описана логика управляющей функции.</param>
+		/// <returns>Управляющая функция.</returns>
 		public static ControlFunction Build(string name, List<string> name_space, Func<CommandBuilder> build_func)
 		{
 			var cmd = build_func.Invoke();
 			return cmd.BuildFunction(name, name_space);
 		}
 
+		/// <summary>
+		/// Выполняет сборку управляющей функции из метода библиотеки.
+		/// </summary>
+		/// <param name="assembly">Библиотека.</param>
+		/// <param name="full_name">Полное название метода C# с логикой управляющей функции.</param>
+		/// <returns>Управляющая функция.</returns>
 		public static ControlFunction CompileMethodFromAssembly(Assembly assembly, string full_name)
 		{
 			var split_full_name = full_name.Split('.');
@@ -152,19 +168,9 @@ namespace Core.Model.CodeCompiler.Build
 			return row;
 		}
 
-		/// <summary>
-		/// Подгатавливает команду и новую ячейку данных для результата её выполнения и возвращает идентификатор команды.
-		/// </summary>
-		/// <param name="out_data_id">Идентификатор ячейки данных с результатом выполнения</param>
-		/// <returns>Идентификатор команды.</returns>
-		private int GetNewTmpFunctionId(out int out_data_id)
+		public TemplateFunctionRow NewCommand(FunctionHeader fucntion_header, params TemplateFunctionRow[] input_data)
 		{
-			
-
-			var id = _commandTemplates.Count;
-			_dataFromCommandIds.Add(id);
-			out_data_id = _dataFromCommandIds.Count - 1;
-			return id;
+			return NewCommand(fucntion_header, input_data.ToList());
 		}
 
 		/// <summary>
@@ -224,6 +230,25 @@ namespace Core.Model.CodeCompiler.Build
 			return NewCommand((FunctionHeader)fucntion.BasicFunction.Header, input_data);
 		}
 
+		/// <summary>
+		/// Подгатавливает команду и возвращает её идентификатор.
+		/// </summary>
+		/// <param name="fucntion">Функция.</param>
+		/// <param name="input_data">Входные данные.</param>
+		/// <returns>Идентификатор команды.</returns>
+		public Var<T> Func<T>(FunctionHeader fucntion, params TemplateFunctionRow[] input_data)
+		{
+			return new Var<T>(this)
+			{
+				Id = NewCommand(fucntion, input_data)
+			};
+		}
+
+		/// <summary>
+		/// Формирует строку шаблона функции с константой.
+		/// </summary>
+		/// <param name="data">Значение константы.</param>
+		/// <returns>Строка шаблона функции.</returns>
 		public TemplateFunctionRow Constant(object data)
 		{
 			var row = new TemplateFunctionRow
@@ -256,8 +281,6 @@ namespace Core.Model.CodeCompiler.Build
 
 			result.Type = TemplateFunctionRowType.Output;
 			result.IsOutput = true;
-
-			//_commandTemplates[_dataFromCommandIds[output_data_id]].OutputDataId = 0;
 		}
 
 		/// <summary>
@@ -266,10 +289,7 @@ namespace Core.Model.CodeCompiler.Build
 		/// <returns>Список команд.</returns>
 		public List<CommandTemplate> BuildCommands()
 		{
-			
-
 			_rows = _rows.OrderBy(x => x.Type).ToList();
-			//var const_shift = _commandTemplates.Count + _constants.Count + _inputDataCount + 1;
 
 			List<CommandTemplate> command_templates = new List<CommandTemplate>();
 

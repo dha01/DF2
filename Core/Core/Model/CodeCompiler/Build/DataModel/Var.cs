@@ -1,23 +1,40 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Core.Model.CodeCompiler.Code;
+using Core.Model.CodeExecution.DataModel.Headers.Functions;
 
 namespace Core.Model.CodeCompiler.Build.DataModel
 {
-	public interface VarInterface
-	{
-		TemplateFunctionRow Id { get; set; }
-	}
-
-	public class Var<T> : VarInterface
+	/// <summary>
+	/// Переменная.
+	/// </summary>
+	/// <typeparam name="T">Тип.</typeparam>
+	public class Var<T> : IVarInterface
 	{
 		private CommandBuilder _commandBuilder;
 
+		/// <summary>
+		/// Строка шаблона функции.
+		/// </summary>
 		public TemplateFunctionRow Id { get; set; }
 
-		/*public Var()
+		public Var<T> Constant(T value)
 		{
-			//_commandBuilder = command_builder;
-		}*/
+			Id = _commandBuilder.Constant(value);
+			return this;
+		}
+
+		public Var<T> NewCommand(FunctionHeader fucntion_header, params IVarInterface[] input_data)
+		{
+			Id = _commandBuilder.NewCommand(fucntion_header, input_data.Select(x=>x.Id));
+			return this;
+		}
+
+		public Var<T> NewCommand(BasicFunctionModel fucntion, params IVarInterface[] input_data)
+		{
+			Id = _commandBuilder.NewCommand((FunctionHeader)fucntion.BasicFunction.Header, input_data.Select(x => x.Id));
+			return this;
+		}
 
 		public Var(CommandBuilder command_builder)
 		{
@@ -38,18 +55,13 @@ namespace Core.Model.CodeCompiler.Build.DataModel
 		{
 			return default(T);
 		}
-		/*
-		public static explicit operator Var<T>(int var)
-		{
-			return new Var<T>() { Id = var };
-		}*/
 
 		public static implicit operator TemplateFunctionRow(Var<T> var)
 		{
 			return var.Id;
 		}
 
-		#region
+		#region Sum
 
 		public static Var<T> operator +(Var<T> a, Var<T> b)
 		{
@@ -76,7 +88,6 @@ namespace Core.Model.CodeCompiler.Build.DataModel
 		}
 
 		#endregion
-
 
 		#region Sub
 
@@ -114,6 +125,8 @@ namespace Core.Model.CodeCompiler.Build.DataModel
 			};
 		}
 
+		#region Mul
+
 		public static Var<T> operator *(Var<T> a, Var<T> b)
 		{
 			return new Var<T>(a._commandBuilder)
@@ -122,6 +135,26 @@ namespace Core.Model.CodeCompiler.Build.DataModel
 			};
 		}
 
+		public static Var<T> operator *(Var<T> a, T b)
+		{
+			return new Var<T>(a._commandBuilder)
+			{
+				Id = a._commandBuilder.NewCommand(BasicFunctionModel.Mul, new List<TemplateFunctionRow> { a, a._commandBuilder.Constant(b) })
+			};
+		}
+
+		public static Var<T> operator *(T a, Var<T> b)
+		{
+			return new Var<T>(b._commandBuilder)
+			{
+				Id = b._commandBuilder.NewCommand(BasicFunctionModel.Mul, new List<TemplateFunctionRow> { b._commandBuilder.Constant(a), b })
+			};
+		}
+
+		#endregion
+
+		#region Div
+
 		public static Var<T> operator /(Var<T> a, Var<T> b)
 		{
 			return new Var<T>(a._commandBuilder)
@@ -129,6 +162,24 @@ namespace Core.Model.CodeCompiler.Build.DataModel
 				Id = a._commandBuilder.NewCommand(BasicFunctionModel.Div, new List<TemplateFunctionRow> { a, b })
 			};
 		}
+
+		public static Var<T> operator /(Var<T> a, T b)
+		{
+			return new Var<T>(a._commandBuilder)
+			{
+				Id = a._commandBuilder.NewCommand(BasicFunctionModel.Div, new List<TemplateFunctionRow> { a, a._commandBuilder.Constant(b) })
+			};
+		}
+
+		public static Var<T> operator /(T a, Var<T> b)
+		{
+			return new Var<T>(b._commandBuilder)
+			{
+				Id = b._commandBuilder.NewCommand(BasicFunctionModel.Div, new List<TemplateFunctionRow> { b._commandBuilder.Constant(a), b })
+			};
+		}
+
+		#endregion
 
 		#region Equal
 
@@ -216,7 +267,7 @@ namespace Core.Model.CodeCompiler.Build.DataModel
 
 		#endregion
 
-		#region Or
+		#region And
 
 		public static Var<bool> operator &(Var<T> a, Var<T> b)
 		{
