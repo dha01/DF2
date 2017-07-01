@@ -9,5 +9,6 @@ namespace Core.Model.CodeExecution.DataModel.Bodies.Functions
 		public List<int> InputDataIds { get; set; }
 		public int OutputDataId { get; set; }
 		public List<int> TriggeredCommandIds { get; set; }
+		public List<int> ConditionId { get; set; } = new List<int>();
 	}
 }

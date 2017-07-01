@@ -50,7 +50,9 @@ namespace Core.Model.CodeExecution.Repository
 								CallStack = callstack,
 								HasValue = new Dictionary<Owner, bool>(),
 								Owners = new List<Owner>(),
-							},HasValue = true,
+							},
+							//HasValue = true,
+							HasValue = true,
 							Data = constant
 						} });
 						i++;

@@ -64,7 +64,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 						CallStack = callstack
 					},
 					Data = null,
-					HasValue = false
+					HasValue = null
 				};
 				tmp_array.Add(data);
 			}
@@ -105,7 +105,8 @@ namespace Core.Model.CodeExecution.Service.Execution
 					InputDataHeaders = command_template.InputDataIds.Select(x => (DataCellHeader)tmp_array[x].Header).ToList(),
 					OutputDataHeader = (DataCellHeader)tmp_array[command_template.OutputDataId].Header,
 					TriggeredCommands = command_template.TriggeredCommandIds.Select(x => command_list[x].Header).ToList(),
-					FunctionHeader = command_template.FunctionHeader
+					FunctionHeader = command_template.FunctionHeader,
+					ConditionDataHeaders = command_template.ConditionId.Select(x => (DataCellHeader)tmp_array[x].Header).ToList()
 				};
 				Parallel.Invoke(() => { _dataFlowLogicsService.AddNewCommandHeader(new_command_header); });
 			}

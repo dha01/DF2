@@ -12,7 +12,7 @@ namespace Core.Model.CodeExecution.DataModel.Bodies.Commands
 
 		public List<CommandHeader> TriggeredCommands { get; set; }
 
-		public DataCell ConditionData { get; set; }
+		public List<DataCell> ConditionData { get; set; }
 
 		public List<DataCell> InputData { get; set; }
 		public DataCell OutputData { get; set; }

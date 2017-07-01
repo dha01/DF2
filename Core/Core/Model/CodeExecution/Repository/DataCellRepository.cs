@@ -16,6 +16,7 @@ namespace Core.Model.CodeExecution.Repository
 				var item = _items[key];
 				item.Header.AddOwners(conteiner.Header.Owners);
 				item.Data = conteiner.Data;
+				//item.HasValue = conteiner.HasValue;
 				item.HasValue = conteiner.HasValue;
 			}
 			else
@@ -26,7 +27,8 @@ namespace Core.Model.CodeExecution.Repository
 
 		protected override bool IsItemExists(string key)
 		{
-			return base.IsItemExists(key) && _items[key].HasValue;
+			var item = _items[key];
+			return base.IsItemExists(key) && item.HasValue.HasValue && item.HasValue.Value;
 		}
 
 		protected override void AddHeader(DataCellHeader header)

@@ -144,13 +144,15 @@ namespace Core.Model.DataFlowLogics.Logger
 				{
 					new_child = new FunctionCall()
 					{
+						CallDateTime = new_command.DateTime,
 						Lvl = current.Lvl + 1,
 						CallStack = command.GetHeader<InvokeHeader>().CallStack.ToList(),
-						InputDataNames = command.InputData.Select(x => x.Header.CallStack.Last()).ToList(),
-						OutputDataName = command.OutputData.Header.CallStack.Last(),
+						InputDataNames = command.InputData, //command.InputData.Select(x => x.Header.CallStack.Last()).ToList(),
+						OutputDataName = command.OutputData,//command.OutputData.Header.CallStack.Last(),
 						FunctionName = command.Function.GetHeader<FunctionHeader>().CallstackToString("."),
 						LvlName = command.GetHeader<InvokeHeader>().CallStack.Last(),
-						Childs = new List<FunctionCall>()
+						Childs = new List<FunctionCall>(),
+						Command = new_command.Command
 					};
 					current.Childs.Add(new_child);
 				}
@@ -158,8 +160,8 @@ namespace Core.Model.DataFlowLogics.Logger
 				{
 					new_child = exist;
 					new_child.FunctionName = command.Function.GetHeader<FunctionHeader>().CallstackToString(".");
-					new_child.InputDataNames = command.InputData.Select(x => x.Header.CallStack.Last()).ToList();
-					new_child.OutputDataName = command.OutputData.Header.CallStack.Last();
+					new_child.InputDataNames = command.InputData; //command.InputData.Select(x => x.Header.CallStack.Last()).ToList();
+					new_child.OutputDataName = command.OutputData;//command.OutputData.Header.CallStack.Last();
 					new_child.CallStack = command.GetHeader<InvokeHeader>().CallStack.ToList();
 				}
 				

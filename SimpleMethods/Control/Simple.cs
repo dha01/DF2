@@ -1,4 +1,5 @@
-﻿using Core.Model.CodeCompiler.Build.Attributes;
+﻿using System.Threading;
+using Core.Model.CodeCompiler.Build.Attributes;
 using Core.Model.CodeCompiler.Build.DataModel;
 using Core.Model.CodeCompiler.Code;
 
@@ -12,11 +13,17 @@ namespace SimpleMethods.Control
 		[ControlFunction]
 		public void Main(Var<int> a, Var<int> b, Var<int> c, Var<int> d, Var<int> e, Var<int> f, Var<int> g, Var<int> h)
 		{
-			var x1 = (a + b) * (b + c);
 
+			var cond = a == 1;
+			Return(Iif(cond, Const(2) + Const(2), Const(2) * Const(2)));
+
+			var x1 = (a + b) * (b + c);
+			Return(Iif(a == 1 | a == 2, Const(1), Exec<int>("MyFunction", a - 1) + Exec<int>("MyFunction", a - 2)));
+			Return(Iif(a == 1, Const(1), Iif(a == 2, Const(1), Exec<int>("MyFunction", a - 1) + Exec<int>("MyFunction", a - 2))));
 			var x2 = x1 * x1;
 			var x3 = x1 + x2;
-			var x4 = Exec<int>("Second", a, b);
+
+			var x4 = Exec<int>("Second", a - 1, b + 1);
 
 			var result = Iif(x2 == 0, x2, x3);
 			//Exec(BasicFunctions.Any, x2, x3);

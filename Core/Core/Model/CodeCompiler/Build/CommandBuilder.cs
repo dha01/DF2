@@ -249,7 +249,7 @@ namespace Core.Model.CodeCompiler.Build
 				throw new Exception("public void Return Не удалось получить строку.");
 			}
 
-			if (result.Type == TemplateFunctionRowType.Input)
+			if (result.Type == TemplateFunctionRowType.Input || result.Type == TemplateFunctionRowType.Const)
 			{
 				result = NewCommand(BasicFunctionModel.Set, new List<TemplateFunctionRow> {output_data_id});
 			}
@@ -302,7 +302,8 @@ namespace Core.Model.CodeCompiler.Build
 					InputDataIds = func.Input.Select(x => _rows.IndexOf(x)).ToList(),
 					TriggeredCommandIds = func.Triggered.Select(x => funcs.IndexOf(x)).ToList(),
 					OutputDataId = _rows.IndexOf(func),
-					FunctionHeader = func.FunctionHeader
+					FunctionHeader = func.FunctionHeader,
+					ConditionId = func.Conditions.Select(x => _rows.IndexOf(x)).ToList()
 				};
 				command_templates.Add(command);
 			}
@@ -324,7 +325,7 @@ namespace Core.Model.CodeCompiler.Build
 				Commands = BuildCommands(),
 				Constants = constants.Select(x => x.Value).ToList(),
 				Header = BuildHeader(name, name_space),
-				InputDataCount = _rows.Count(x => x.Type == TemplateFunctionRowType.Input)
+				InputDataCount = _rows.Count(x => x.Type == TemplateFunctionRowType.Input),
 			};
 		} 
 	}

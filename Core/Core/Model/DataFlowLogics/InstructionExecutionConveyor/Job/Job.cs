@@ -27,8 +27,8 @@ namespace Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job
 			get { return _queueLength; }
 		}
 
-		public Action<Command> Callback;
-		
+		public Action<Command> Callback { get; set; }
+
 		//private ICommandRepository _commandRepository;
 		private ConcurrentQueue<Command> CommandQueue { get; set; }
 
@@ -82,7 +82,11 @@ namespace Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job
 					//Console.WriteLine(string.Format("{2} Job.Invoke {0} начал выполнять функцию {1}", Id, string.Join("/", ((DataCellHeader)command.OutputData.Header).CallStack), DateTime.Now));
 					//Parallel.Invoke(() => { Parallel.Invoke(() => { Parallel.Invoke(() => { throw new Exception("!"); }); }); });
 
-
+					if (command.ConditionData.Any(x => x.HasValue == null || !x.HasValue.Value))
+					{
+						throw new Exception("Хрень!");
+					}
+					
 					_executionManager.Execute(command.Function, command.InputData, command.OutputData, new CommandContext() { Header = new InvokeHeader() { CallStack = command.Header.CallStack} });
 
 				//	Interlocked.Decrement(ref _queueLength);

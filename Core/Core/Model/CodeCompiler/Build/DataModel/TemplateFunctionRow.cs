@@ -20,6 +20,7 @@ namespace Core.Model.CodeCompiler.Build.DataModel
 		public List<TemplateFunctionRow> Input { get; set; }
 		public List<TemplateFunctionRow> Output { get; set; }
 		public List<TemplateFunctionRow> Triggered { get; set; }
+		public List<TemplateFunctionRow> Conditions { get; set; } = new List<TemplateFunctionRow>();
 
 		public object Value { get; set; }
 

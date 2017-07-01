@@ -23,6 +23,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		private IFunctionRepository _functionRepository;
 
 		private ConcurrentDictionary<string, Command> _preparingCommands { get; set; }
+		private ConcurrentDictionary<string, CommandHeader> _waitConditionCommands { get; set; } = new ConcurrentDictionary<string, CommandHeader>();
 
 		private ConcurrentDictionary<string, List<string>> _dataLinksWithCommands = new ConcurrentDictionary<string, List<string>>();
 
@@ -61,7 +62,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 				output_data = new DataCell()
 				{
 					Header = data_cell_header,
-					HasValue = false,
+					HasValue = null,
 					Data = null
 				};
 				_dataCellRepository.Add(new[] { output_data });
@@ -73,12 +74,12 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		private DataCell GetDataCell(DataCellHeader data_cell_header)
 		{
 			var data_cell = _dataCellRepository.Get(new[] { data_cell_header }).FirstOrDefault();
-			if (data_cell == null || !data_cell.HasValue)
+			if (data_cell == null)
 			{
 				return new DataCell()
 				{
 					Header = data_cell_header,
-					HasValue = false,
+					HasValue = null,
 					Data = null
 				};
 
@@ -91,8 +92,51 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 		}
 
+		private bool CheckCommandCodition(CommandHeader command_header)
+		{
+			if (command_header.ConditionDataHeaders.Any() && !command_header.ConditionDataHeaders.Any(x =>
+			{
+				var data = GetDataCell(x);
+				return data.HasValue != null && data.HasValue.Value;
+			}))
+			{
+				/*var new_commandd = new Command()
+				{
+					Header = new InvokeHeader()
+					{
+						CallStack = command_header.CallStack
+					}
+				};*/
+				if (_waitConditionCommands.TryAdd(command_header.Token, command_header))
+				{
+					//throw new NotImplementedException("PreparationCommandService.CheckCommandCodition не удалось добавить.");
+				}
+
+				foreach (var input_dataa in command_header.ConditionDataHeaders)
+				{
+					if (_dataLinksWithCommands.ContainsKey(input_dataa.Token))
+					{
+						_dataLinksWithCommands[input_dataa.Token].Add(command_header.Token);
+					}
+					else
+					{
+						_dataLinksWithCommands[input_dataa.Token] = new List<string>() { command_header.Token };
+					}
+				}
+
+				return false;
+			}
+
+			return true;
+		}
+
 		private Command CreateNewCommand(CommandHeader command_header)
 		{
+			if (!CheckCommandCodition(command_header))
+			{
+				return null;
+			}
+
 			// Получаем выходную ячейку данных.
 			var output_data = GetOutputData(command_header.OutputDataHeader);
 
@@ -111,8 +155,14 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 					CallStack = command_header.CallStack
 				},
 				InputData = input_data,
-				OutputData = output_data
+				OutputData = output_data,
+				ConditionData = command_header.ConditionDataHeaders.Select(GetDataCell).ToList()
 			};
+
+			if (new_command.ConditionData.Any(x => !(bool)x.Data))
+			{
+				return null;
+			}
 
 			var all_ready = true;
 			var any_ready = false;
@@ -126,7 +176,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 						var result = GetDataCell(command_header.InputDataHeaders[i]);
 						new_command.InputData[i] = result;
 
-						if (!result.HasValue)
+						if (result.HasValue == null)
 						{
 							all_ready = false;
 						}
@@ -140,7 +190,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 						var result = GetDataCell(command_header.InputDataHeaders[i]);
 						new_command.InputData[i] = result;
 
-						if (result.HasValue)
+						if (result.HasValue != null && result.HasValue.Value)
 						{
 							any = true;
 						}
@@ -160,9 +210,9 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 					new_command.InputData[1] = if_true;
 					new_command.InputData[2] = if_false;
 
-					if (!condition.HasValue ||
-						(bool)condition.Data && !if_true.HasValue ||
-						!(bool)condition.Data && !if_false.HasValue)
+					if (condition.HasValue == null ||
+						(bool)condition.Data && condition.HasValue == null ||
+						!(bool)condition.Data && condition.HasValue == null)
 					{
 						all_ready = false;
 					}
@@ -175,7 +225,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			{
 				AddCommandToPreparing(new_command);
 			}
-			_dataCellRepository.Add(new_command.InputData.Where(x => !x.HasValue), false);
+			_dataCellRepository.Add(new_command.InputData.Where(x => x.HasValue == null), false);
 
 			// Получаем или подписываемся на получение функций.
 			var function_header = new[] { command_header.FunctionHeader };
@@ -226,59 +276,84 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			var data_cell_headers = new[] { data_cell_header };
 			var data_cell = _dataCellRepository.Get(data_cell_headers).FirstOrDefault();
 
-			if (data_cell != null && data_cell.HasValue)
+			if (data_cell != null && data_cell.HasValue != null)
 			{
-				if (_dataLinksWithCommands.ContainsKey(data_cell_header.Token))
-				{
-					var command_tokens = _dataLinksWithCommands[data_cell_header.Token].ToList();
-					foreach (var command_token in command_tokens)
+				//if (data_cell.HasValue != null)
+				//{
+					if (_dataLinksWithCommands.ContainsKey(data_cell_header.Token))
 					{
-						if (_preparingCommands.ContainsKey(command_token))
+						var command_tokens = _dataLinksWithCommands[data_cell_header.Token].ToList();
+						foreach (var command_token in command_tokens)
 						{
-							var command = _preparingCommands[command_token];
-							command.InputData = _dataCellRepository.Get(command.InputData.Select(x => (DataCellHeader)x.Header)).ToList();
-
-							if (command.Function != null)
+							if (_preparingCommands.ContainsKey(command_token))
 							{
-								switch (((FunctionHeader)command.Function.Header).Condition)
-								{
-									case InputParamCondition.All:
-										if (command.InputData.All(x => x.HasValue))
-										{
-											break;
-										}
-										return;
-									case InputParamCondition.Any:
-										if (command.InputData.Any(x => x.HasValue))
-										{
-											break;
-										}
-										return;
-									case InputParamCondition.Iif:
-										if (command.InputData[0].HasValue &&
-											((bool)command.InputData[0].Data && command.InputData[1].HasValue
-											|| !(bool)command.InputData[0].Data && command.InputData[2].HasValue))
-										{
-											break;
-										}
-										return;
-									default:
-										throw new Exception($"OnDataReady Неизвестный тип: {((FunctionHeader)command.Function.Header).Condition}");
-								}
+								var command = _preparingCommands[command_token];
+								command.InputData = _dataCellRepository.Get(command.InputData.Select(x => (DataCellHeader) x.Header)).ToList();
 
-								if (_preparingCommands.TryRemove(command_token, out command))
+								if (command.Function != null)
 								{
-									_dataLinksWithCommands[data_cell_header.Token].Remove(command_token);
-									if (_dataLinksWithCommands[data_cell_header.Token].Count == 0)
+									switch (((FunctionHeader) command.Function.Header).Condition)
 									{
-										_dataLinksWithCommands.TryRemove(data_cell_header.Token, out List<string> str);
+										case InputParamCondition.All:
+											if (command.InputData.All(x => x.HasValue != null && x.HasValue.Value))
+											{
+												break;
+											}
+											return;
+										case InputParamCondition.Any:
+											if (command.InputData.Any(x => x.HasValue != null && x.HasValue.Value))
+											{
+												break;
+											}
+											return;
+										case InputParamCondition.Iif:
+											if (command.InputData[0].HasValue != null &&
+											    ((bool) command.InputData[0].Data && command.InputData[1].HasValue != null
+												 || !(bool) command.InputData[0].Data && command.InputData[2].HasValue != null))
+											{
+												break;
+											}
+											return;
+										default:
+											throw new Exception($"OnDataReady Неизвестный тип: {((FunctionHeader) command.Function.Header).Condition}");
 									}
-									OnPreparedCommand(command);
+
+									if (_preparingCommands.TryRemove(command_token, out command))
+									{
+										_dataLinksWithCommands[data_cell_header.Token].Remove(command_token);
+										if (_dataLinksWithCommands[data_cell_header.Token].Count == 0)
+										{
+											_dataLinksWithCommands.TryRemove(data_cell_header.Token, out List<string> str);
+										}
+										OnPreparedCommand(command);
+									}
+								}
+							}
+
+							if (_waitConditionCommands.ContainsKey(command_token))
+							{
+								if ((bool) data_cell.Data)
+								{
+									var new_command = CreateNewCommand(_waitConditionCommands[command_token]);
+									if (new_command != null)
+									{
+										OnPreparedCommand(new_command);
+									}
+
+									_waitConditionCommands.TryRemove(command_token, out CommandHeader token);
+								}
+								else
+								{
+									//_waitConditionCommands.TryRemove(command_token, out CommandHeader token);
 								}
 							}
 						}
 					}
-				}
+				/*}
+				else
+				{
+					throw new NotImplementedException("Нужно что то делать если данные не придут.");
+				}*/
 			}
 		}
 
@@ -295,7 +370,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 				{
 					var command = _preparingCommands[function_header.Token];
 					command.Function = function;
-					if (command.InputData.All(x => x.HasValue) && command.Function != null)
+					if (command.InputData.All(x => x.HasValue != null) && command.Function != null)
 					{
 						if (_preparingCommands.TryRemove(function_header.Token, out command))
 						{

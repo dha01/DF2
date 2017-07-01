@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Core.Model.CodeExecution.DataModel.Bodies.Commands;
+using Core.Model.CodeExecution.DataModel.Bodies.Functions;
 using Core.Model.CodeExecution.DataModel.Headers.Commands;
 using Core.Model.CodeExecution.DataModel.Headers.Data;
 using Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job;
@@ -195,6 +196,12 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			Console.WriteLine("! OnPreparedCommand {0}", command.Header.CallstackToString());
 			var key = command.Header.CallstackToString();
 			CommandHeader removed_command_header;
+
+			if (command.ConditionData.Any(x => x.HasValue == null || !x.HasValue.Value || !(bool)x.Data))
+			{
+				throw new Exception("Невозможное событие. Проверка для отладки.");
+			}
+
 			if (_preparationCommandHeaders.TryRemove(key, out removed_command_header))
 			{
 				if (_jobManager.HasFreeJob())

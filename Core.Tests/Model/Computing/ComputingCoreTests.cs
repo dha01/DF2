@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -9,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Core.Model.CodeCompiler.Build;
+using Core.Model.CodeExecution.DataModel.Bodies.Commands;
 using Core.Model.CodeExecution.DataModel.Bodies.Functions;
 using Core.Model.CodeExecution.DataModel.Headers.Functions;
 using Core.Model.CodeExecution.Repository;
@@ -449,16 +451,23 @@ namespace CustomNamespace
 	public class CustomClass : ControlFunctionBase
 	{
 		[ControlFunction]
-		public void MyFunction(Var<int> a, Var<int> b, Var<int> c)
+		public void MyFunction(Var<int> a)
 		{
+			//Return(Iif(a == 1, Const(1), Exec<int>(""MyFunction"", a - 1) + Exec<int>(""MyFunction"", a - 1)));
+			Return(Iif(a == 1 | a == 2, Const(1), Exec<int>(""MyFunction"", a - 1) + Exec<int>(""MyFunction"", a - 2)));
 			
-			var x2 = a + b + 1;
-			var x1 = b * c + 1;
+			//var cond = a == 3;
+			//Return(Iif(cond, Const(3) + Const(3), Const(3) * Const(3)));
+			//Return(Any(If(cond, Const(2) + Const(2)), Else(cond, Const(3) * Const(3)));
+		//	Exec<int>(""MyFunction"", a - 1, Iif(a == 0, 1,))
+//Return(Iif(a == 0, 0, b + Exec<int>(""MyFunction"", a - 1, b)));
+
+			//var x2 = a + b + 1;
+			//var x1 = b * a + 1;
 			//var x3 = Any(x1, x2);
 			//Iif(x2 == 0, x2, x3)
-			Return(Iif(a == 1, x2, x1));
 
-
+			//Return(Iif(a == 1, x2, x1));
 			//var x1 = (a + b) * (b + c);
 
 			
@@ -513,20 +522,39 @@ namespace CustomNamespace
 			Assert.Fail(result.Result.Data.ToString());
 		}
 
+		private int fib(int a)
+		{
+			return a == 1 || a == 2 ? 1 : fib(a-1) + fib(a-2);
+		}
+
 		[TestMethod]
 		public void IntegrationSCustomCodeTest()
 		{
-
 		//	computing_core.AddAssembly(@"F:\Main Folder\Аспирантура\Диссертация\Program\DF2\SimpleMethods\bin\Debug\netcoreapp1.1\SimpleMethods.dll");
+			var str1 = "User1/Process0/CustomNamespace.CustomClass.MyFunction<6>/CustomNamespace.CustomClass.MyFunction/tmp_var_8";
+			var str2 = "User1/Process0/CustomNamespace.CustomClass.MyFunction<6>/CustomNamespace.CustomClass.MyFunction/tmp_var_8";
 
-			
+			ConcurrentDictionary<string, int> _preparingCommands = new ConcurrentDictionary<string, int>();
+			_preparingCommands.TryAdd(str1, 1);
+			_preparingCommands.TryAdd(str2, 2);
+
+			_preparingCommands.TryGetValue(str1, out int val1);
+			_preparingCommands.TryGetValue(str2, out int val2);
+
+
+
 			var text = GetText(assembly, "CustomNamespace.CustomClass.MyFunction");
 			//var new_text = GetNewText(assembly, "CustomNamespace.CustomClass.MyFunction");
+			var f = fib(14);
 
-
-			var result = computing_core.Exec("CustomNamespace.CustomClass.MyFunction", 0, 2, 3);
+			var result = computing_core.Exec("CustomNamespace.CustomClass.MyFunction", 14);
 			result.Wait(10000);
 			var x = result.Result;
+
+			StackTraceLogger.Wait();
+			var log = StackTraceLogger.GetLog();
+
+			var scheme = StackTraceLogger.GetLogScheme(log);
 
 			Assert.Fail(result.Result.Data.ToString());
 		}
@@ -544,7 +572,7 @@ namespace CustomNamespace
 			var index = 0;
 			foreach (var row in code.Commands)
 			{
-				arr[row.OutputDataId] = $@"[{row.OutputDataId}]	{(row.OutputDataId == 0 ? "out" : "tmp")}	= {row.FunctionHeader.CallstackToString(".")}<{index}>({string.Join(",", row.InputDataIds.Select(y => $"[{y}]"))}) {string.Join("|", row.TriggeredCommandIds.Select(y => $"<{y}>"))}";
+				arr[row.OutputDataId] = $@"[{row.OutputDataId}]	{(row.OutputDataId == 0 ? "out" : "tmp")}	= {row.FunctionHeader.CallstackToString(".")}<{index}>({string.Join(",", row.InputDataIds.Select(y => $"[{y}]"))}) {string.Join("|", row.TriggeredCommandIds.Select(y => $"<{y}>"))} {string.Join("|", row.ConditionId.Select(y => $"Cond([{y}])"))}";
 
 				foreach (var val in row.InputDataIds)
 				{

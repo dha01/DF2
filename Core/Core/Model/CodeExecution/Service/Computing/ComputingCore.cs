@@ -144,7 +144,8 @@ namespace Core.Model.CodeExecution.Service.Computing
 					FunctionHeader = function_header,//CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList()),//(FunctionHeader)BuildedControlFunction.Header,//CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList()), //SimpleMethods.Control.Simple.MainHeader,
 					InputDataHeaders = input_data.Select(x=>(DataCellHeader)x.Header).ToList(),
 					OutputDataHeader = output_data_header,
-					TriggeredCommands = new List<InvokeHeader>()
+					TriggeredCommands = new List<InvokeHeader>(),
+					ConditionDataHeaders = new List<DataCellHeader>()
 				}
 			};
 
@@ -155,7 +156,7 @@ namespace Core.Model.CodeExecution.Service.Computing
 			var result = GetDataCell(new[] {output_data_header}).First();
 			return Task.Factory.StartNew(() =>
 			{
-				while (!result.HasValue)
+				while (!result.HasValue.HasValue)
 				{
 
 				}

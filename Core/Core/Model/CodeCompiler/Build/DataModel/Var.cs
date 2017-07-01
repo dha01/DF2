@@ -77,6 +77,9 @@ namespace Core.Model.CodeCompiler.Build.DataModel
 
 		#endregion
 
+
+		#region Sub
+
 		public static Var<T> operator -(Var<T> a, Var<T> b)
 		{
 			return new Var<T>(a._commandBuilder)
@@ -84,6 +87,24 @@ namespace Core.Model.CodeCompiler.Build.DataModel
 				Id = a._commandBuilder.NewCommand(BasicFunctionModel.Sub, new List<TemplateFunctionRow> { a, b })
 			};
 		}
+
+		public static Var<T> operator -(Var<T> a, T b)
+		{
+			return new Var<T>(a._commandBuilder)
+			{
+				Id = a._commandBuilder.NewCommand(BasicFunctionModel.Sub, new List<TemplateFunctionRow> { a, a._commandBuilder.Constant(b) })
+			};
+		}
+
+		public static Var<T> operator -(T a, Var<T> b)
+		{
+			return new Var<T>(b._commandBuilder)
+			{
+				Id = b._commandBuilder.NewCommand(BasicFunctionModel.Sub, new List<TemplateFunctionRow> { b._commandBuilder.Constant(a), b })
+			};
+		}
+
+		#endregion
 
 		public static Var<T> operator -(Var<T> a)
 		{
@@ -161,6 +182,64 @@ namespace Core.Model.CodeCompiler.Build.DataModel
 			return new Var<bool>(b._commandBuilder)
 			{
 				Id = b._commandBuilder.NewCommand(BasicFunctionModel.NotEqual, new List<TemplateFunctionRow> { b._commandBuilder.Constant(a), b })
+			};
+		}
+
+		#endregion
+
+		#region Or
+
+		public static Var<bool> operator |(Var<T> a, Var<T> b)
+		{
+			return new Var<bool>(a._commandBuilder)
+			{
+				Id = a._commandBuilder.NewCommand(BasicFunctionModel.Or, new List<TemplateFunctionRow> { a, b })
+			};
+		}
+
+
+		public static Var<bool> operator |(Var<T> a, T b)
+		{
+			return new Var<bool>(a._commandBuilder)
+			{
+				Id = a._commandBuilder.NewCommand(BasicFunctionModel.Or, new List<TemplateFunctionRow> { a, a._commandBuilder.Constant(b) })
+			};
+		}
+
+		public static Var<bool> operator |(T a, Var<T> b)
+		{
+			return new Var<bool>(b._commandBuilder)
+			{
+				Id = b._commandBuilder.NewCommand(BasicFunctionModel.Or, new List<TemplateFunctionRow> { b._commandBuilder.Constant(a), b })
+			};
+		}
+
+		#endregion
+
+		#region Or
+
+		public static Var<bool> operator &(Var<T> a, Var<T> b)
+		{
+			return new Var<bool>(a._commandBuilder)
+			{
+				Id = a._commandBuilder.NewCommand(BasicFunctionModel.And, new List<TemplateFunctionRow> { a, b })
+			};
+		}
+
+
+		public static Var<bool> operator &(Var<T> a, T b)
+		{
+			return new Var<bool>(a._commandBuilder)
+			{
+				Id = a._commandBuilder.NewCommand(BasicFunctionModel.And, new List<TemplateFunctionRow> { a, a._commandBuilder.Constant(b) })
+			};
+		}
+
+		public static Var<bool> operator &(T a, Var<T> b)
+		{
+			return new Var<bool>(b._commandBuilder)
+			{
+				Id = b._commandBuilder.NewCommand(BasicFunctionModel.And, new List<TemplateFunctionRow> { b._commandBuilder.Constant(a), b })
 			};
 		}
 

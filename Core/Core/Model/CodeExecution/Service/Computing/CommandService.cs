@@ -66,7 +66,8 @@ namespace Core.Model.CodeExecution.Service.Computing
 				output_data = new DataCell()
 				{
 					Header = command_header.OutputDataHeader,
-					HasValue = false,
+					//HasValue = false,
+					HasValue = null,
 					Data = null
 				};
 			}
