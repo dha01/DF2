@@ -74,6 +74,11 @@ namespace Core.Model.CodeCompiler.Code
 			cmd.Return(id);
 		}
 
+		protected void Return<T>(T value)
+		{
+			cmd.Return(cmd.Constant(value));
+		}
+
 		/// <summary>
 		/// Возращает любое значение из списка. Все остальные значения могут быть без результатаэ
 		/// </summary>

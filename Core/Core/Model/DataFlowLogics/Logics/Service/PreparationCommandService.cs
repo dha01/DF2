@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Core.Model.CodeExecution.DataModel.Bodies.Commands;
 using Core.Model.CodeExecution.DataModel.Bodies.Data;
-using Core.Model.CodeExecution.DataModel.Bodies.Functions;
 using Core.Model.CodeExecution.DataModel.Headers.Base;
 using Core.Model.CodeExecution.DataModel.Headers.Commands;
 using Core.Model.CodeExecution.DataModel.Headers.Data;
@@ -13,6 +12,9 @@ using Core.Model.CodeExecution.Repository;
 
 namespace Core.Model.DataFlowLogics.Logics.Service
 {
+	/// <summary>
+	/// Сервис подготовки команд к исполнению.
+	/// </summary>
 	public class PreparationCommandService : IPreparationCommandService
 	{
 
@@ -305,6 +307,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		{
 			if (_waitConditionCommands.TryGetValue(command_token, out CommandHeader command_header))
 			{
+				var data = _dataCellRepository.Get(condition_data_cell_token).First().Data;
 				if ((bool)_dataCellRepository.Get(condition_data_cell_token).First().Data)
 				{
 					if (TryCreateCommand(command_header, out Command new_command))

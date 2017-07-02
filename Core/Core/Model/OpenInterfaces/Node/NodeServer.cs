@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Core.Model.CodeCompiler.Build;
 using Core.Model.CodeExecution.Service.Computing;
@@ -95,15 +96,16 @@ namespace Core.Model.OpenInterfaces.Node
 		}
 
 		private static int index = 0;
-		public string InvokeCode(string code)
+		public string InvokeCode(string code, string input)
 		{
 			index++;
 			//var computing_core = ComputingCore.InitComputingCore();
 			//	computing_core.AddAssembly(@"F:\Main Folder\Аспирантура\Диссертация\Program\DF2\SimpleMethods\bin\Debug\netcoreapp1.1\SimpleMethods.dll");
 
 			var assembly = CommandBuilder.CreateFunctionFromSourceCode(@"
-using Core.Model.Compiler.Build.DataModel;
-using Core.Model.Compiler.Code;
+using Core.Model.CodeCompiler.Build.Attributes;
+using Core.Model.CodeCompiler.Build.DataModel;
+using Core.Model.CodeCompiler.Code;
 
 namespace CustomNamespace" + index.ToString() + @"
 {
@@ -113,7 +115,7 @@ namespace CustomNamespace" + index.ToString() + @"
 	}
 }");
 			_computingCore.AddAssembly(assembly);
-			var result = _computingCore.Exec($"CustomNamespace{index}.CustomClass.Main", 1, 2, 3);
+			var result = _computingCore.Exec($"CustomNamespace{index}.CustomClass.Main", input.Split(';').Select(x => (object)Convert.ToInt32(x)).ToArray());
 			result.Wait(10000);
 			return JsonConvert.SerializeObject(result.Result.Data);
 		}
