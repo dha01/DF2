@@ -16,7 +16,6 @@ namespace Core.Model.CodeExecution.Repository
 				var item = _items[key];
 				item.Header.AddOwners(conteiner.Header.Owners);
 				item.Data = conteiner.Data;
-				//item.HasValue = conteiner.HasValue;
 				item.HasValue = conteiner.HasValue;
 			}
 			else

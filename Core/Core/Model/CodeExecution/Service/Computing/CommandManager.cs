@@ -84,7 +84,7 @@ namespace Core.Model.CodeExecution.Service.Computing
 			_dataCellRepository.AddHeaders(new [] { command_header.OutputDataHeader });
 			_dataCellRepository.AddHeaders(command_header.InputDataHeaders);
 
-			Console.WriteLine(string.Format("CommandManager.OnNewCommand Callstack={0}", string.Join("/", invoke_header.CallStack)));
+			//Console.WriteLine(string.Format("CommandManager.OnNewCommand Callstack={0}", string.Join("/", invoke_header.CallStack)));
 			PrepareOrSendToWait(new[] { command_header });
 		}
 

@@ -95,7 +95,7 @@ namespace Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job
 					//invoke
 
 					StackTraceLogger.Write(command);
-
+					/*
 					string str = "";
 
 					str += command.Header.CallstackToString() + " : ";
@@ -106,7 +106,7 @@ namespace Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job
 					str += ")";
 
 					str += " -> " + command.OutputData.Header.CallstackToString();
-					Console.WriteLine(str);
+					Console.WriteLine(str);*/
 
 					//Console.WriteLine(string.Format("{2} Job.Invoke {0} выполнил функцию {1}",  Id, string.Join("/", ((DataCellHeader)command.OutputData.Header).CallStack), DateTime.Now));
 					

@@ -72,7 +72,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		/// <param name="command_header"></param>
 		public void AddNewCommandHeader(CommandHeader command_header)
 		{
-			Console.WriteLine("! AddNewCommandHeader {0}", command_header.CallstackToString());
+			//Console.WriteLine("! AddNewCommandHeader {0}", command_header.CallstackToString());
 			
 			var key = command_header.CallstackToString();
 			if (_allCommandHeaders.ContainsKey(key))
@@ -102,7 +102,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 					}
 					_preparationCommandService.PrepareCommand(command_header);
 					
-					Console.WriteLine("! AddNewCommandHeader _preparationCommandHeaders {0}", command_header.CallstackToString());
+					//Console.WriteLine("! AddNewCommandHeader _preparationCommandHeaders {0}", command_header.CallstackToString());
 				}
 				else
 				{
@@ -131,7 +131,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 					{
 						throw new NotImplementedException("DataFlowLogicsService.OnFreeJob _executingCommands Не удалось добавить.");
 					}
-					Console.WriteLine("! AddNewCommandHeader _awaitingExecutionCommands->_executingCommands {0}", command.Header.CallstackToString());
+					//Console.WriteLine("! AddNewCommandHeader _awaitingExecutionCommands->_executingCommands {0}", command.Header.CallstackToString());
 				}
 				else
 				{
@@ -151,7 +151,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 						{
 							throw new NotImplementedException("DataFlowLogicsService.OnFreeJob _preparationCommandHeaders Не удалось добавить.");
 						}
-						Console.WriteLine("! AddNewCommandHeader _awaitingPreparationCommandHeaders->_preparationCommandHeaders {0}", command_header.CallstackToString());
+						//Console.WriteLine("! AddNewCommandHeader _awaitingPreparationCommandHeaders->_preparationCommandHeaders {0}", command_header.CallstackToString());
 					}
 					else
 					{
@@ -167,10 +167,13 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		/// <param name="command">Команда, выполнение которой было завершено.</param>
 		public void OnExecutedCommand(Command command)
 		{
-			Console.WriteLine("! OnExecutedCommand {0}", command.Header.CallstackToString());
+			//Console.WriteLine("! OnExecutedCommand {0}", command.Header.CallstackToString());
 			
 			var key = command.Header.CallstackToString();
-			_preparationCommandService.OnDataReady((DataCellHeader)command.OutputData.Header);
+			if (!(command.Function is ControlFunction))
+			{
+				_preparationCommandService.OnDataReady(command.OutputData.Header.Token);
+			}
 			Command removed_command;
 
 			if (_executingCommands.TryRemove(key, out removed_command))
@@ -179,7 +182,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 				{
 					throw new NotImplementedException("DataFlowLogicsService.OnExecutedCommand Не удалось добавить.");
 				}
-				Console.WriteLine("! AddNewCommandHeader _executingCommands->_executedCommands {0}", removed_command.Header.CallstackToString());
+				//Console.WriteLine("! AddNewCommandHeader _executingCommands->_executedCommands {0}", removed_command.Header.CallstackToString());
 			}
 			else
 			{
@@ -193,7 +196,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		/// <param name="command"></param>
 		public void OnPreparedCommand(Command command)
 		{
-			Console.WriteLine("! OnPreparedCommand {0}", command.Header.CallstackToString());
+			//Console.WriteLine("! OnPreparedCommand {0}", command.Header.CallstackToString());
 			var key = command.Header.CallstackToString();
 			CommandHeader removed_command_header;
 
@@ -211,7 +214,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 					{
 						throw new NotImplementedException("DataFlowLogicsService.OnPreparedCommand true Не удалось добавить.");
 					}
-					Console.WriteLine("! AddNewCommandHeader _preparationCommandHeaders->_executingCommands {0}", command.Header.CallstackToString());
+					//Console.WriteLine("! AddNewCommandHeader _preparationCommandHeaders->_executingCommands {0}", command.Header.CallstackToString());
 				}
 				else
 				{
@@ -219,7 +222,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 					{
 						throw new NotImplementedException("DataFlowLogicsService.OnPreparedCommand false Не удалось добавить.");
 					}
-					Console.WriteLine("! AddNewCommandHeader _preparationCommandHeaders->_awaitingExecutionCommands {0}", command.Header.CallstackToString());
+					//Console.WriteLine("! AddNewCommandHeader _preparationCommandHeaders->_awaitingExecutionCommands {0}", command.Header.CallstackToString());
 				}
 			}
 			else

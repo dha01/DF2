@@ -17,18 +17,7 @@ namespace Core.Model.CodeExecution.DataModel.Bodies.Data
 		/// <summary>
 		/// Содержитли ячейка результат вычислений.
 		/// </summary>
-		public virtual bool? HasValue
-		{
-			get { return _hasValue; }
-			set
-			{
-				if (_hasValue.HasValue)
-				{
-					throw new Exception("Нельзя переопределять это значени!");
-				}
-				_hasValue = value;
-			}
-		}
+		public virtual bool? HasValue { get; set; }
 
 	}
 }

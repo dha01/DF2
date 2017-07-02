@@ -172,9 +172,9 @@ namespace Core.Model.DataFlowLogics.Logger
 				}*/
 				var i = index;
 				Interlocked.Increment(ref index);
-				Console.WriteLine("!!!!! White {0}", i);
+				/*Console.WriteLine("!!!!! White {0}", i);
 				Console.WriteLine("!!!!! LvlName={0}, FunctionName={1}", new_child.LvlName, new_child.FunctionName);
-				Console.WriteLine("!!!!! Callstack={0}", command.Header.CallstackToString("/"));
+				Console.WriteLine("!!!!! Callstack={0}", command.Header.CallstackToString("/"));*/
 				//Console.WriteLine("!!!!! Callstack={0}", string.Join("/", call_stack));
 				return;
 			}

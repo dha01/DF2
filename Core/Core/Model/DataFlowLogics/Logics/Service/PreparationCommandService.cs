@@ -92,21 +92,23 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 		}
 
-		private bool CheckCommandCodition(CommandHeader command_header)
+		/// <summary>
+		/// Проверяет, что для команды либо нет услувий, либо хотя бы одно условие уже получено.
+		/// </summary>
+		/// <param name="command_header">Заголовок команды.</param>
+		/// <param name="condition_data_cells">Условия.</param>
+		/// <returns>True, если нет условий или хотя бы одно условие уже получено.</returns>
+		private bool CheckCommandCodition(CommandHeader command_header, out List<DataCell> condition_data_cells)
 		{
+			condition_data_cells = new List<DataCell>();
+			var condition_data_cells_out = new List<DataCell>();
 			if (command_header.ConditionDataHeaders.Any() && !command_header.ConditionDataHeaders.Any(x =>
 			{
 				var data = GetDataCell(x);
+				condition_data_cells_out.Add(data);
 				return data.HasValue != null && data.HasValue.Value;
 			}))
 			{
-				/*var new_commandd = new Command()
-				{
-					Header = new InvokeHeader()
-					{
-						CallStack = command_header.CallStack
-					}
-				};*/
 				if (_waitConditionCommands.TryAdd(command_header.Token, command_header))
 				{
 					//throw new NotImplementedException("PreparationCommandService.CheckCommandCodition не удалось добавить.");
@@ -123,49 +125,54 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 						_dataLinksWithCommands[input_dataa.Token] = new List<string>() { command_header.Token };
 					}
 				}
-
 				return false;
 			}
-
+			condition_data_cells.AddRange(condition_data_cells_out);
 			return true;
 		}
 
-		private Command CreateNewCommand(CommandHeader command_header)
+		/// <summary>
+		/// Пытается созадть готовую к исполнению команду. Если команда не может быть исполнена на данный момент, то возвращает false. 
+		/// </summary>
+		/// <param name="command_header">Заголовок команды.</param>
+		/// <param name="new_command">Созданная команда.</param>
+		/// <returns>Удалось ли создать готовую к исполнению команду.</returns>
+		private bool TryCreateCommand(CommandHeader command_header, out Command new_command)
 		{
-			if (!CheckCommandCodition(command_header))
+			new_command = null;
+
+			// Если условия ещё не готовы, то возвращаем null.
+			if (!CheckCommandCodition(command_header, out List<DataCell> condition_data))
 			{
-				return null;
+				return false;
 			}
 
-			// Получаем выходную ячейку данных.
-			var output_data = GetOutputData(command_header.OutputDataHeader);
+			// Если нет ни одного истинного условия, то возвращаем null.
+			if (condition_data.Any(x => x.HasValue.HasValue && x.HasValue.Value && !(bool)x.Data))
+			{
+				return false;
+			}
 
 			// Подготавливае места для ячеек с выходными данными.
 			var count = command_header.InputDataHeaders.Count;
 			var input_data = new List<DataCell>(count);
-			for (int i = 0; i < count; i++)
+			for (var i = 0; i < count; i++)
 			{
 				input_data.Add(null);
 			}
 
-			var new_command = new Command()
+			new_command = new Command()
 			{
 				Header = new InvokeHeader()
 				{
 					CallStack = command_header.CallStack
 				},
 				InputData = input_data,
-				OutputData = output_data,
-				ConditionData = command_header.ConditionDataHeaders.Select(GetDataCell).ToList()
+				OutputData = GetOutputData(command_header.OutputDataHeader),
+				ConditionData = condition_data
 			};
 
-			if (new_command.ConditionData.Any(x => !(bool)x.Data))
-			{
-				return null;
-			}
-
 			var all_ready = true;
-			var any_ready = false;
 
 			switch (command_header.FunctionHeader.Condition)
 			{
@@ -201,22 +208,6 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 						all_ready = false;
 					}
 					break;
-				case InputParamCondition.Iif:
-					var condition = GetDataCell(command_header.InputDataHeaders[0]);
-					var if_true = GetDataCell(command_header.InputDataHeaders[1]);
-					var if_false = GetDataCell(command_header.InputDataHeaders[2]);
-
-					new_command.InputData[0] = condition;
-					new_command.InputData[1] = if_true;
-					new_command.InputData[2] = if_false;
-
-					if (condition.HasValue == null ||
-						(bool)condition.Data && condition.HasValue == null ||
-						!(bool)condition.Data && condition.HasValue == null)
-					{
-						all_ready = false;
-					}
-					break;
 				default:
 					throw new Exception($"CreateNewCommand Неизвестный тип: {command_header.FunctionHeader.Condition}");
 			}
@@ -228,8 +219,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			_dataCellRepository.Add(new_command.InputData.Where(x => x.HasValue == null), false);
 
 			// Получаем или подписываемся на получение функций.
-			var function_header = new[] { command_header.FunctionHeader };
-			var function = _functionRepository.Get(function_header).FirstOrDefault();
+			var function = _functionRepository.Get(command_header.FunctionHeader.Token).FirstOrDefault();
 			if (function == null)
 			{
 				if (all_ready)
@@ -245,15 +235,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 				new_command.Function = function;
 			}
 
-			// Если команда готова, то возвращаем её.
-			if (all_ready)
-			{
-				return new_command;
-			}
-			else
-			{
-				return null;
-			}
+			return all_ready;
 		}
 
 		public void PrepareCommand(CommandHeader command_header)
@@ -264,96 +246,94 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 			
 			// Добавляем новую команду, находящуюся в процессе подготовки.
-			var new_command = CreateNewCommand(command_header);
-			if (new_command != null)
+			if (TryCreateCommand(command_header, out Command new_command))
 			{
 				OnPreparedCommand(new_command);
 			}
 		}
 
-		public void OnDataReady(DataCellHeader data_cell_header)
+		/// <summary>
+		/// Отправляет зависимые команды на проверку готовности к исполнению.
+		/// </summary>
+		/// <param name="command_token">Токен выполненной команды, зависимости с которой необходимо проверить.</param>
+		/// <param name="data_cell_token">Токен ячейки с данными.</param>
+		private void CheckPreparingCommands(string command_token, string data_cell_token)
 		{
-			var data_cell_headers = new[] { data_cell_header };
-			var data_cell = _dataCellRepository.Get(data_cell_headers).FirstOrDefault();
-
-			if (data_cell != null && data_cell.HasValue != null)
+			if (_preparingCommands.TryGetValue(command_token, out Command command))
 			{
-				//if (data_cell.HasValue != null)
-				//{
-					if (_dataLinksWithCommands.ContainsKey(data_cell_header.Token))
+				command.InputData = _dataCellRepository.Get(command.InputData.Select(x => (DataCellHeader)x.Header)).ToList();
+
+				if (command.Function != null)
+				{
+					switch (((FunctionHeader)command.Function.Header).Condition)
 					{
-						var command_tokens = _dataLinksWithCommands[data_cell_header.Token].ToList();
-						foreach (var command_token in command_tokens)
-						{
-							if (_preparingCommands.ContainsKey(command_token))
+						case InputParamCondition.All:
+							if (command.InputData.All(x => x.HasValue != null && x.HasValue.Value))
 							{
-								var command = _preparingCommands[command_token];
-								command.InputData = _dataCellRepository.Get(command.InputData.Select(x => (DataCellHeader) x.Header)).ToList();
-
-								if (command.Function != null)
-								{
-									switch (((FunctionHeader) command.Function.Header).Condition)
-									{
-										case InputParamCondition.All:
-											if (command.InputData.All(x => x.HasValue != null && x.HasValue.Value))
-											{
-												break;
-											}
-											return;
-										case InputParamCondition.Any:
-											if (command.InputData.Any(x => x.HasValue != null && x.HasValue.Value))
-											{
-												break;
-											}
-											return;
-										case InputParamCondition.Iif:
-											if (command.InputData[0].HasValue != null &&
-											    ((bool) command.InputData[0].Data && command.InputData[1].HasValue != null
-												 || !(bool) command.InputData[0].Data && command.InputData[2].HasValue != null))
-											{
-												break;
-											}
-											return;
-										default:
-											throw new Exception($"OnDataReady Неизвестный тип: {((FunctionHeader) command.Function.Header).Condition}");
-									}
-
-									if (_preparingCommands.TryRemove(command_token, out command))
-									{
-										_dataLinksWithCommands[data_cell_header.Token].Remove(command_token);
-										if (_dataLinksWithCommands[data_cell_header.Token].Count == 0)
-										{
-											_dataLinksWithCommands.TryRemove(data_cell_header.Token, out List<string> str);
-										}
-										OnPreparedCommand(command);
-									}
-								}
+								break;
 							}
-
-							if (_waitConditionCommands.ContainsKey(command_token))
+							return;
+						case InputParamCondition.Any:
+							if (command.InputData.Any(x => x.HasValue != null && x.HasValue.Value))
 							{
-								if ((bool) data_cell.Data)
-								{
-									var new_command = CreateNewCommand(_waitConditionCommands[command_token]);
-									if (new_command != null)
-									{
-										OnPreparedCommand(new_command);
-									}
-
-									_waitConditionCommands.TryRemove(command_token, out CommandHeader token);
-								}
-								else
-								{
-									//_waitConditionCommands.TryRemove(command_token, out CommandHeader token);
-								}
+								break;
 							}
-						}
+							return;
+						default:
+							throw new Exception($"OnDataReady Неизвестный тип: {((FunctionHeader)command.Function.Header).Condition}");
 					}
-				/*}
+
+					if (_preparingCommands.TryRemove(command_token, out command))
+					{
+						_dataLinksWithCommands[data_cell_token].Remove(command_token);
+						if (_dataLinksWithCommands[data_cell_token].Count == 0)
+						{
+							_dataLinksWithCommands.TryRemove(data_cell_token, out List<string> str);
+						}
+						OnPreparedCommand(command);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Отправляет команды прошедшие проверку условия на проверку готовности к исполнению.
+		/// </summary>
+		/// <param name="command_token">Токен команды.</param>
+		/// <param name="condition_data_cell_token">Токен ячейки с данными с условием.</param>
+		private void CheckWaitConditionCommands(string command_token, string condition_data_cell_token)
+		{
+			if (_waitConditionCommands.TryGetValue(command_token, out CommandHeader command_header))
+			{
+				if ((bool)_dataCellRepository.Get(condition_data_cell_token).First().Data)
+				{
+					if (TryCreateCommand(command_header, out Command new_command))
+					{
+						OnPreparedCommand(new_command);
+					}
+					_waitConditionCommands.TryRemove(command_token, out CommandHeader token);
+				}
 				else
 				{
-					throw new NotImplementedException("Нужно что то делать если данные не придут.");
-				}*/
+					//_waitConditionCommands.TryRemove(command_token, out CommandHeader token);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Метод вызываемый в момент, когда получен результат вычислений функции.
+		/// Ожидается, что ячейка с данными уже должна содержать значение.
+		/// </summary>
+		/// <param name="data_cell_token">Токен ячейки с данными.</param>
+		public void OnDataReady(string data_cell_token)
+		{
+			if (_dataLinksWithCommands.TryGetValue(data_cell_token, out List<string> command_tokens))
+			{
+				foreach (var command_token in command_tokens.ToList())
+				{
+					CheckPreparingCommands(command_token, data_cell_token);
+					CheckWaitConditionCommands(command_token, data_cell_token);
+				}
 			}
 		}
 
@@ -366,9 +346,8 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 			else
 			{
-				if (_preparingCommands.ContainsKey(function_header.Token))
+				if (_preparingCommands.TryGetValue(function_header.Token, out Command command))
 				{
-					var command = _preparingCommands[function_header.Token];
 					command.Function = function;
 					if (command.InputData.All(x => x.HasValue != null) && command.Function != null)
 					{

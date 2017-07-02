@@ -530,19 +530,6 @@ namespace CustomNamespace
 		[TestMethod]
 		public void IntegrationSCustomCodeTest()
 		{
-		//	computing_core.AddAssembly(@"F:\Main Folder\Аспирантура\Диссертация\Program\DF2\SimpleMethods\bin\Debug\netcoreapp1.1\SimpleMethods.dll");
-			var str1 = "User1/Process0/CustomNamespace.CustomClass.MyFunction<6>/CustomNamespace.CustomClass.MyFunction/tmp_var_8";
-			var str2 = "User1/Process0/CustomNamespace.CustomClass.MyFunction<6>/CustomNamespace.CustomClass.MyFunction/tmp_var_8";
-
-			ConcurrentDictionary<string, int> _preparingCommands = new ConcurrentDictionary<string, int>();
-			_preparingCommands.TryAdd(str1, 1);
-			_preparingCommands.TryAdd(str2, 2);
-
-			_preparingCommands.TryGetValue(str1, out int val1);
-			_preparingCommands.TryGetValue(str2, out int val2);
-
-
-
 			var text = GetText(assembly, "CustomNamespace.CustomClass.MyFunction");
 			//var new_text = GetNewText(assembly, "CustomNamespace.CustomClass.MyFunction");
 			var f = fib(14);
@@ -555,7 +542,7 @@ namespace CustomNamespace
 			var log = StackTraceLogger.GetLog();
 
 			var scheme = StackTraceLogger.GetLogScheme(log);
-
+			Console.WriteLine(result.Result.Data);
 			Assert.Fail(result.Result.Data.ToString());
 		}
 

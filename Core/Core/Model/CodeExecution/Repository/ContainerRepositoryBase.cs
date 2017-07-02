@@ -96,16 +96,20 @@ namespace Core.Model.CodeExecution.Repository
 
 		public virtual IEnumerable<T_conteiner> Get(IEnumerable<T_header> headers)
 		{
-			var list = new List<T_conteiner>();
-			foreach (var header in headers)
-			{
-				var key = string.Join("/", header.CallStack);
-				if (_items.ContainsKey(key))
-				{
-					list.Add(_items[key]);
-				}
-			}
-			return list;
+			var item = default(T_conteiner);
+			return
+				from header in headers
+				where _items.TryGetValue(header.Token, out item)
+				select item;
+		}
+
+		public virtual IEnumerable<T_conteiner> Get(params string[] tokens)
+		{
+			var item = default(T_conteiner);
+			return
+				from token in tokens
+				where _items.TryGetValue(token, out item)
+				select item;
 		}
 
 		public virtual void AddHeaders(IEnumerable<T_header> headers)

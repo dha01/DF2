@@ -11,6 +11,7 @@ namespace Core.Model.CodeExecution.Repository
 		IEnumerable<T> Get<T>(IEnumerable<T_header> header) where T : T_conteiner;
 
 		IEnumerable<T_conteiner> Get(IEnumerable<T_header> header);
+		IEnumerable<T_conteiner> Get(params string[] tokens);
 
 		void AddHeaders(IEnumerable<T_header> header);
 

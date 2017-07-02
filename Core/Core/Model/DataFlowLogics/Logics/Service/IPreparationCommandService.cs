@@ -11,6 +11,6 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		
 		void PrepareCommand(CommandHeader command_header);
 
-		void OnDataReady(DataCellHeader data_cell_header);
+		void OnDataReady(string data_cell_header_token);
 	}
 }
