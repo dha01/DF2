@@ -607,7 +607,7 @@ namespace CustomNamespace
 			var index = 0;
 			foreach (var row in code.Commands)
 			{
-				arr[row.OutputDataId] = $@"[{row.OutputDataId}]	{(row.OutputDataId == 0 ? "out" : "tmp")}	= {row.FunctionHeader.CallstackToString(".")}<{index}>({string.Join(",", row.InputDataIds.Select(y => $"[{y}]"))}) {string.Join("|", row.TriggeredCommandIds.Select(y => $"<{y}>"))} {string.Join("|", row.ConditionId.Select(y => $"Cond([{y}])"))}";
+				arr[row.OutputDataId] = $@"[{row.OutputDataId}]	{(row.OutputDataId == 0 ? "out" : "tmp")}	= {row.FunctionHeader.Token}<{index}>({string.Join(",", row.InputDataIds.Select(y => $"[{y}]"))}) {string.Join("|", row.TriggeredCommandIds.Select(y => $"<{y}>"))} {string.Join("|", row.ConditionId.Select(y => $"Cond([{y}])"))}";
 
 				foreach (var val in row.InputDataIds)
 				{
@@ -634,7 +634,7 @@ namespace CustomNamespace
 			}
 
 			var in_index = 1;
-			var text = $@"{code.Header.CallstackToString(".")}({string.Join(", ", arr.Where(x => x.Contains("InputData")).Select(y => $"InputData{in_index++}"))})
+			var text = $@"{code.Header.Token}({string.Join(", ", arr.Where(x => x.Contains("InputData")).Select(y => $"InputData{in_index++}"))})
 {{
 	{string.Join("\n	", arr)}
 }}";

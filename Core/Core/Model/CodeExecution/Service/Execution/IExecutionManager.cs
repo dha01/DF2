@@ -10,8 +10,8 @@ namespace Core.Model.CodeExecution.Service.Execution
 	/// </summary>
 	public interface IExecutionManager : IExecutionService
 	{
-		void Execute(BasicFunction function, IEnumerable<DataCell> input_data, DataCell output, CommandContext command_context = null);
-		void Execute(ControlFunction function, IEnumerable<DataCell> input_data, DataCell output, CommandContext command_context = null);
-		void Execute(CSharpFunction function, IEnumerable<DataCell> input_data, DataCell output, CommandContext command_context = null);
+		void Execute(BasicFunction function, IEnumerable<DataCell> input_data, DataCell output, string[] callstack = null);
+		void Execute(ControlFunction function, IEnumerable<DataCell> input_data, DataCell output, string[] callstack = null);
+		void Execute(CSharpFunction function, IEnumerable<DataCell> input_data, DataCell output, string[] callstack = null);
 	}
 }

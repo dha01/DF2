@@ -87,7 +87,7 @@ namespace Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job
 						throw new Exception("Хрень!");
 					}
 					
-					_executionManager.Execute(command.Function, command.InputData, command.OutputData, new CommandContext() { Header = new InvokeHeader() { CallStack = command.Header.CallStack} });
+					_executionManager.Execute(command.Function, command.InputData, command.OutputData, command.Header.CallStack);
 
 				//	Interlocked.Decrement(ref _queueLength);
 					/*command.OutputData.Data

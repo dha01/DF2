@@ -14,7 +14,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 	/// </summary>
 	public class BasicExecutionService : IExecutionService
 	{
-		public virtual void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, CommandContext command_context = null)
+		public virtual void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, string[] callstack = null)
 		{
 			var func = ((BasicFunction) function).GetModel();
 			var data = func.Invoke(input_data.ToArray());

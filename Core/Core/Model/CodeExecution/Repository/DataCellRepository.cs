@@ -10,16 +10,15 @@ namespace Core.Model.CodeExecution.Repository
 	{
 		protected override void AddConteiner(DataCell conteiner)
 		{
-			var key = string.Join("/", conteiner.Header.CallStack);
-			if (_items.ContainsKey(key))
+			if (_items.ContainsKey(conteiner.Header.Token))
 			{
-				var item = _items[key];
+				var item = _items[conteiner.Header.Token];
 				item.Data = conteiner.Data;
 				item.HasValue = conteiner.HasValue;
 			}
 			else
 			{
-				_items[key] = conteiner;
+				_items[conteiner.Header.Token] = conteiner;
 			}
 		}
 
@@ -31,14 +30,13 @@ namespace Core.Model.CodeExecution.Repository
 
 		protected override void AddHeader(DataCellHeader header)
 		{
-			var key = string.Join("/", header.CallStack);
-			if (_itemHeaders.ContainsKey(key))
+			if (_itemHeaders.ContainsKey(header.Token))
 			{
 				//_itemHeaders[key]. AddOwners(header.Owners);
 			}
 			else
 			{
-				_itemHeaders[key] = header;
+				_itemHeaders[header.Token] = header;
 			}
 		}
 	}

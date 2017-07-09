@@ -39,27 +39,25 @@ namespace Core.Model.CodeExecution.Repository
 
 		protected virtual void AddConteiner(T_conteiner conteiner)
 		{
-			var key = string.Join("/", conteiner.Header.CallStack);
-			if (_items.ContainsKey(key))
+			if (_items.ContainsKey(conteiner.Header.Token))
 			{
 				//_items[key].Header.AddOwners(conteiner.Header.Owners);
 			}
 			else
 			{
-				_items[key] = conteiner;
+				_items[conteiner.Header.Token] = conteiner;
 			}
 		}
 
 		protected virtual void AddHeader(T_header header)
 		{
-			var key = string.Join("/", header.CallStack);
-			if (_itemHeaders.ContainsKey(key))
+			if (_itemHeaders.ContainsKey(header.Token))
 			{
 				//_itemHeaders[key].AddOwners(header.Owners);
 			}
 			else
 			{
-				_itemHeaders[key] = header;
+				_itemHeaders[header.Token] = header;
 			}
 		}
 
@@ -71,14 +69,13 @@ namespace Core.Model.CodeExecution.Repository
 			
 			foreach (var conteiner in conteiners)
 			{
-				var key = string.Join("/", conteiner.Header.CallStack);
 				AddConteiner(conteiner);
 				AddHeader((T_header)conteiner.Header);
 
 				//if (send_subsctibers)
 				//{
 					List<Action<T_header>> actions;
-					_subscribes.TryRemove(key, out actions);
+					_subscribes.TryRemove(conteiner.Header.Token, out actions);
 					if (actions != null)
 					{
 						Parallel.Invoke(actions.Select(x => new Action(() => { x.Invoke((T_header) conteiner.Header); })).ToArray());
@@ -135,8 +132,7 @@ namespace Core.Model.CodeExecution.Repository
 			foreach (var header in headers)
 			{
 				//var key = _itemHeaders.FirstOrDefault(x => x.Equals(header));
-				var key = string.Join("/", header.CallStack);
-				_itemHeaders[key] = header;
+				_itemHeaders[header.Token] = header;
 			}
 		}
 
@@ -155,22 +151,20 @@ namespace Core.Model.CodeExecution.Repository
 			{
 				foreach (var header in headers)
 				{
-					var key = string.Join("/", header.CallStack);
-
-					if (IsItemExists(key))
+					if (IsItemExists(header.Token))
 					{
 						var local_header = header;
 						Parallel.Invoke(() => { callback.Invoke(local_header); });
 						continue;
 					}
 
-					if (_subscribes.ContainsKey(key))
+					if (_subscribes.ContainsKey(header.Token))
 					{
-						_subscribes[key].Add(callback);
+						_subscribes[header.Token].Add(callback);
 					}
 					else
 					{
-						_subscribes[key] = new List<Action<T_header>>() { callback };
+						_subscribes[header.Token] = new List<Action<T_header>>() { callback };
 					}
 				}
 			}

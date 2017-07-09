@@ -10,9 +10,9 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Base
 	{
 		public virtual string[] CallStack { get; set; }
 
-		private string _token;
+		protected string _token;
 
-		public string Token
+		public virtual string Token
 		{
 			get
 			{

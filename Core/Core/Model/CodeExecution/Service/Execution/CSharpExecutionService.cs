@@ -21,7 +21,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 			_functionRepository = function_repository;
 		}
 
-		public virtual void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, CommandContext command_context = null)
+		public virtual void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, string[] callstack = null)
 		{
 			var func = _functionRepository.Get<CSharpFunction>(new List<FunctionHeader>(){ (FunctionHeader)function.Header } ).FirstOrDefault();
 

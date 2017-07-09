@@ -30,8 +30,6 @@ namespace Core.Model.CodeExecution.Repository
 
 			foreach (var conteiner in conteiners)
 			{
-				var key = string.Join("/", conteiner.Header.CallStack);
-
 				if (conteiner is ControlFunction)
 				{
 					var control_function = (ControlFunction)conteiner;
@@ -62,7 +60,7 @@ namespace Core.Model.CodeExecution.Repository
 				//if (send_subsctibers)
 				//{
 				List<Action<FunctionHeader>> actions;
-				_subscribes.TryRemove(key, out actions);
+				_subscribes.TryRemove(conteiner.Header.Token, out actions);
 				if (actions != null)
 				{
 					Parallel.Invoke(actions.Select(x => new Action(() => { x.Invoke((FunctionHeader)conteiner.Header); })).ToArray());

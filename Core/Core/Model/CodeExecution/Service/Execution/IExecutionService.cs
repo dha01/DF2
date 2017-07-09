@@ -10,7 +10,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 	/// </summary>
 	public interface IExecutionService
 	{
-		void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, CommandContext command_context = null);
+		void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, string[] callstack = null);
 
 	}
 }

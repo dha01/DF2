@@ -22,6 +22,19 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Functions
 			var split = name.Split('.');
 			return CommandBuilder.BuildHeader(split.Last(), split.Take(split.Length - 1).ToList());
 		}
+		
+		public override string Token
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(_token))
+				{
+					_token = CallstackToString(".");
+				}
+				return _token;
+			}
+			set { _token = value; }
+		}
 
 		public string Name { get; set; }
 
