@@ -6,6 +6,10 @@
     <RuntimeIdentifiers>win7-x64;osx.10.11-x64;ubuntu.16.04-x64;centos.7-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />

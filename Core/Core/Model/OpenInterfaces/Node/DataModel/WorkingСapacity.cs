@@ -2,7 +2,7 @@
 
 namespace Core.Model.OpenInterfaces.Node.DataModel
 {
-	public class WorkingСapacity
+	public class WorkingCapacity
 	{
 		public bool IsOnline { get; set; }
 		public int CheckCount { get; set; }

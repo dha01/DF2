@@ -9,7 +9,6 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Data
 	/// </summary>
 	public class DataCellHeader : InvokeHeader
 	{
-		public virtual Dictionary<Owner, bool> HasValue { get; set; }
 	}
 }
 

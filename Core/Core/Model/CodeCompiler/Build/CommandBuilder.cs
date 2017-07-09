@@ -74,8 +74,7 @@ namespace Core.Model.CodeCompiler.Build
 			{
 				FunctionName = name,
 				Name = name,
-				Owners = new List<Owner>(),
-				CallStack = list
+				CallStack = list.ToArray()
 			};
 		}
 
@@ -143,9 +142,7 @@ namespace Core.Model.CodeCompiler.Build
 				HasValue = true,
 				Header = new DataCellHeader()
 				{
-					Owners = new List<Owner>(),
 					CallStack = string.Format("{0}/InputData{1}", str, index++).Split('/'),
-					HasValue = new Dictionary<Owner, bool>()
 				}
 			}).ToList();
 		}

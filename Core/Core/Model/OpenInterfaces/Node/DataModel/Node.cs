@@ -10,7 +10,7 @@ namespace Core.Model.OpenInterfaces.Node.DataModel
 
 		public NetworkAddress NetworkAddress { get; set; }
 
-		public WorkingСapacity WorkingСapacity { get; set; }
+		public WorkingCapacity WorkingCapacity { get; set; }
 
 		public List<Node> ProxyNodes { get; set; }
 

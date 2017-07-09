@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Core.Model.CodeExecution.DataModel;
 using Core.Model.CodeExecution.DataModel.Bodies.Base;
 using Core.Model.CodeExecution.DataModel.Headers.Base;
 
@@ -41,7 +42,7 @@ namespace Core.Model.CodeExecution.Repository
 			var key = string.Join("/", conteiner.Header.CallStack);
 			if (_items.ContainsKey(key))
 			{
-				_items[key].Header.AddOwners(conteiner.Header.Owners);
+				//_items[key].Header.AddOwners(conteiner.Header.Owners);
 			}
 			else
 			{
@@ -54,7 +55,7 @@ namespace Core.Model.CodeExecution.Repository
 			var key = string.Join("/", header.CallStack);
 			if (_itemHeaders.ContainsKey(key))
 			{
-				_itemHeaders[key].AddOwners(header.Owners);
+				//_itemHeaders[key].AddOwners(header.Owners);
 			}
 			else
 			{
@@ -112,6 +113,22 @@ namespace Core.Model.CodeExecution.Repository
 				select item;
 		}
 
+
+		public virtual void Delete(params string[] tokens)
+		{
+			foreach (var token in tokens)
+			{
+				_items.TryRemove(token, out T_conteiner container);
+				_itemHeaders.TryRemove(token, out T_header container_header);
+			}
+		}
+
+		public virtual void DeleteStartWith(params string[] tokens)
+		{
+			var deleted_keys = _items.Keys.ToList().Where(x => tokens.Any(y => x.StartsWith(y)));
+			Delete(deleted_keys.ToArray());
+		}
+
 		public virtual void AddHeaders(IEnumerable<T_header> headers)
 		{
 
@@ -157,6 +174,16 @@ namespace Core.Model.CodeExecution.Repository
 					}
 				}
 			}
+		}
+
+
+		public ConteinerRepositoryInfo GetConteinerRepositoryInfo()
+		{
+			return new ConteinerRepositoryInfo
+			{
+				ContainerCount = _items.Count,
+				ContainerHeaderCount = _itemHeaders.Count
+			};
 		}
 	}
 }

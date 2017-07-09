@@ -157,11 +157,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 
 			// Подготавливае места для ячеек с выходными данными.
 			var count = command_header.InputDataHeaders.Count;
-			var input_data = new List<DataCell>(count);
-			for (var i = 0; i < count; i++)
-			{
-				input_data.Add(null);
-			}
+			var input_data = new DataCell[count];
 
 			new_command = new Command()
 			{
@@ -169,7 +165,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 				{
 					CallStack = command_header.CallStack
 				},
-				InputData = input_data,
+				InputData = input_data.ToList(),
 				OutputData = GetOutputData(command_header.OutputDataHeader),
 				ConditionData = condition_data
 			};
@@ -360,6 +356,32 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 						}
 					}
 				}
+			}
+		}
+
+		public void Clear(string path)
+		{
+			CommandHeader removed_command_header;
+			Command removed_commandd;
+			List<string> removed_list;
+			var key_list = _preparingCommands.Keys.ToList().Where(x => x.StartsWith(path));
+
+			foreach (var ke in key_list)
+			{
+				_preparingCommands.TryRemove(ke, out removed_commandd);
+			}
+			
+
+			key_list = _waitConditionCommands.Keys.ToList().Where(x => x.StartsWith(path));
+			foreach (var ke in key_list)
+			{
+				_waitConditionCommands.TryRemove(ke, out removed_command_header);
+			}
+
+			key_list = _dataLinksWithCommands.Keys.ToList().Where(x => x.StartsWith(path));
+			foreach (var ke in key_list)
+			{
+				_dataLinksWithCommands.TryRemove(ke, out removed_list);
 			}
 		}
 	}

@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Core.Model.OpenInterfaces.Node;
 using Core.Model.OpenInterfaces.Node.DataModel;
@@ -33,7 +34,7 @@ namespace Node
 			Configuration = builder.Build();
 		}
 
-		public IConfigurationRoot Configuration { get; }
+		public IConfigurationRoot Configuration { get; set; }
 
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)

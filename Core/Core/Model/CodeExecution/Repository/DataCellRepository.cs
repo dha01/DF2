@@ -14,7 +14,6 @@ namespace Core.Model.CodeExecution.Repository
 			if (_items.ContainsKey(key))
 			{
 				var item = _items[key];
-				item.Header.AddOwners(conteiner.Header.Owners);
 				item.Data = conteiner.Data;
 				item.HasValue = conteiner.HasValue;
 			}
@@ -35,7 +34,7 @@ namespace Core.Model.CodeExecution.Repository
 			var key = string.Join("/", header.CallStack);
 			if (_itemHeaders.ContainsKey(key))
 			{
-				_itemHeaders[key]. AddOwners(header.Owners);
+				//_itemHeaders[key]. AddOwners(header.Owners);
 			}
 			else
 			{

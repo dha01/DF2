@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Core.Model.CodeCompiler.Build;
 using Core.Model.CodeExecution.Service.Computing;
+using Core.Model.CodeExecution.Service.DataModel;
+using Core.Model.DataFlowLogics.Logics.DataModel;
 using Core.Model.OpenInterfaces.Node.DataModel;
 using Core.Model.OpenInterfaces.Node.Repository;
 using Core.Model.OpenInterfaces.Server.Service;
@@ -38,7 +40,7 @@ namespace Core.Model.OpenInterfaces.Node
 			{
 				Guid = Guid.NewGuid(),
 				NetworkAddress = server_service.NetworkAddress,
-				WorkingСapacity = new WorkingСapacity()
+				WorkingCapacity = new WorkingCapacity()
 				{
 					CheckCount = -1,
 					FailCheckCount = 0,
@@ -87,6 +89,11 @@ namespace Core.Model.OpenInterfaces.Node
 		public DataModel.Node GetInfo()
 		{
 			return _info;
+		}
+
+		public ComputingCoreInfo GetComputingCoreInfo()
+		{
+			return _computingCore.GetComputingCoreInfo();
 		}
 
 		public bool Ping()

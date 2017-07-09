@@ -20,7 +20,6 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Commands
 			set
 			{
 				CallStack = value.CallStack;
-				Owners = value.Owners;
 			}
 		}
 

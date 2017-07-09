@@ -5,7 +5,9 @@ using System.Linq;
 using Core.Model.CodeExecution.DataModel.Bodies.Commands;
 using Core.Model.CodeExecution.DataModel.Bodies.Functions;
 using Core.Model.CodeExecution.DataModel.Headers.Commands;
+using Core.Model.CodeExecution.Repository;
 using Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job;
+using Core.Model.DataFlowLogics.Logics.DataModel;
 
 namespace Core.Model.DataFlowLogics.Logics.Service
 {
@@ -55,14 +57,20 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		private readonly IPreparationCommandService _preparationCommandService;
 
 		/// <summary>
+		/// Сервис подготовки команд к исполнению.
+		/// </summary>
+		private readonly IDataCellRepository _dataCellRepository;
+
+		/// <summary>
 		/// Конструктор.
 		/// </summary>
 		/// <param name="job_manager">Управлеяющий пулом исполнителей.</param>
 		/// <param name="preparation_command_service">Сервис подготовки команд к исполнению.</param>
-		public DataFlowLogicsService(IJobManager job_manager, IPreparationCommandService preparation_command_service)
+		public DataFlowLogicsService(IJobManager job_manager, IPreparationCommandService preparation_command_service, IDataCellRepository data_cell_repository)
 		{
 			_jobManager = job_manager;
 			_preparationCommandService = preparation_command_service;
+			_dataCellRepository = data_cell_repository;
 
 			_preparationCommandService.OnPreparedCommand = OnPreparedCommand;
 
@@ -183,10 +191,6 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			//Console.WriteLine("! OnExecutedCommand {0}", command.Header.CallstackToString());
 			
 			var key = command.Header.CallstackToString();
-			if (!(command.Function is ControlFunction))
-			{
-				_preparationCommandService.OnDataReady(command.OutputData.Header.Token);
-			}
 
 			if (_executingCommands.TryRemove(key, out Command removed_command))
 			{
@@ -198,7 +202,46 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 			else
 			{
-				throw new NotImplementedException("DataFlowLogicsService.OnExecutedCommand Не удалось извлечь.");
+				if (_executingCommands.ContainsKey(key))
+				{
+					OnExecutedCommand(command);
+					return;
+				}
+				else
+				{
+					//throw new NotImplementedException("DataFlowLogicsService.OnExecutedCommand Не удалось извлечь.");
+				}
+			}
+
+
+			if (!(command.Function is ControlFunction))
+			{
+				_preparationCommandService.OnDataReady(command.OutputData.Header.Token);
+				
+				if (command.OutputData.Header.Token.EndsWith("/result"))
+				{
+					var path = command.OutputData.Header.Token.Replace("result", "");
+					var key_list = _allCommandHeaders.Keys.ToList().Where(x => x.StartsWith(path));
+
+					foreach (var ke in key_list)
+					{
+						CommandHeader removed_command_header;
+						Command removed_commandd;
+						_allCommandHeaders.TryRemove(ke, out removed_command_header);
+						_awaitingPreparationCommandHeaders.TryRemove(ke, out removed_command_header);
+						_preparationCommandHeaders.TryRemove(ke, out removed_command_header);
+						_awaitingExecutionCommands.TryRemove(ke, out removed_commandd);
+						_executingCommands.TryRemove(ke, out removed_commandd);
+						_executedCommands.TryRemove(ke, out removed_commandd);
+					}
+					
+					_dataCellRepository.DeleteStartWith(path);
+					_preparationCommandService.Clear(path);
+				}
+			}
+			else
+			{
+				_executingCommands.TryAdd(key, command);
 			}
 		}
 
@@ -240,5 +283,26 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 				throw new NotImplementedException("DataFlowLogicsService.OnPreparedCommand Не удалось извлечь.");
 			}
 		}
+
+		#region Информация о состоянии
+
+		/// <summary>
+		/// Возвращает количество команд в каждой из очередей.
+		/// </summary>
+		/// <returns></returns>
+		public StateQueuesInfo GetStateQueuesInfo()
+		{
+			return new StateQueuesInfo
+			{
+				AllCommandHeaderCount = _allCommandHeaders.Count,
+				AwaitingPreparationCommandHeaderCount = _awaitingPreparationCommandHeaders.Count,
+				PreparationCommandHeaderCount = _preparationCommandHeaders.Count,
+				AwaitingExecutionCommandCount = _awaitingExecutionCommands.Count,
+				ExecutingCommandCount = _executingCommands.Count,
+				ExecutedCommandCount = _executedCommands.Count
+			};
+		}
+
+		#endregion
 	}
 }

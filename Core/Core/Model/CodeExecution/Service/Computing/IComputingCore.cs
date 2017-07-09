@@ -5,6 +5,8 @@ using Core.Model.CodeExecution.DataModel.Headers.Base;
 using Core.Model.CodeExecution.DataModel.Headers.Commands;
 using Core.Model.CodeExecution.DataModel.Headers.Data;
 using Core.Model.CodeExecution.DataModel.Headers.Functions;
+using Core.Model.CodeExecution.Service.DataModel;
+using Core.Model.DataFlowLogics.Logics.DataModel;
 
 namespace Core.Model.CodeExecution.Service.Computing
 {
@@ -27,6 +29,12 @@ namespace Core.Model.CodeExecution.Service.Computing
 
 		IEnumerable<Function> GetFunctions(IEnumerable<FunctionHeader> functions);
 
+
+		/// <summary>
+		/// Возвращает количество команд в каждой из очередей.
+		/// </summary>
+		/// <returns></returns>
+		ComputingCoreInfo GetComputingCoreInfo();
 	}
 }
 

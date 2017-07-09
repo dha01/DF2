@@ -58,5 +58,10 @@ namespace Node.Controllers
 		{
 			return View("Index");
 		}
+
+		public ActionResult State()
+		{
+			return View();
+		}
 	}
 }

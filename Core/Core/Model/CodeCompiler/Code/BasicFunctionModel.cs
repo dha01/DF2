@@ -210,8 +210,7 @@ namespace Core.Model.CodeCompiler.Code
 				Header = new BasicFunctionHeader()
 				{
 					Name = name,
-					Owners = new List<Owner>(),
-					CallStack = new List<string>() { "BasicFunctions", name },
+					CallStack = new [] { "BasicFunctions", name },
 					Id = id,
 					Condition = condition
 				}

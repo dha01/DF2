@@ -59,9 +59,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 				{
 					Header = new DataCellHeader()
 					{
-						HasValue = new Dictionary<Owner, bool>(),
-						Owners = new List<Owner>(),
-						CallStack = callstack
+						CallStack = callstack.ToArray()
 					},
 					Data = null,
 					HasValue = null
@@ -80,9 +78,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 				{
 					Header = new DataCellHeader()
 					{
-						HasValue = new Dictionary<Owner, bool>(),
-						Owners = new List<Owner>(),
-						CallStack = callstack
+						CallStack = callstack.ToArray()
 					},
 					Data = control_function.Constants[i],
 					HasValue = true
@@ -101,7 +97,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 				var new_command_header = new CommandHeader
 				{
 					Owners = new List<Owner>(),
-					CallStack = callstack,
+					CallStack = callstack.ToArray(),
 					InputDataHeaders = command_template.InputDataIds.Select(x => (DataCellHeader)tmp_array[x].Header).ToList(),
 					OutputDataHeader = (DataCellHeader)tmp_array[command_template.OutputDataId].Header,
 					TriggeredCommands = command_template.TriggeredCommandIds.Select(x => command_list[x].Header).ToList(),

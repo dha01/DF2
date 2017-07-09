@@ -25,7 +25,7 @@ namespace Core.Model.OpenInterfaces.Node
 				self.NetworkAddress = result.NetworkAddress;
 				self.Guid = result.Guid;
 				self.Index = result.Index;
-				self.WorkingСapacity = result.WorkingСapacity;
+				self.WorkingCapacity = result.WorkingCapacity;
 				self.ProxyNodes = result.ProxyNodes;
 			}
 			

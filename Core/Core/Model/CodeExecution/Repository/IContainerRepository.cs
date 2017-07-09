@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Core.Model.CodeExecution.DataModel;
 
 namespace Core.Model.CodeExecution.Repository
 {
@@ -12,10 +13,15 @@ namespace Core.Model.CodeExecution.Repository
 
 		IEnumerable<T_conteiner> Get(IEnumerable<T_header> header);
 		IEnumerable<T_conteiner> Get(params string[] tokens);
+		void Delete(params string[] tokens);
+		void DeleteStartWith(params string[] tokens);
 
 		void AddHeaders(IEnumerable<T_header> header);
 
 		void Subscribe(IEnumerable<T_header> header, Action<T_header> callback);
+
+
+		ConteinerRepositoryInfo GetConteinerRepositoryInfo();
 
 	}
 }

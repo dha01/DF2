@@ -11,9 +11,11 @@ using Core.Model.CodeExecution.DataModel.Headers.Commands;
 using Core.Model.CodeExecution.DataModel.Headers.Data;
 using Core.Model.CodeExecution.DataModel.Headers.Functions;
 using Core.Model.CodeExecution.Repository;
+using Core.Model.CodeExecution.Service.DataModel;
 using Core.Model.CodeExecution.Service.Execution;
 using Core.Model.DataFlowLogics.InstructionExecutionConveyor.Extractors;
 using Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job;
+using Core.Model.DataFlowLogics.Logics.DataModel;
 using Core.Model.DataFlowLogics.Logics.Service;
 using Core.Model.NetworkLogic;
 
@@ -42,13 +44,9 @@ namespace Core.Model.CodeExecution.Service.Computing
 
 			var job_manager = new JobManager(execution_manager);
 			var preparation_command_service = new PreparationCommandService(data_cell_repository, function_repository);
-			var data_flow_logics_service = new DataFlowLogicsService(job_manager, preparation_command_service);
+			var data_flow_logics_service = new DataFlowLogicsService(job_manager, preparation_command_service, data_cell_repository);
 			control_execution_service.SetDataFlowLogicsService(data_flow_logics_service);
-			var command_service = new CommandService(
-				function_repository,
-				data_cell_repository,
-				command_repository
-			);
+
 			var computing_core = new ComputingCore(
 				function_repository,
 				data_cell_repository,
@@ -129,9 +127,7 @@ namespace Core.Model.CodeExecution.Service.Computing
 
 			var output_data_header = new DataCellHeader()
 			{
-				Owners = new List<Owner>(),
-				CallStack = $"{root}.result".Split('.').ToList(),
-				HasValue = new Dictionary<Owner, bool>()
+				CallStack = $"{root}.result".Split('.').ToArray(),
 			};
 
 			var input_data = CommandBuilder.BuildInputData(param, $"{root}".Split('.').ToList());
@@ -140,7 +136,7 @@ namespace Core.Model.CodeExecution.Service.Computing
 			{
 				new CommandHeader()
 				{
-					CallStack = $"{root}".Split('.').ToList(),
+					CallStack = $"{root}".Split('.').ToArray(),
 					FunctionHeader = function_header,//CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList()),//(FunctionHeader)BuildedControlFunction.Header,//CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList()), //SimpleMethods.Control.Simple.MainHeader,
 					InputDataHeaders = input_data.Select(x=>(DataCellHeader)x.Header).ToList(),
 					OutputDataHeader = output_data_header,
@@ -206,6 +202,19 @@ namespace Core.Model.CodeExecution.Service.Computing
 		}
 
 		#endregion
+
+		/// <summary>
+		/// Возвращает количество команд в каждой из очередей.
+		/// </summary>
+		/// <returns></returns>
+		public ComputingCoreInfo GetComputingCoreInfo()
+		{
+			return new ComputingCoreInfo
+			{
+				StateQueuesInfo = _dataFlowLogicsService.GetStateQueuesInfo(),
+				DataCellsInfo = _dataCellRepository.GetConteinerRepositoryInfo()
+			};
+		}
 	}
 }
 

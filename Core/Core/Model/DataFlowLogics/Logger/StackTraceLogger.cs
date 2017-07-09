@@ -80,12 +80,12 @@ namespace Core.Model.DataFlowLogics.Logger
 
 		public static void Write(Command command)
 		{
-			_writeQueue.Enqueue(new NewCommand()
+		/*	_writeQueue.Enqueue(new NewCommand()
 			{
 				DateTime = DateTime.Now,
 				Command = command
 			});
-			_eventReset.Set();
+			_eventReset.Set();*/
 		}
 
 

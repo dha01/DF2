@@ -8,7 +8,7 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Base
 	/// </summary>
 	public class InvokeHeader : Header
 	{
-		public virtual IEnumerable<string> CallStack { get; set; }
+		public virtual string[] CallStack { get; set; }
 
 		private string _token;
 

@@ -11,7 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Core.Model.CodeCompiler.Build;
 using Core.Model.CodeExecution.DataModel.Bodies.Commands;
+using Core.Model.CodeExecution.DataModel.Bodies.Data;
 using Core.Model.CodeExecution.DataModel.Bodies.Functions;
+using Core.Model.CodeExecution.DataModel.Headers.Data;
 using Core.Model.CodeExecution.DataModel.Headers.Functions;
 using Core.Model.CodeExecution.Repository;
 using Core.Model.CodeExecution.Service.Computing;
@@ -221,7 +223,7 @@ namespace Core.Tests.Model.Computing
 
 			Console.WriteLine("theCPUCounter {0} ", process.TotalProcessorTime);
 		}
-
+		/*
 		private static BasicFunction Sum = new BasicFunction()
 			{
 				Id = 1,
@@ -245,7 +247,7 @@ namespace Core.Tests.Model.Computing
 				Id = 2
 			}
 		};
-
+		
 		private static ControlFunction BuildedControlFunction2
 		{
 			get
@@ -268,7 +270,7 @@ namespace Core.Tests.Model.Computing
 						return cmd;
 					});
 			}
-		}
+		}*/
 
 
 
@@ -527,23 +529,69 @@ namespace CustomNamespace
 			return a == 1 || a == 2 ? 1 : fib(a-1) + fib(a-2);
 		}
 
+		private readonly ConcurrentDictionary<string, DataCell> _testDataCells = new ConcurrentDictionary<string, DataCell>();
+
+		private void Meth()
+		{
+			for (int i = 0; i < 5000000; i++)
+			{
+				_testDataCells.TryAdd(Guid.NewGuid().ToString(), new DataCell
+				{
+					HasValue = true,
+					Data = 25,
+					Header = new DataCellHeader
+					{
+						//HasValue = new Dictionary<Owner, bool>(),
+						CallStack = new [] { Guid.NewGuid().ToString() },
+						//Owners = new List<Owner>()
+					}
+				});
+			}
+
+			foreach (var key in _testDataCells.Keys)
+			{
+				_testDataCells.TryRemove(key, out DataCell data_cell);
+			}
+		}
+
 		[TestMethod]
 		public void IntegrationSCustomCodeTest()
 		{
+			//Meth();
+
+			GC.Collect(2);
+
 			var text = GetText(assembly, "CustomNamespace.CustomClass.MyFunction");
 			//var new_text = GetNewText(assembly, "CustomNamespace.CustomClass.MyFunction");
-			var f = fib(14);
+			var f = fib(21);
 
-			var result = computing_core.Exec("CustomNamespace.CustomClass.MyFunction", 14);
-			result.Wait(10000);
-			var x = result.Result;
+			//var result1 = computing_core.Exec("CustomNamespace.CustomClass.MyFunction", 20);
+			//var result2 = computing_core.Exec("CustomNamespace.CustomClass.MyFunction", 21);
+			var count = 1000;
 
-			StackTraceLogger.Wait();
-			var log = StackTraceLogger.GetLog();
+			Task<DataCell>[] tasks = new Task<DataCell>[count + 1];
+			int[] results = new int[count + 1];
 
-			var scheme = StackTraceLogger.GetLogScheme(log);
-			Console.WriteLine(result.Result.Data);
-			Assert.Fail(result.Result.Data.ToString());
+			for (int i = 0; i < count; i++)
+			{
+				var result = computing_core.Exec("CustomNamespace.CustomClass.MyFunction", 5);
+			//	result.Wait(15000);
+				tasks[i] = result;
+				//GC.Collect(2);
+			}
+
+			for (int i = 0; i < count; i++)
+			{
+				tasks[i].Wait(15000);
+				results[i] = (int)tasks[i].Result.Data;
+			}
+
+			//StackTraceLogger.Wait();
+				//var log = StackTraceLogger.GetLog();
+
+				//var scheme = StackTraceLogger.GetLogScheme(log);
+				//Console.WriteLine(result.Result.Data);
+				//Assert.Fail(result.Result.Data.ToString());
 		}
 
 		public string GetText(ControlFunction code)

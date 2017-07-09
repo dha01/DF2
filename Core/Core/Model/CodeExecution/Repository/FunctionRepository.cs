@@ -47,9 +47,7 @@ namespace Core.Model.CodeExecution.Repository
 						{
 							Header = new DataCellHeader()
 							{
-								CallStack = callstack,
-								HasValue = new Dictionary<Owner, bool>(),
-								Owners = new List<Owner>(),
+								CallStack = callstack.ToArray(),
 							},
 							//HasValue = true,
 							HasValue = true,

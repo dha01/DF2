@@ -168,14 +168,14 @@ namespace Core.Model.CodeExecution.Service.Computing
 			{
 				DataCell data_cell = null;
 
-				foreach (var owner in data_cell_header.Owners)
+				/*foreach (var owner in data_cell_header.Owners)
 				{
 					data_cell = GetDataCellRequest(data_cell_header, owner.IpAddress);
 					if (data_cell != null)
 					{
 						break;
 					}
-				}
+				}*/
 				
 				if (data_cell != null)
 				{
@@ -184,11 +184,11 @@ namespace Core.Model.CodeExecution.Service.Computing
 				}
 				else
 				{
-					if (data_cell_header.Owners.Any())
+					/*if (data_cell_header.Owners.Any())
 					{
 						// TODO: Нужно что то делать если ни у кого из владельцев нет нужных данных.
 						throw new Exception("Нужно что то делать если ни у кого из владельцев нет нужных данных.");
-					}
+					}*/
 				}
 			}
 		}
