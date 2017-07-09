@@ -39,13 +39,13 @@ namespace Core.Model.CodeExecution.Repository
 
 		protected virtual void AddConteiner(T_conteiner conteiner)
 		{
-			if (_items.ContainsKey(conteiner.Header.Token))
+			if (_items.ContainsKey(conteiner.Token))
 			{
 				//_items[key].Header.AddOwners(conteiner.Header.Owners);
 			}
 			else
 			{
-				_items[conteiner.Header.Token] = conteiner;
+				_items[conteiner.Token] = conteiner;
 			}
 		}
 
@@ -75,7 +75,7 @@ namespace Core.Model.CodeExecution.Repository
 				//if (send_subsctibers)
 				//{
 					List<Action<T_header>> actions;
-					_subscribes.TryRemove(conteiner.Header.Token, out actions);
+					_subscribes.TryRemove(conteiner.Token, out actions);
 					if (actions != null)
 					{
 						Parallel.Invoke(actions.Select(x => new Action(() => { x.Invoke((T_header) conteiner.Header); })).ToArray());

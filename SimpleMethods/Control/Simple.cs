@@ -11,6 +11,41 @@ namespace SimpleMethods.Control
 		//public static ControlFunctionHeader MainHeader => CommandBuilder.BuildHeader(nameof(Main), $"{typeof(Simple).Namespace}.{typeof(Simple).Name}".Split('.').ToList());
 
 		[ControlFunction]
+		public void Fib(Var<int> a)
+		{
+
+			//Return(Iif(a == 1 | a == 2, Const(1), Exec<int>("Fib", a - 1) + Exec<int>("Fib", a - 2)));
+
+			var one = Const(1);
+			var two = Const(2);
+			Return(
+				Iif(
+					Exec<bool>("Fib_labda_1", a, one, two), 
+					Exec<int>("Fib_labda_2", one), 
+					Exec<int>("Fib_labda_3", a, one, two)
+				));
+		}
+
+		[ControlFunction]
+		public void Fib_labda_1(Var<int> a, Var<int> b, Var<int> c)
+		{
+			Return(a == b | a == c);
+		}
+
+		[ControlFunction]
+		public void Fib_labda_2(Var<int> a)
+		{
+			Return(a);
+		}
+
+		[ControlFunction]
+		public void Fib_labda_3(Var<int> a, Var<int> b, Var<int> c)
+		{
+			Return(Exec<int>("Fib", a - b) + Exec<int>("Fib", a - c));
+		}
+
+
+		[ControlFunction]
 		public void Main(Var<int> a, Var<int> b, Var<int> c, Var<int> d, Var<int> e, Var<int> f, Var<int> g, Var<int> h)
 		{
 

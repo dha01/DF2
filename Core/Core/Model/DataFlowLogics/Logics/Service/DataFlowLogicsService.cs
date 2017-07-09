@@ -134,7 +134,6 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 						throw new NotImplementedException("DataFlowLogicsService.AddNewCommandHeader _rawCommandHeaders Не удалось добавить.");
 					}
 				}
-				
 			}
 		}
 
@@ -189,10 +188,10 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		public void OnExecutedCommand(Command command)
 		{
 			//Console.WriteLine("! OnExecutedCommand {0}", command.Header.CallstackToString());
-
-			if (_executingCommands.TryRemove(command.Header.Token, out Command removed_command))
+			_dataCellRepository.Add(new []{ command.OutputData });
+			if (_executingCommands.TryRemove(command.Token, out Command removed_command))
 			{
-				if (!_executedCommands.TryAdd(command.Header.Token, removed_command))
+				if (!_executedCommands.TryAdd(command.Token, removed_command))
 				{
 					throw new NotImplementedException("DataFlowLogicsService.OnExecutedCommand Не удалось добавить.");
 				}
@@ -200,7 +199,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 			else
 			{
-				if (_executingCommands.ContainsKey(command.Header.Token))
+				/*if (_executingCommands.ContainsKey(command.Token))
 				{
 					OnExecutedCommand(command);
 					return;
@@ -208,17 +207,17 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 				else
 				{
 					//throw new NotImplementedException("DataFlowLogicsService.OnExecutedCommand Не удалось извлечь.");
-				}
+				}*/
 			}
 
 
-			if (!(command.Function is ControlFunction))
+			if (!(command.Function is ControlFunction) || command.OutputData.HasValue.HasValue)
 			{
-				_preparationCommandService.OnDataReady(command.OutputData.Header.Token);
-				
-				if (command.OutputData.Header.Token.EndsWith("/result"))
+				_preparationCommandService.OnDataReady(command.OutputData.Token);
+
+				if (command.OutputData.Token.EndsWith("/result"))
 				{
-					var path = command.OutputData.Header.Token.Replace("result", "");
+					var path = command.OutputData.Token.Replace("result", "");
 					var key_list = _allCommandHeaders.Keys.ToList().Where(x => x.StartsWith(path));
 
 					foreach (var ke in key_list)
@@ -239,7 +238,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 			else
 			{
-				_executingCommands.TryAdd(command.Header.Token, command);
+				_executingCommands.TryAdd(command.Token, command);
 			}
 		}
 
@@ -255,13 +254,13 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			{
 				throw new Exception("Невозможное событие. Проверка для отладки.");
 			}
-
-			if (_preparationCommandHeaders.TryRemove(command.Header.Token, out CommandHeader removed_command_header))
+			
+			if (_preparationCommandHeaders.TryRemove(command.Token, out CommandHeader removed_command_header))
 			{
 				if (_jobManager.HasFreeJob())
 				{
 					_jobManager.AddCommand(command);
-					if (!_executingCommands.TryAdd(command.Header.Token, command))
+					if (!_executingCommands.TryAdd(command.Token, command))
 					{
 						throw new NotImplementedException("DataFlowLogicsService.OnPreparedCommand true Не удалось добавить.");
 					}
@@ -269,7 +268,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 				}
 				else
 				{
-					if (!_awaitingExecutionCommands.TryAdd(command.Header.Token, command))
+					if (!_awaitingExecutionCommands.TryAdd(command.Token, command))
 					{
 						throw new NotImplementedException("DataFlowLogicsService.OnPreparedCommand false Не удалось добавить.");
 					}
@@ -278,7 +277,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 			else
 			{
-				throw new NotImplementedException("DataFlowLogicsService.OnPreparedCommand Не удалось извлечь.");
+				//throw new NotImplementedException("DataFlowLogicsService.OnPreparedCommand Не удалось извлечь.");
 			}
 		}
 

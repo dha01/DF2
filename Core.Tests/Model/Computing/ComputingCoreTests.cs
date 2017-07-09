@@ -453,51 +453,38 @@ namespace CustomNamespace
 	public class CustomClass : ControlFunctionBase
 	{
 		[ControlFunction]
-		public void MyFunction(Var<int> a)
+		public void Fib(Var<int> a)
 		{
-			//Return(Iif(a == 1, Const(1), Exec<int>(""MyFunction"", a - 1) + Exec<int>(""MyFunction"", a - 1)));
-			Return(Iif(a == 1 | a == 2, Const(1), Exec<int>(""MyFunction"", a - 1) + Exec<int>(""MyFunction"", a - 2)));
-			
-			//var cond = a == 3;
-			//Return(Iif(cond, Const(3) + Const(3), Const(3) * Const(3)));
-			//Return(Any(If(cond, Const(2) + Const(2)), Else(cond, Const(3) * Const(3)));
-		//	Exec<int>(""MyFunction"", a - 1, Iif(a == 0, 1,))
-//Return(Iif(a == 0, 0, b + Exec<int>(""MyFunction"", a - 1, b)));
 
-			//var x2 = a + b + 1;
-			//var x1 = b * a + 1;
-			//var x3 = Any(x1, x2);
-			//Iif(x2 == 0, x2, x3)
+			//Return(Iif(a == 1 | a == 2, Const(1), Exec<int>(""Fib"", a - 1) + Exec<int>(""Fib"", a - 2)));
 
-			//Return(Iif(a == 1, x2, x1));
-			//var x1 = (a + b) * (b + c);
+			var one = Const(1);
+			var two = Const(2);
+			Return(
+				Iif(
+					Exec<bool>(""Fib_labda_1"", a, one, two), 
+					Exec<int>(""Fib_labda_2"", one), 
+					Exec<int>(""Fib_labda_3"", a, one, two)
+				));
+		}
 
-			
-			//var x2 = x1 * x1;
-			//var x3 = x1 + x2;
-			//var x4 = x2 + x3;
+		[ControlFunction]
+		public void Fib_labda_1(Var<int> a, Var<int> b, Var<int> c)
+		{
+			Return(a == b | a == c);
+		}
 
-			//var result = x2 - x3 + 1 + x4;
-			/*
+		[ControlFunction]
+		public void Fib_labda_2(Var<int> a)
+		{
+			Return(a);
+		}
 
-			var x1 = Null();
-
-			x1.Value = Iif(a == 1, a + b, b + c);
-			If(a == 1);
-			{
-				x1.Value = a + b;
-			}
-			Else();
-			{
-				x1.Value = b + c;
-			}
-			EndIf();
-
-
-			//Return(Any(x1, x1', x1'));
-			Return(x1);
-			*/
-	    }
+		[ControlFunction]
+		public void Fib_labda_3(Var<int> a, Var<int> b, Var<int> c)
+		{
+			Return(Exec<int>(""Fib"", a - b) + Exec<int>(""Fib"", a - c));
+		}
 	}
 }");
 		[ClassInitialize]
@@ -513,15 +500,32 @@ namespace CustomNamespace
 			//	computing_core.AddAssembly(@"F:\Main Folder\Аспирантура\Диссертация\Program\DF2\SimpleMethods\bin\Debug\netcoreapp1.1\SimpleMethods.dll");
 
 
-			var text = GetText(assembly, "CustomNamespace.CustomClass.MyFunction");
+			var text = GetText(assembly, "CustomNamespace.CustomClass.Fib");
+			var text1 = GetText(assembly, "CustomNamespace.CustomClass.Fib_labda_1");
+			var text2 = GetText(assembly, "CustomNamespace.CustomClass.Fib_labda_2");
+			var text3 = GetText(assembly, "CustomNamespace.CustomClass.Fib_labda_3");
 			//var new_text = GetNewText(assembly, "CustomNamespace.CustomClass.MyFunction");
 
+			var count = 10;
 
-			var result = computing_core.Exec("CustomNamespace.CustomClass.MyFunction", 1, 2, 3);
-			result.Wait(10000);
-			var x = result.Result;
+			Task<DataCell>[] tasks = new Task<DataCell>[count + 1];
+			int[] results = new int[count + 1];
 
-			Assert.Fail(result.Result.Data.ToString());
+			for (int i = 0; i < count; i++)
+			{
+				var result = computing_core.Exec("CustomNamespace.CustomClass.Fib", 15);
+				//	result.Wait(15000);
+				tasks[i] = result;
+				//GC.Collect(2);
+			}
+
+			for (int i = 0; i < count; i++)
+			{
+				tasks[i].Wait(15000);
+				results[i] = (int)tasks[i].Result.Data;
+			}
+
+			//Assert.Fail(result.Result.Data.ToString());
 		}
 
 		private int fib(int a)
@@ -559,7 +563,7 @@ namespace CustomNamespace
 		{
 			//Meth();
 
-			GC.Collect(2);
+			//GC.Collect(2);
 
 			var text = GetText(assembly, "CustomNamespace.CustomClass.MyFunction");
 			//var new_text = GetNewText(assembly, "CustomNamespace.CustomClass.MyFunction");
@@ -634,7 +638,7 @@ namespace CustomNamespace
 			}
 
 			var in_index = 1;
-			var text = $@"{code.Header.Token}({string.Join(", ", arr.Where(x => x.Contains("InputData")).Select(y => $"InputData{in_index++}"))})
+			var text = $@"{code.Token}({string.Join(", ", arr.Where(x => x.Contains("InputData")).Select(y => $"InputData{in_index++}"))})
 {{
 	{string.Join("\n	", arr)}
 }}";

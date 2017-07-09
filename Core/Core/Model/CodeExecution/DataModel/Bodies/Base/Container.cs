@@ -5,6 +5,9 @@ namespace Core.Model.CodeExecution.DataModel.Bodies.Base
 	public interface IContainer
 	{
 		InvokeHeader Header { get; set; }
+
+
+		string Token { get; }
 	}
 }
 

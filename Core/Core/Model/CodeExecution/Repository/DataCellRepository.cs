@@ -10,15 +10,15 @@ namespace Core.Model.CodeExecution.Repository
 	{
 		protected override void AddConteiner(DataCell conteiner)
 		{
-			if (_items.ContainsKey(conteiner.Header.Token))
+			if (_items.ContainsKey(conteiner.Token))
 			{
-				var item = _items[conteiner.Header.Token];
+				var item = _items[conteiner.Token];
 				item.Data = conteiner.Data;
 				item.HasValue = conteiner.HasValue;
 			}
 			else
 			{
-				_items[conteiner.Header.Token] = conteiner;
+				_items[conteiner.Token] = conteiner;
 			}
 		}
 

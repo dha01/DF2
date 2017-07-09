@@ -38,27 +38,27 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 
 		private void AddCommandToPreparing(Command new_command)
 		{
-			if (_preparingCommands.TryAdd(new_command.Header.Token, new_command))
+			if (_preparingCommands.TryAdd(new_command.Token, new_command))
 			{
 				//throw new NotImplementedException("PreparationCommandService.PrepareCommand не удалось добавить.");
 			}
 
 			foreach (var input_data in new_command.InputData)
 			{
-				if (_dataLinksWithCommands.ContainsKey(input_data.Header.Token))
+				if (_dataLinksWithCommands.ContainsKey(input_data.Token))
 				{
-					_dataLinksWithCommands[input_data.Header.Token].Add(new_command.Header.Token);
+					_dataLinksWithCommands[input_data.Token].Add(new_command.Token);
 				}
 				else
 				{
-					_dataLinksWithCommands[input_data.Header.Token] = new List<string>() { new_command.Header.Token };
+					_dataLinksWithCommands[input_data.Token] = new List<string>() { new_command.Token };
 				}
 			}
 		}
 
 		private DataCell GetOutputData(DataCellHeader data_cell_header)
 		{
-			var output_data = _dataCellRepository.Get(new[] { data_cell_header }).FirstOrDefault();
+			var output_data = _dataCellRepository.Get(data_cell_header.Token).FirstOrDefault();
 			if (output_data == null)
 			{
 				output_data = new DataCell()
@@ -75,7 +75,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 
 		private DataCell GetDataCell(DataCellHeader data_cell_header)
 		{
-			var data_cell = _dataCellRepository.Get(new[] { data_cell_header }).FirstOrDefault();
+			var data_cell = _dataCellRepository.Get(data_cell_header.Token).FirstOrDefault();
 			if (data_cell == null)
 			{
 				return new DataCell()
@@ -259,7 +259,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		{
 			if (_preparingCommands.TryGetValue(command_token, out Command command))
 			{
-				command.InputData = _dataCellRepository.Get(command.InputData.Select(x => (DataCellHeader)x.Header)).ToList();
+				command.InputData = _dataCellRepository.Get(command.InputData.Select(x => x.Token).ToArray()).ToList();
 
 				if (command.Function != null)
 				{
@@ -314,7 +314,10 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 				}
 				else
 				{
-					//_waitConditionCommands.TryRemove(command_token, out CommandHeader token);
+					if (command_header.ConditionDataHeaders.Count <= 1)
+					{
+						_waitConditionCommands.TryRemove(command_token, out CommandHeader token);
+					}
 				}
 			}
 		}
@@ -338,7 +341,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 
 		public void OnFunctionReady(FunctionHeader function_header)
 		{
-			var function = _functionRepository.Get(new[] { function_header }).FirstOrDefault();
+			var function = _functionRepository.Get(function_header.Token).FirstOrDefault();
 			if (function == null)
 			{
 				_functionRepository.Subscribe(new[] { function_header }, OnFunctionReady);

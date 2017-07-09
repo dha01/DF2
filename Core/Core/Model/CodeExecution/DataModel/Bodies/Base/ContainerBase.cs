@@ -6,9 +6,6 @@ namespace Core.Model.CodeExecution.DataModel.Bodies.Base
 	{
 		public virtual InvokeHeader Header { get; set; }
 
-		public T GetHeader<T>() where T : InvokeHeader
-		{
-			return (T) Header;
-		}
+		public string Token => Header.Token;
 	}
 }

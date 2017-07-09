@@ -134,11 +134,11 @@ namespace Core.Model.DataFlowLogics.Logger
 				/*current.InputDataNames = command.InputData.Select(x => x.Header.CallStack.Last()).ToList();
 				current.OutputDataName = command.OutputData.Header.CallStack.Last();
 				current.FunctionName = command.Function.GetHeader<FunctionHeader>().CallstackToString(".");*/
-				if (command.GetHeader<InvokeHeader>().CallStack.Last().StartsWith("User1.BasicFunctions.ControlCallFunction2"))
+				if (command.Header.CallStack.Last().StartsWith("User1.BasicFunctions.ControlCallFunction2"))
 				{
 					//var c = 2;
 				}
-				var exist = current.Childs.FirstOrDefault(x => x.LvlName.Equals(command.GetHeader<InvokeHeader>().CallStack.Last()));
+				var exist = current.Childs.FirstOrDefault(x => x.LvlName.Equals(command.Header.CallStack.Last()));
 				FunctionCall new_child;
 				if(exist == null)
 				{
@@ -146,11 +146,11 @@ namespace Core.Model.DataFlowLogics.Logger
 					{
 						CallDateTime = new_command.DateTime,
 						Lvl = current.Lvl + 1,
-						CallStack = command.GetHeader<InvokeHeader>().CallStack.ToList(),
+						CallStack = command.Header.CallStack.ToList(),
 						InputDataNames = command.InputData, //command.InputData.Select(x => x.Header.CallStack.Last()).ToList(),
 						OutputDataName = command.OutputData,//command.OutputData.Header.CallStack.Last(),
-						FunctionName = command.Function.Header.Token,
-						LvlName = command.GetHeader<InvokeHeader>().CallStack.Last(),
+						FunctionName = command.Function.Token,
+						LvlName = command.Header.CallStack.Last(),
 						Childs = new List<FunctionCall>(),
 						Command = new_command.Command
 					};
@@ -159,10 +159,10 @@ namespace Core.Model.DataFlowLogics.Logger
 				else
 				{
 					new_child = exist;
-					new_child.FunctionName = command.Function.Header.Token;
+					new_child.FunctionName = command.Function.Token;
 					new_child.InputDataNames = command.InputData; //command.InputData.Select(x => x.Header.CallStack.Last()).ToList();
 					new_child.OutputDataName = command.OutputData;//command.OutputData.Header.CallStack.Last();
-					new_child.CallStack = command.GetHeader<InvokeHeader>().CallStack.ToList();
+					new_child.CallStack = command.Header.CallStack.ToList();
 				}
 				
 				/*

@@ -47,7 +47,7 @@ namespace Core.Model.CodeExecution.Service.Computing
 
 			foreach (var data_cell_header in command_header.InputDataHeaders)
 			{
-				var data = _dataCellRepository.Get(new[] { data_cell_header }).FirstOrDefault();
+				var data = _dataCellRepository.Get(data_cell_header.Token).FirstOrDefault();
 
 				if (data != null)
 				{
@@ -59,7 +59,7 @@ namespace Core.Model.CodeExecution.Service.Computing
 				}
 			}
 
-			var output_data = _dataCellRepository.Get(new[] { command_header.OutputDataHeader }).FirstOrDefault();
+			var output_data = _dataCellRepository.Get(command_header.OutputDataHeader.Token).FirstOrDefault();
 
 			if (output_data == null)
 			{
@@ -72,7 +72,7 @@ namespace Core.Model.CodeExecution.Service.Computing
 				};
 			}
 
-			var function = _functionRepository.Get(new[] { command_header.FunctionHeader }).FirstOrDefault();
+			var function = _functionRepository.Get(command_header.FunctionHeader.Token).FirstOrDefault();
 
 			if (empty_input_data.Any() || function == null)
 			{

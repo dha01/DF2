@@ -78,7 +78,7 @@ namespace Core.Model.CodeExecution.Service.Computing
 
 		public void OnNewCommand(InvokeHeader invoke_header)
 		{
-			var command_header = _commandRepository.Get(new[] { invoke_header }).First();
+			var command_header = _commandRepository.Get(invoke_header.Token).First();
 			
 			_functionRepository.AddHeaders(new [] { command_header.FunctionHeader });
 			_dataCellRepository.AddHeaders(new [] { command_header.OutputDataHeader });

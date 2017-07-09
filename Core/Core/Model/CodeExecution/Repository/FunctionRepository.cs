@@ -41,7 +41,7 @@ namespace Core.Model.CodeExecution.Repository
 						{
 							Header = new DataCellHeader()
 							{
-								CallStack = new [] { conteiner.Header.Token, $"const_{i}" },
+								CallStack = new [] { conteiner.Token, $"const_{i}" },
 							},
 							HasValue = true,
 							Data = constant
@@ -55,7 +55,7 @@ namespace Core.Model.CodeExecution.Repository
 				//if (send_subsctibers)
 				//{
 				List<Action<FunctionHeader>> actions;
-				_subscribes.TryRemove(conteiner.Header.Token, out actions);
+				_subscribes.TryRemove(conteiner.Token, out actions);
 				if (actions != null)
 				{
 					Parallel.Invoke(actions.Select(x => new Action(() => { x.Invoke((FunctionHeader)conteiner.Header); })).ToArray());
