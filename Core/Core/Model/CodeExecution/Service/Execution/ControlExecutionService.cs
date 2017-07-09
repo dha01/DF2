@@ -87,7 +87,6 @@ namespace Core.Model.CodeExecution.Service.Execution
 			{
 				var new_command_header = new CommandHeader
 				{
-					Owners = new List<Owner>(),
 					CallStack = callstack.Concat(new[] { $"{command_template.FunctionHeader.Token}<{command_template.OutputDataId}>" }).ToArray(),
 					InputDataHeaders = command_template.InputDataIds.Select(x => (DataCellHeader)tmp_array[x].Header).ToList(),
 					OutputDataHeader = (DataCellHeader)tmp_array[command_template.OutputDataId].Header,

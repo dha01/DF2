@@ -103,7 +103,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 				CommandHeader header;
 				if (_allCommandHeaders.TryGetValue(command_header.Token, out header))
 				{
-					header.AddOwners(command_header.Owners);
+					//header.AddOwners(command_header.Owners);
 				}
 				else
 				{

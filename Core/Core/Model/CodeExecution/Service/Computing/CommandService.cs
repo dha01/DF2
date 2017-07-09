@@ -214,14 +214,14 @@ namespace Core.Model.CodeExecution.Service.Computing
 			{
 				Function function = null;
 
-				foreach (var owner in function_header.Owners)
+				/*foreach (var owner in function_header.Owners)
 				{
 					function = GetFunctionRequest(function_header, owner.IpAddress);
 					if (function != null)
 					{
 						break;
 					}
-				}
+				}*/
 
 				if (function != null)
 				{
@@ -230,11 +230,11 @@ namespace Core.Model.CodeExecution.Service.Computing
 				}
 				else
 				{
-					if (function_header.Owners.Any())
+					/*if (function_header.Owners.Any())
 					{
 						// TODO: Нужно что то делать если ни у кого из владельцев нет нужных данных.
 						throw new NotImplementedException("Нужно что то делать если ни у кого из владельцев нет нужных данных.");
-					}
+					}*/
 				}
 			}
 		}
