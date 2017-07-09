@@ -37,17 +37,12 @@ namespace Core.Model.CodeExecution.Repository
 					int i = 0;
 					foreach (var constant in control_function.Constants)
 					{
-						var callstack = new List<string>();
-						callstack.Add(conteiner.GetHeader<FunctionHeader>().CallstackToString("."));
-						callstack.Add(string.Format("const_{0}", i));
-
 						_dataCellRepository.Add(new []{ new DataCell()
 						{
 							Header = new DataCellHeader()
 							{
-								CallStack = callstack.ToArray(),
+								CallStack = new [] { conteiner.Header.Token, $"const_{i}" },
 							},
-							//HasValue = true,
 							HasValue = true,
 							Data = constant
 						} });

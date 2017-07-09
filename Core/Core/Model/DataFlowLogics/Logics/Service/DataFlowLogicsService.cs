@@ -189,12 +189,10 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		public void OnExecutedCommand(Command command)
 		{
 			//Console.WriteLine("! OnExecutedCommand {0}", command.Header.CallstackToString());
-			
-			var key = command.Header.CallstackToString();
 
-			if (_executingCommands.TryRemove(key, out Command removed_command))
+			if (_executingCommands.TryRemove(command.Header.Token, out Command removed_command))
 			{
-				if (!_executedCommands.TryAdd(key, removed_command))
+				if (!_executedCommands.TryAdd(command.Header.Token, removed_command))
 				{
 					throw new NotImplementedException("DataFlowLogicsService.OnExecutedCommand Не удалось добавить.");
 				}
@@ -202,7 +200,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 			else
 			{
-				if (_executingCommands.ContainsKey(key))
+				if (_executingCommands.ContainsKey(command.Header.Token))
 				{
 					OnExecutedCommand(command);
 					return;
@@ -241,7 +239,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 			else
 			{
-				_executingCommands.TryAdd(key, command);
+				_executingCommands.TryAdd(command.Header.Token, command);
 			}
 		}
 

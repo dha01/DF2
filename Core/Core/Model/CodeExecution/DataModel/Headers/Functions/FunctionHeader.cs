@@ -29,11 +29,10 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Functions
 			{
 				if (string.IsNullOrEmpty(_token))
 				{
-					_token = CallstackToString(".");
+					_token = string.Join(".", CallStack);
 				}
 				return _token;
 			}
-			set { _token = value; }
 		}
 
 		public string Name { get; set; }

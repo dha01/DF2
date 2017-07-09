@@ -18,17 +18,10 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Base
 			{
 				if (string.IsNullOrEmpty(_token))
 				{
-					_token = CallstackToString();
+					_token = string.Join("/", CallStack);
 				}
 				return _token;
 			}
-			set { _token = value; }
-		}
-
-
-		public string CallstackToString(string separator = "/")
-		{
-			return string.Join(separator, CallStack);
 		}
 
 		public bool Equals(InvokeHeader obj)
