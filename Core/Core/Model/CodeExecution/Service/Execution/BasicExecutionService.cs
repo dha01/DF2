@@ -6,6 +6,7 @@ using Core.Model.CodeCompiler.Code;
 using Core.Model.CodeExecution.DataModel.Bodies.Commands;
 using Core.Model.CodeExecution.DataModel.Bodies.Data;
 using Core.Model.CodeExecution.DataModel.Bodies.Functions;
+using Core.Model.CodeExecution.DataModel.Headers.Base;
 
 namespace Core.Model.CodeExecution.Service.Execution
 {
@@ -14,7 +15,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 	/// </summary>
 	public class BasicExecutionService : IExecutionService
 	{
-		public virtual void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, string[] callstack = null)
+		public virtual void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, Token? callstack = null)
 		{
 			var func = ((BasicFunction) function).GetModel();
 			var data = func.Invoke(input_data.ToArray());

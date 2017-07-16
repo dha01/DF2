@@ -41,7 +41,7 @@ namespace Core.Model.CodeExecution.Repository
 						{
 							Header = new DataCellHeader()
 							{
-								CallStack = new [] { (string)conteiner.Token, $"const_{i}" },
+								Token = conteiner.Token.Next($"const_{i}")
 							},
 							HasValue = true,
 							Data = constant

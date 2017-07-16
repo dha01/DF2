@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Core.Model.CodeExecution.DataModel.Bodies.Commands;
 using Core.Model.CodeExecution.DataModel.Bodies.Data;
 using Core.Model.CodeExecution.DataModel.Bodies.Functions;
+using Core.Model.CodeExecution.DataModel.Headers.Base;
 
 namespace Core.Model.CodeExecution.Service.Execution
 {
@@ -23,7 +24,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 			}
 		}
 
-		public void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, string[] callstack = null)
+		public void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, Token? callstack = null)
 		{
 			if (function.GetType() == typeof(BasicFunction))
 			{
@@ -45,7 +46,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 			}
 		}
 
-		public void Execute(BasicFunction function, IEnumerable<DataCell> input_data, DataCell output, string[] callstack = null)
+		public void Execute(BasicFunction function, IEnumerable<DataCell> input_data, DataCell output, Token? callstack = null)
 		{
 			if (_availableExecutionServices.ContainsKey(typeof (BasicExecutionService)))
 			{
@@ -57,7 +58,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 			}
 		}
 
-		public void Execute(ControlFunction function, IEnumerable<DataCell> input_data, DataCell output, string[] callstack = null)
+		public void Execute(ControlFunction function, IEnumerable<DataCell> input_data, DataCell output, Token? callstack = null)
 		{
 			if (_availableExecutionServices.ContainsKey(typeof(BasicExecutionService)))
 			{
@@ -69,7 +70,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 			}
 		}
 
-		public void Execute(CSharpFunction function, IEnumerable<DataCell> input_data, DataCell output, string[] callstack = null)
+		public void Execute(CSharpFunction function, IEnumerable<DataCell> input_data, DataCell output, Token? callstack = null)
 		{
 			if (_availableExecutionServices.ContainsKey(typeof(BasicExecutionService)))
 			{

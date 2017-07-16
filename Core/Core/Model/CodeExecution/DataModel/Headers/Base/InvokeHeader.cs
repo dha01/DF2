@@ -117,7 +117,7 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Base
 		}
 		public Token Next(string value,TokenType type = TokenType.Path)
 		{
-			return $"{GetSeparator(type)}value";
+			return $"{_value}{GetSeparator(type)}{value}";
 		}
 
 		public IEnumerable<string> ToEnumerable(TokenType type = TokenType.Path)
@@ -151,27 +151,7 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Base
 	/// </summary>
 	public class InvokeHeader : Header
 	{
-		public virtual string[] CallStack { get; set; }
-
-		protected Token? _token;
-
-		public virtual Token Token
-		{
-			get
-			{
-				if (_token == null)
-				{
-					_token = string.Join("/", CallStack);
-				}
-				return _token.Value;
-			}
-			set { _token = value; }
-		}
-
-		public bool Equals(InvokeHeader obj)
-		{
-			return CallStack.SequenceEqual(obj.CallStack);
-		}
+		public virtual Token Token { get; set; }
 	}
 }
 

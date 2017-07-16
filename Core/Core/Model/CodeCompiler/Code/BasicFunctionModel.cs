@@ -210,7 +210,7 @@ namespace Core.Model.CodeCompiler.Code
 				Header = new BasicFunctionHeader()
 				{
 					Name = name,
-					CallStack = new [] { "BasicFunctions", name },
+					Token = $"BasicFunctions.{name}",
 					Id = id,
 					Condition = condition
 				}

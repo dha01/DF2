@@ -40,7 +40,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 			_basicExecutionService = new BasicExecutionService();
 		}
 
-		public virtual void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, string[] callstack = null)
+		public virtual void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, Token? callstack = null)
 		{
 			var control_function = (ControlFunction)function;
 			var input_data_count = input_data.Count();
@@ -63,7 +63,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 				{
 					Header = new DataCellHeader()
 					{
-						CallStack = callstack.Concat(new[] { (string)function.Token, $"tmp_var_{i + count}" }).ToArray()
+						Token = new Token(string.Join("/", callstack)).Next(function.Token).Next($"tmp_var_{i + count}")
 					},
 					Data = null,
 					HasValue = null
@@ -78,7 +78,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 				{
 					Header = new DataCellHeader()
 					{
-						CallStack = new []{ (string)function.Token, $"const_{i}" }
+						Token = function.Token.Next($"const_{i}")
 					},
 					Data = control_function.Constants[i],
 					HasValue = true
@@ -130,7 +130,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 			{
 				var new_command_header = new CommandHeader
 				{
-					CallStack = callstack.Concat(new[] { $"{command_template.FunctionHeader.Token}<{command_template.OutputDataId}>" }).ToArray(),
+					Token = $"{string.Join("/", callstack)}/{command_template.FunctionHeader.Token}<{command_template.OutputDataId}>",
 					InputDataHeaders = command_template.InputDataIds.Select(x => (DataCellHeader)tmp_array[x].Header).ToList(),
 					OutputDataHeader = (DataCellHeader)tmp_array[command_template.OutputDataId].Header,
 					TriggeredCommands = command_template.TriggeredCommandIds.Select(x => command_list[x].Header).ToList(),

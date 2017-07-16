@@ -4,6 +4,7 @@ using System.Reflection;
 using Core.Model.CodeExecution.DataModel.Bodies.Commands;
 using Core.Model.CodeExecution.DataModel.Bodies.Data;
 using Core.Model.CodeExecution.DataModel.Bodies.Functions;
+using Core.Model.CodeExecution.DataModel.Headers.Base;
 using Core.Model.CodeExecution.DataModel.Headers.Functions;
 using Core.Model.CodeExecution.Repository;
 
@@ -21,7 +22,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 			_functionRepository = function_repository;
 		}
 
-		public virtual void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, string[] callstack = null)
+		public virtual void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, Token? callstack = null)
 		{
 			var func = _functionRepository.Get<CSharpFunction>(new List<FunctionHeader>(){ (FunctionHeader)function.Header } ).FirstOrDefault();
 

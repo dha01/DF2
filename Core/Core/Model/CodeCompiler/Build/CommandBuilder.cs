@@ -74,7 +74,7 @@ namespace Core.Model.CodeCompiler.Build
 			{
 				FunctionName = name,
 				Name = name,
-				CallStack = list.ToArray()
+				Token = string.Join(".", list)
 			};
 		}
 
@@ -142,7 +142,7 @@ namespace Core.Model.CodeCompiler.Build
 				HasValue = true,
 				Header = new DataCellHeader()
 				{
-					CallStack = string.Format("{0}/InputData{1}", str, index++).Split('/'),
+					Token = $"{str}/InputData{index++}"
 				}
 			}).ToList();
 		}

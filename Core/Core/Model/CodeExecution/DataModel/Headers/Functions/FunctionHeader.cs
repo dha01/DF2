@@ -22,18 +22,14 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Functions
 			var split = name.Split('.');
 			return CommandBuilder.BuildHeader(split.Last(), split.Take(split.Length - 1).ToList());
 		}
-		
+		/*
 		public override Token Token
 		{
 			get
 			{
-				if (_token == null)
-				{
-					_token = string.Join(".", CallStack);
-				}
 				return _token.Value;
 			}
-		}
+		}*/
 
 		public string Name { get; set; }
 

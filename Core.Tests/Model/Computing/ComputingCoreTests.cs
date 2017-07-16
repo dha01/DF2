@@ -551,7 +551,7 @@ namespace CustomNamespace
 					Header = new DataCellHeader
 					{
 						//HasValue = new Dictionary<Owner, bool>(),
-						CallStack = new [] { Guid.NewGuid().ToString() },
+						Token = Guid.NewGuid().ToString(),
 						//Owners = new List<Owner>()
 					}
 				});

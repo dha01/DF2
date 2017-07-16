@@ -84,7 +84,7 @@ namespace Core.Model.CodeExecution.Service.Computing
 			{
 				Header = new InvokeHeader()
 				{
-					CallStack = command_header.Token.ToArray()
+					Token = command_header.Token
 				},
 				Function = function,
 				InputData = input_data,
