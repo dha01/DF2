@@ -5,6 +5,7 @@ using Core.Model.CodeCompiler.Code;
 using Core.Model.CodeExecution.DataModel.Bodies.Commands;
 using Core.Model.CodeExecution.DataModel.Bodies.Data;
 using Core.Model.CodeExecution.DataModel.Bodies.Functions;
+using Core.Model.CodeExecution.DataModel.Headers.Base;
 using Core.Model.CodeExecution.DataModel.Headers.Commands;
 using Core.Model.CodeExecution.DataModel.Headers.Data;
 using Core.Model.CodeExecution.DataModel.Headers.Functions;
@@ -45,6 +46,8 @@ namespace Core.Model.CodeExecution.Service.Execution
 			var input_data_count = input_data.Count();
 			var tmp_count = control_function.Commands.Count() + input_data_count/* + 1*/;
 
+		//	var token = new Token(string.Join("/", callstack.ToList()));
+
 			// Локальный массив временных данных функции. Добавляем выходные данные нулевым элементом.
 			var tmp_array = new List<DataCell>(tmp_count) { output };
 
@@ -60,7 +63,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 				{
 					Header = new DataCellHeader()
 					{
-						CallStack = callstack.Concat(new[] { function.Token, $"tmp_var_{i + count}" }).ToArray()
+						CallStack = callstack.Concat(new[] { (string)function.Token, $"tmp_var_{i + count}" }).ToArray()
 					},
 					Data = null,
 					HasValue = null
@@ -75,7 +78,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 				{
 					Header = new DataCellHeader()
 					{
-						CallStack = new []{ function.Token, $"const_{i}" }
+						CallStack = new []{ (string)function.Token, $"const_{i}" }
 					},
 					Data = control_function.Constants[i],
 					HasValue = true
@@ -88,6 +91,8 @@ namespace Core.Model.CodeExecution.Service.Execution
 
 			if (command_list.All(x => x.FunctionHeader is BasicFunctionHeader))
 			{
+				// Исполняем базовые команды.
+
 				var command_template = command_list.FirstOrDefault(
 					y => tmp_array[y.OutputDataId].HasValue == null &&
 						y.ConditionId.Select(x => tmp_array[x]).All(x => x.HasValue != null && x.HasValue.Value) &&
@@ -132,27 +137,6 @@ namespace Core.Model.CodeExecution.Service.Execution
 					FunctionHeader = command_template.FunctionHeader,
 					ConditionDataHeaders = command_template.ConditionId.Select(x => (DataCellHeader)tmp_array[x].Header).ToList()
 				};
-				/*
-				if (command_template.FunctionHeader is BasicFunctionHeader &&
-				    command_template.ConditionId.Select(x => tmp_array[x]).All(x => x.HasValue != null && x.HasValue.Value) &&
-					command_template.InputDataIds.Select(x => tmp_array[x]).All(x => x.HasValue != null && x.HasValue.Value))
-				{
-					//((BasicFunctionHeader)command_template.FunctionHeader).
-					var func = BasicFunctionModel.AllMethods[((BasicFunctionHeader) command_template.FunctionHeader).Name].BasicFunction;
-
-					_basicExecutionService.Execute(func, command_template.InputDataIds.Select(x => tmp_array[x]), tmp_array[command_template.OutputDataId]);
-
-					Parallel.Invoke(() => { _dataFlowLogicsService.OnExecutedCommand(new Command
-						{
-							Header = new_command_header,
-							InputData = command_template.InputDataIds.Select(x => tmp_array[x]).ToList(),
-							OutputData = tmp_array[command_template.OutputDataId],
-							TriggeredCommands = new List<CommandHeader>(),
-							ConditionData = command_template.ConditionId.Select(x => tmp_array[x]).ToList(),
-							Function = func
-						});
-					});
-				}*/
 
 				Parallel.Invoke(() => { _dataFlowLogicsService.AddNewCommandHeader(new_command_header); });
 			}

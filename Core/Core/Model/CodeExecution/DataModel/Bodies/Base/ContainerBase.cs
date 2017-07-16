@@ -6,6 +6,11 @@ namespace Core.Model.CodeExecution.DataModel.Bodies.Base
 	{
 		public virtual InvokeHeader Header { get; set; }
 
-		public string Token => Header.Token;
+		public Token Token => Header.Token;
+
+		public IContainer Clone()
+		{
+			return (IContainer)MemberwiseClone();
+		}
 	}
 }

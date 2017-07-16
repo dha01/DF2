@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Core.Model.CodeExecution.DataModel;
 using Core.Model.CodeExecution.DataModel.Bodies.Base;
@@ -18,8 +20,119 @@ namespace Core.Model.CodeExecution.Repository
 		where T_conteiner : IContainer 
 		where T_header : InvokeHeader
 	{
-		protected ConcurrentDictionary<string, T_conteiner> _items;
-		protected ConcurrentDictionary<string, T_header> _itemHeaders;
+		protected class Tree
+		{
+			public string Name { get; set; }
+			public ConcurrentDictionary<string, T_conteiner> _values = new ConcurrentDictionary<string, T_conteiner>();
+			public ConcurrentDictionary<string, Tree> _items = new ConcurrentDictionary<string, Tree>();
+
+			public Tree(string lvl_name)
+			{
+				Name = lvl_name;
+			}
+
+			public T_conteiner Get(IEnumerable<string> path)
+			{
+				var part = path.First();
+
+				if (path.Count() > 1)
+				{
+					if (_items.TryGetValue(part, out Tree tree))
+					{
+						var result = tree.Get(path.Skip(1));
+						return result;
+					}
+					else
+					{
+						if (_items.ContainsKey(part))
+						{
+							var c = 5;
+						}
+					}
+				}
+				else
+				{
+					if (_values.TryGetValue(part, out T_conteiner value))
+					{
+						return value;
+					}
+					else
+					{
+						if (_values.ContainsKey(part))
+						{
+							var c = 5;
+						}
+					}
+				}
+
+				return default(T_conteiner);
+			}
+
+			public void Delete(IEnumerable<string> path)
+			{
+				var part = path.First();
+
+				if (_items.TryGetValue(part, out Tree tree))
+				{
+					var count = path.Count();
+					if (path.Count() > 1)
+					{
+						tree.Delete(path.Skip(1));
+					}
+					else
+					{
+						_items.TryRemove(part, out tree);
+					}
+				}
+				if (_values.TryGetValue(part, out T_conteiner cont))
+				{
+					if (path.Count() > 1)
+					{
+						tree.Delete(path.Skip(1));
+					}
+					else
+					{
+						_values.TryRemove(part, out cont);
+					}
+				}
+			}
+
+			public void Add(T_conteiner item, IEnumerable<string> path = null)
+			{
+				path = path ?? item.Token.ToEnumerable();
+
+				var part = path.First();
+
+				if (path.Count() > 1)
+				{
+					if (!_items.TryGetValue(part, out Tree tree))
+					{
+						tree = new Tree(part);
+						if (!_items.TryAdd(part, tree))
+						{
+							if (!_items.TryGetValue(part, out tree))
+							{
+								var c = 6;
+							}
+						}
+					}
+					tree.Add(item, path.Skip(1));
+				}
+				else
+				{
+					//item.Header.Token = null;
+					//item.Header.CallStack = null;
+					if (!_values.TryAdd(part, item))
+					{
+						var c = 5;
+					}
+				}
+			}
+		}
+		protected Tree _itemsTree = new Tree("root");
+
+		//protected ConcurrentDictionary<string, T_conteiner> _items;
+		//protected ConcurrentDictionary<string, T_header> _itemHeaders;
 
 		protected ConcurrentDictionary<string, List<Action<T_header>>> _subscribes;
 
@@ -31,34 +144,35 @@ namespace Core.Model.CodeExecution.Repository
 
 		public ContainerRepositoryBase()
 		{
-			_items = new ConcurrentDictionary<string, T_conteiner>();
-			_itemHeaders = new ConcurrentDictionary<string, T_header>();
+			//_items = new ConcurrentDictionary<string, T_conteiner>();
+			//_itemHeaders = new ConcurrentDictionary<string, T_header>();
 			_subscribes = new ConcurrentDictionary<string, List<Action<T_header>>>();
 			_unionSubscribe = new List<Action<T_header>>();
 		}
 
 		protected virtual void AddConteiner(T_conteiner conteiner)
 		{
-			if (_items.ContainsKey(conteiner.Token))
+			if (IsItemExists(conteiner.Token))
 			{
 				//_items[key].Header.AddOwners(conteiner.Header.Owners);
 			}
 			else
 			{
-				_items[conteiner.Token] = conteiner;
+				//_items[conteiner.Token] = conteiner;
+				_itemsTree.Add(conteiner);
 			}
 		}
 
 		protected virtual void AddHeader(T_header header)
 		{
-			if (_itemHeaders.ContainsKey(header.Token))
+			/*if (_itemHeaders.ContainsKey(header.Token))
 			{
 				//_itemHeaders[key].AddOwners(header.Owners);
 			}
 			else
 			{
 				_itemHeaders[header.Token] = header;
-			}
+			}*/
 		}
 
 		public virtual void Add(IEnumerable<T_conteiner> conteiners, bool send_subsctibers = true)
@@ -75,13 +189,21 @@ namespace Core.Model.CodeExecution.Repository
 				//if (send_subsctibers)
 				//{
 					List<Action<T_header>> actions;
-					_subscribes.TryRemove(conteiner.Token, out actions);
+					_subscribes.TryGetValue(conteiner.Token, out actions);
 					if (actions != null)
 					{
-						Parallel.Invoke(actions.Select(x => new Action(() => { x.Invoke((T_header) conteiner.Header); })).ToArray());
+						Parallel.Invoke(actions.Select(x => new Action(() =>
+						{
+							x.Invoke((T_header) conteiner.Header);
+							//_subscribes.TryRemove(conteiner.Token, out actions);
+						})).ToArray());
 					}
 
-					Parallel.Invoke(_unionSubscribe.Select(x => new Action(() => { x.Invoke((T_header)conteiner.Header); })).ToArray());
+					Parallel.Invoke(_unionSubscribe.Select(x => new Action(() =>
+					{
+						x.Invoke((T_header)conteiner.Header);
+						//_subscribes.TryRemove(conteiner.Token, out actions);
+					})).ToArray());
 				//}
 				//Console.WriteLine(string.Format("ContainerRepositoryBase Add Callstack={0}", string.Join("/", conteiner.Header.CallStack)));
 			}
@@ -95,19 +217,28 @@ namespace Core.Model.CodeExecution.Repository
 		public virtual IEnumerable<T_conteiner> Get(IEnumerable<T_header> headers)
 		{
 			var item = default(T_conteiner);
-			return
-				from header in headers
-				where _items.TryGetValue(header.Token, out item)
-				select item;
+			return from header in headers
+				select _itemsTree.Get(header.Token.ToEnumerable());
 		}
 
 		public virtual IEnumerable<T_conteiner> Get(params string[] tokens)
 		{
 			var item = default(T_conteiner);
-			return
-				from token in tokens
-				where _items.TryGetValue(token, out item)
-				select item;
+
+			var first = (from token in tokens
+				select _itemsTree.Get(token.Split('/'))).ToList();
+			
+		/*	var second = 
+				(from token in tokens
+				select _items.TryGetValue(token, out item) ? item : default(T_conteiner)).ToList();
+
+			if (first.Count(x => x != null) != second.Count(x => x != null))
+			{
+				// TODO: что то иногда не совпадает.
+				var t = 5;
+			}*/
+
+			return first;
 		}
 
 
@@ -115,15 +246,16 @@ namespace Core.Model.CodeExecution.Repository
 		{
 			foreach (var token in tokens)
 			{
-				_items.TryRemove(token, out T_conteiner container);
-				_itemHeaders.TryRemove(token, out T_header container_header);
+				_itemsTree.Delete(token.Trim('/').Split('/'));
+				//_items.TryRemove(token, out T_conteiner container);
+				//_itemHeaders.TryRemove(token, out T_header container_header);
 			}
 		}
 
 		public virtual void DeleteStartWith(params string[] tokens)
 		{
-			var deleted_keys = _items.Keys.ToList().Where(x => tokens.Any(y => x.StartsWith(y)));
-			Delete(deleted_keys.ToArray());
+			//var deleted_keys = _items.Keys.ToList().Where(x => tokens.Any(y => x.StartsWith(y)) && !_subscribes.ContainsKey(x));
+			Delete(tokens);
 		}
 
 		public virtual void AddHeaders(IEnumerable<T_header> headers)
@@ -132,13 +264,14 @@ namespace Core.Model.CodeExecution.Repository
 			foreach (var header in headers)
 			{
 				//var key = _itemHeaders.FirstOrDefault(x => x.Equals(header));
-				_itemHeaders[header.Token] = header;
+				//_itemHeaders[header.Token] = header;
 			}
 		}
 
 		protected virtual bool IsItemExists(string key)
 		{
-			return _items.ContainsKey(key);
+			//return _items.ContainsKey(key);
+			return _itemsTree.Get(key.Split('/')) != null;
 		}
 
 		public virtual void Subscribe(IEnumerable<T_header> headers, Action<T_header> callback)
@@ -175,8 +308,8 @@ namespace Core.Model.CodeExecution.Repository
 		{
 			return new ConteinerRepositoryInfo
 			{
-				ContainerCount = _items.Count,
-				ContainerHeaderCount = _itemHeaders.Count
+				//ContainerCount = _items.Count,
+				//ContainerHeaderCount = _itemHeaders.Count
 			};
 		}
 	}

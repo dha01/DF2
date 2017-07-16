@@ -127,18 +127,18 @@ namespace Core.Model.DataFlowLogics.Logger
 			var command = new_command.Command;
 			current = current ?? zeroLvl;
 
-			if (current.Lvl + 1 == command.Header.CallStack.Count())
+			if (current.Lvl + 1 == command.Header.Token.ToEnumerable().Count())
 			{
 				/*var call_stack = command.OutputData.Header.CallStack.Take(current.Lvl).ToList();
 				call_stack.Add(command.Function.GetHeader<FunctionHeader>().Name);*/
 				/*current.InputDataNames = command.InputData.Select(x => x.Header.CallStack.Last()).ToList();
 				current.OutputDataName = command.OutputData.Header.CallStack.Last();
 				current.FunctionName = command.Function.GetHeader<FunctionHeader>().CallstackToString(".");*/
-				if (command.Header.CallStack.Last().StartsWith("User1.BasicFunctions.ControlCallFunction2"))
+				if (command.Header.Token.Last().StartsWith("User1.BasicFunctions.ControlCallFunction2"))
 				{
 					//var c = 2;
 				}
-				var exist = current.Childs.FirstOrDefault(x => x.LvlName.Equals(command.Header.CallStack.Last()));
+				var exist = current.Childs.FirstOrDefault(x => x.LvlName.Equals(command.Header.Token.Last()));
 				FunctionCall new_child;
 				if(exist == null)
 				{
@@ -146,11 +146,11 @@ namespace Core.Model.DataFlowLogics.Logger
 					{
 						CallDateTime = new_command.DateTime,
 						Lvl = current.Lvl + 1,
-						CallStack = command.Header.CallStack.ToList(),
+						CallStack = command.Header.Token.ToList(),
 						InputDataNames = command.InputData, //command.InputData.Select(x => x.Header.CallStack.Last()).ToList(),
 						OutputDataName = command.OutputData,//command.OutputData.Header.CallStack.Last(),
 						FunctionName = command.Function.Token,
-						LvlName = command.Header.CallStack.Last(),
+						LvlName = command.Header.Token.Last(),
 						Childs = new List<FunctionCall>(),
 						Command = new_command.Command
 					};
@@ -162,7 +162,7 @@ namespace Core.Model.DataFlowLogics.Logger
 					new_child.FunctionName = command.Function.Token;
 					new_child.InputDataNames = command.InputData; //command.InputData.Select(x => x.Header.CallStack.Last()).ToList();
 					new_child.OutputDataName = command.OutputData;//command.OutputData.Header.CallStack.Last();
-					new_child.CallStack = command.Header.CallStack.ToList();
+					new_child.CallStack = command.Header.Token.ToList();
 				}
 				
 				/*
@@ -180,7 +180,7 @@ namespace Core.Model.DataFlowLogics.Logger
 			}
 
 			
-			var lvl_name = command.Header.CallStack.Skip(current.Lvl).Take(1).FirstOrDefault();
+			var lvl_name = command.Header.Token.Last();
 			var exists = current.Childs.FirstOrDefault(x => x.LvlName.Equals(lvl_name));
 
 			if (lvl_name.StartsWith("User1.BasicFunctions.ControlCallFunction2"))

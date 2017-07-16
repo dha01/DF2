@@ -10,25 +10,32 @@ namespace Core.Model.CodeExecution.Repository
 	{
 		protected override void AddConteiner(DataCell conteiner)
 		{
-			if (_items.ContainsKey(conteiner.Token))
+			var item = _itemsTree.Get(conteiner.Token.ToEnumerable());
+			if (/*_items.ContainsKey(conteiner.Token)*/ item != null)
 			{
-				var item = _items[conteiner.Token];
+				//var item = _itemsTree.Get(conteiner.Token.Split('/')); //_items[conteiner.Token];
 				item.Data = conteiner.Data;
 				item.HasValue = conteiner.HasValue;
 			}
 			else
 			{
-				_items[conteiner.Token] = conteiner;
+				//_items[conteiner.Token] = conteiner;
+				_itemsTree.Add(conteiner);
 			}
 		}
 
 		protected override bool IsItemExists(string key)
 		{
-			var item = _items[key];
-			return base.IsItemExists(key) && item.HasValue.HasValue && item.HasValue.Value;
+			if (!base.IsItemExists(key))
+			{
+				return false;
+			}
+
+			var item = _itemsTree.Get(key.Split('/'));// _items[key];
+			return item.HasValue.HasValue && item.HasValue.Value;
 		}
 
-		protected override void AddHeader(DataCellHeader header)
+		/*protected override void AddHeader(DataCellHeader header)
 		{
 			if (_itemHeaders.ContainsKey(header.Token))
 			{
@@ -38,6 +45,6 @@ namespace Core.Model.CodeExecution.Repository
 			{
 				_itemHeaders[header.Token] = header;
 			}
-		}
+		}*/
 	}
 }

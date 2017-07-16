@@ -7,7 +7,9 @@ namespace Core.Model.CodeExecution.DataModel.Bodies.Base
 		InvokeHeader Header { get; set; }
 
 
-		string Token { get; }
+		Token Token { get; }
+
+		IContainer Clone();
 	}
 }
 

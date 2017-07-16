@@ -509,7 +509,7 @@ namespace CustomNamespace
 			var count = 10;
 
 			Task<DataCell>[] tasks = new Task<DataCell>[count + 1];
-			int[] results = new int[count + 1];
+			int?[] results = new int?[count + 1];
 
 			for (int i = 0; i < count; i++)
 			{
@@ -521,8 +521,13 @@ namespace CustomNamespace
 
 			for (int i = 0; i < count; i++)
 			{
-				tasks[i].Wait(15000);
-				results[i] = (int)tasks[i].Result.Data;
+				tasks[i].Wait(20000);
+
+				if (tasks[i].Result != null)
+				{
+					results[i] = (int)tasks[i].Result.Data;
+				}
+				
 			}
 
 			//Assert.Fail(result.Result.Data.ToString());

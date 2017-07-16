@@ -188,7 +188,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		public void OnExecutedCommand(Command command)
 		{
 			//Console.WriteLine("! OnExecutedCommand {0}", command.Header.CallstackToString());
-			_dataCellRepository.Add(new []{ command.OutputData });
+			
 			if (_executingCommands.TryRemove(command.Token, out Command removed_command))
 			{
 				if (!_executedCommands.TryAdd(command.Token, removed_command))
@@ -213,11 +213,12 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 
 			if (!(command.Function is ControlFunction) || command.OutputData.HasValue.HasValue)
 			{
+				_dataCellRepository.Add(new[] { command.OutputData });
 				_preparationCommandService.OnDataReady(command.OutputData.Token);
 
-				if (command.OutputData.Token.EndsWith("/result"))
+				if (command.OutputData.Token.Last() == "result")
 				{
-					var path = command.OutputData.Token.Replace("result", "");
+					string path = command.OutputData.Token.Prev();
 					var key_list = _allCommandHeaders.Keys.ToList().Where(x => x.StartsWith(path));
 
 					foreach (var ke in key_list)

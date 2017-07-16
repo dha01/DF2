@@ -33,6 +33,11 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Commands
 
 		public virtual List<InvokeHeader> TriggeredCommands { get; set; }
 
+		public IContainer Clone()
+		{
+			return (IContainer)MemberwiseClone();
+		}
+
 	}
 }
 

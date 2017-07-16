@@ -23,15 +23,15 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Functions
 			return CommandBuilder.BuildHeader(split.Last(), split.Take(split.Length - 1).ToList());
 		}
 		
-		public override string Token
+		public override Token Token
 		{
 			get
 			{
-				if (string.IsNullOrEmpty(_token))
+				if (_token == null)
 				{
 					_token = string.Join(".", CallStack);
 				}
-				return _token;
+				return _token.Value;
 			}
 		}
 

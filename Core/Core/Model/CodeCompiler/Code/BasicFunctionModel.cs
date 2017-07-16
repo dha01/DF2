@@ -106,7 +106,7 @@ namespace Core.Model.CodeCompiler.Code
 			BasicFunction = GetBase("Any", 7, InputParamCondition.Any),
 			Invoke = obj => new DataCell
 			{
-				Data = obj.First(x => x.HasValue.HasValue && x.HasValue.Value).Data,
+				Data = obj.First(x => x != null && x.HasValue.HasValue && x.HasValue.Value).Data,
 				HasValue = true
 			}
 		};

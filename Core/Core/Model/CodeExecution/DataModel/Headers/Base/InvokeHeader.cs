@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Core.Model.CodeExecution.DataModel.Headers.Base
 {
-	public enum TokenPartType
+	/*public enum TokenPartType
 	{
 		User,
 		Process,
@@ -48,32 +48,7 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Base
 
 			foreach (var part in Parts)
 			{
-				sb.Append($"{part.Name}{(part.Index.HasValue ? $"<{part.Index}>" : "")}");
-				/*
-				switch (part.Type)
-				{
-					case TokenPartType.User:
-						sb.Append($"{part.Name}");
-						break;
-					case TokenPartType.CSharpFunction:
-						sb.Append($"{part.Name}{(part.Index.HasValue ? $"<{part.Index}>" : "")}");
-						break;
-					case TokenPartType.Const:
-						sb.Append($"{part.Name}{(part.Index.HasValue ? $"<{part.Index}>" : "")}");
-						break;
-					case TokenPartType.ControlFunction:
-						sb.Append($"{part.Name}{(part.Index.HasValue ? $"<{part.Index}>": "")}");
-						break;
-					case TokenPartType.Process:
-						sb.Append($"{part.Name}");
-						break;
-					case TokenPartType.Result:
-						sb.Append($"{part.Name}");
-						break;
-					case TokenPartType.TmpVar:
-						sb.Append($"{part.Name}{(part.Index.HasValue ? $"<{part.Index}>" : "")}");
-						break;
-				}*/
+				sb.Append($"{part.Type}_{part.Name}{(part.Index.HasValue ? $"<{part.Index}>" : "")}");
 			}
 
 			return sb.ToString();
@@ -107,6 +82,67 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Base
 		{
 			return token._stringToken;
 		}
+	}*/
+
+	public struct Token
+	{
+		private string _value;
+
+		public Token(string token)
+		{
+			_value = token;
+		}
+
+		public enum TokenType
+		{
+			Func,
+			Path
+		}
+
+		private char GetSeparator(TokenType type)
+		{
+			return type == TokenType.Path ? '/' : '.';
+		}
+
+		public string Last(TokenType type = TokenType.Path)
+		{
+			return _value.Split(GetSeparator(type)).Last();
+		}
+
+		public Token Prev(TokenType type = TokenType.Path)
+		{
+			//var index = ;
+
+			return _value.Remove(_value.LastIndexOf(GetSeparator(type)));
+		}
+		public Token Next(string value,TokenType type = TokenType.Path)
+		{
+			return $"{GetSeparator(type)}value";
+		}
+
+		public IEnumerable<string> ToEnumerable(TokenType type = TokenType.Path)
+		{
+			return _value.Split(GetSeparator(type));
+		}
+
+		public string[] ToArray(TokenType type = TokenType.Path)
+		{
+			return ToEnumerable(type).ToArray();
+		}
+		public List<string> ToList(TokenType type = TokenType.Path)
+		{
+			return ToEnumerable(type).ToList();
+		}
+
+		public static implicit operator string(Token token)
+		{
+			return token._value;
+		}
+
+		public static implicit operator Token(string token)
+		{
+			return new Token(token);
+		}
 	}
 	
 	
@@ -117,18 +153,19 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Base
 	{
 		public virtual string[] CallStack { get; set; }
 
-		protected string _token;
+		protected Token? _token;
 
-		public virtual string Token
+		public virtual Token Token
 		{
 			get
 			{
-				if (string.IsNullOrEmpty(_token))
+				if (_token == null)
 				{
 					_token = string.Join("/", CallStack);
 				}
-				return _token;
+				return _token.Value;
 			}
+			set { _token = value; }
 		}
 
 		public bool Equals(InvokeHeader obj)

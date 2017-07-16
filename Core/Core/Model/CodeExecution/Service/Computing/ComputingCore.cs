@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Core.Model.CodeCompiler.Build;
 using Core.Model.CodeCompiler.Code;
@@ -145,18 +146,24 @@ namespace Core.Model.CodeExecution.Service.Computing
 				}
 			};
 
-
 			AddDataCell(input_data);
 			AddCommandHeaders(command_headers);
 
-			var result = GetDataCell(new[] {output_data_header}).First();
+
+			ManualResetEvent mer = new ManualResetEvent(false);
+			_dataCellRepository.Subscribe(new[] { output_data_header }, (dch) =>
+			{
+				mer.Set();
+			} );
+
 			return Task.Factory.StartNew(() =>
 			{
-				while (!result.HasValue.HasValue)
+				mer.WaitOne();
+				/*while (!result.HasValue.HasValue)
 				{
 
-				}
-				return result;
+				}*/
+				return GetDataCell(new[] { output_data_header }).First();
 			});
 		}
 

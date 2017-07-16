@@ -24,38 +24,38 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 
 		private IFunctionRepository _functionRepository;
 
-		private ConcurrentDictionary<string, Command> _preparingCommands { get; set; }
+		private ConcurrentDictionary<string, CommandHeader> _preparingCommands { get; set; }
 		private ConcurrentDictionary<string, CommandHeader> _waitConditionCommands { get; set; } = new ConcurrentDictionary<string, CommandHeader>();
 
 		private ConcurrentDictionary<string, List<string>> _dataLinksWithCommands = new ConcurrentDictionary<string, List<string>>();
 
 		public PreparationCommandService(IDataCellRepository data_cell_repository, IFunctionRepository function_repository)
 		{
-			_preparingCommands = new ConcurrentDictionary<string, Command>();
+			_preparingCommands = new ConcurrentDictionary<string, CommandHeader>();
 			_dataCellRepository = data_cell_repository;
 			_functionRepository = function_repository;
 		}
 
-		private void AddCommandToPreparing(Command new_command)
+		private void AddCommandToPreparing(CommandHeader new_command_header)
 		{
-			if (_preparingCommands.TryAdd(new_command.Token, new_command))
+			if (_preparingCommands.TryAdd(new_command_header.Token, new_command_header))
 			{
 				//throw new NotImplementedException("PreparationCommandService.PrepareCommand не удалось добавить.");
 			}
 
-			foreach (var input_data in new_command.InputData)
+			foreach (var input_data in new_command_header.InputDataHeaders)
 			{
 				if (_dataLinksWithCommands.ContainsKey(input_data.Token))
 				{
-					_dataLinksWithCommands[input_data.Token].Add(new_command.Token);
+					_dataLinksWithCommands[input_data.Token].Add(new_command_header.Token);
 				}
 				else
 				{
-					_dataLinksWithCommands[input_data.Token] = new List<string>() { new_command.Token };
+					_dataLinksWithCommands[input_data.Token] = new List<string> { new_command_header.Token };
 				}
 			}
 		}
-
+		
 		private DataCell GetOutputData(DataCellHeader data_cell_header)
 		{
 			var output_data = _dataCellRepository.Get(data_cell_header.Token).FirstOrDefault();
@@ -67,7 +67,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 					HasValue = null,
 					Data = null
 				};
-				_dataCellRepository.Add(new[] { output_data });
+				//_dataCellRepository.Add(new[] { output_data });
 			}
 
 			return output_data;
@@ -95,21 +95,18 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		}
 
 		/// <summary>
-		/// Проверяет, что для команды либо нет услувий, либо хотя бы одно условие уже получено.
+		/// Проверяет, что для команды либо нет условий, либо хотя бы одно условие уже получено.
 		/// </summary>
 		/// <param name="command_header">Заголовок команды.</param>
 		/// <param name="condition_data_cells">Условия.</param>
 		/// <returns>True, если нет условий или хотя бы одно условие уже получено.</returns>
 		private bool CheckCommandCodition(CommandHeader command_header, out List<DataCell> condition_data_cells)
 		{
+			//command_header.Token
+
 			condition_data_cells = new List<DataCell>();
-			var condition_data_cells_out = new List<DataCell>();
-			if (command_header.ConditionDataHeaders.Any() && !command_header.ConditionDataHeaders.Any(x =>
-			{
-				var data = GetDataCell(x);
-				condition_data_cells_out.Add(data);
-				return data.HasValue != null && data.HasValue.Value;
-			}))
+			var condition_data_cells_out = _dataCellRepository.Get(command_header.ConditionDataHeaders.Select(x => (string)x.Token).ToArray()).ToList();
+			if (command_header.ConditionDataHeaders.Any() && !condition_data_cells_out.Any(x =>x != null && x.HasValue != null && x.HasValue.Value))
 			{
 				if (_waitConditionCommands.TryAdd(command_header.Token, command_header))
 				{
@@ -118,14 +115,13 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 
 				foreach (var input_dataa in command_header.ConditionDataHeaders)
 				{
-					if (_dataLinksWithCommands.ContainsKey(input_dataa.Token))
+					if(!_dataLinksWithCommands.TryGetValue(input_dataa.Token, out List<string> list))
 					{
-						_dataLinksWithCommands[input_dataa.Token].Add(command_header.Token);
+						list = new List<string>();
+						_dataLinksWithCommands.TryAdd(input_dataa.Token, list);
 					}
-					else
-					{
-						_dataLinksWithCommands[input_dataa.Token] = new List<string>() { command_header.Token };
-					}
+
+					list.Add(command_header.Token);
 				}
 				return false;
 			}
@@ -150,7 +146,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 
 			// Если нет ни одного истинного условия, то возвращаем null.
-			if (condition_data.Any(x => x.HasValue.HasValue && x.HasValue.Value && !(bool)x.Data))
+			if (condition_data.Any(x => x != null && x.HasValue.HasValue && x.HasValue.Value && !(bool)x.Data))
 			{
 				return false;
 			}
@@ -161,10 +157,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 
 			new_command = new Command()
 			{
-				Header = new InvokeHeader()
-				{
-					CallStack = command_header.CallStack
-				},
+				Header = command_header,
 				InputData = input_data.ToList(),
 				OutputData = GetOutputData(command_header.OutputDataHeader),
 				ConditionData = condition_data
@@ -175,22 +168,37 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			switch (command_header.FunctionHeader.Condition)
 			{
 				case InputParamCondition.All:
+
+					var in_data = _dataCellRepository.Get(command_header.InputDataHeaders.Select(x => (string)x.Token).ToArray()).ToList();
+					new_command.InputData = in_data;
+					if (in_data.Any(x => x == null))
+					{
+						all_ready = false;
+					}
+
 					// Получаем или подписываемся на получение входных параметров.
-					for (int i = 0; i < command_header.InputDataHeaders.Count; i++)
+					/*for (int i = 0; i < command_header.InputDataHeaders.Count; i++)
 					{
 						var result = GetDataCell(command_header.InputDataHeaders[i]);
 						new_command.InputData[i] = result;
-
+						
 						if (result.HasValue == null)
 						{
 							all_ready = false;
 						}
-					}
+					}*/
 					break;
 				case InputParamCondition.Any:
 					var any = false;
+
+					var in_data2 = _dataCellRepository.Get(command_header.InputDataHeaders.Select(x => (string)x.Token).ToArray()).ToList();
+					new_command.InputData = in_data2;
+					if (in_data2.Any(x => x != null && x.HasValue != null && x.HasValue.Value))
+					{
+						any = true;
+					}
 					// Получаем или подписываемся на получение входных параметров.
-					for (int i = 0; i < command_header.InputDataHeaders.Count; i++)
+					/*for (int i = 0; i < command_header.InputDataHeaders.Count; i++)
 					{
 						var result = GetDataCell(command_header.InputDataHeaders[i]);
 						new_command.InputData[i] = result;
@@ -199,7 +207,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 						{
 							any = true;
 						}
-					}
+					}*/
 
 					if (!any)
 					{
@@ -212,9 +220,9 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 
 			if (!all_ready)
 			{
-				AddCommandToPreparing(new_command);
+				AddCommandToPreparing(command_header);
 			}
-			_dataCellRepository.Add(new_command.InputData.Where(x => x.HasValue == null), false);
+			//_dataCellRepository.Add(new_command.InputData.Where(x => x.HasValue == null), false);
 
 			// Получаем или подписываемся на получение функций.
 			var function = _functionRepository.Get(command_header.FunctionHeader.Token).FirstOrDefault();
@@ -223,7 +231,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 				if (all_ready)
 				{
 					all_ready = false;
-					AddCommandToPreparing(new_command);
+					AddCommandToPreparing(command_header);
 				}
 				//_functionRepository.Subscribe(function_header, OnFunctionReady);
 				// TODO: нужно отправлять запросы на другие узлы для получения функции.
@@ -257,38 +265,43 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		/// <param name="data_cell_token">Токен ячейки с данными.</param>
 		private void CheckPreparingCommands(string command_token, string data_cell_token)
 		{
-			if (_preparingCommands.TryGetValue(command_token, out Command command))
+			if (_preparingCommands.TryGetValue(command_token, out CommandHeader command_header))
 			{
-				command.InputData = _dataCellRepository.Get(command.InputData.Select(x => x.Token).ToArray()).ToList();
 
-				if (command.Function != null)
+				var input_data = _dataCellRepository.Get(command_header.InputDataHeaders.Select(x => (string)x.Token).ToArray()).ToList();
+
+				if (_functionRepository.Get(command_header.FunctionHeader.Token) != null)
 				{
-					switch (((FunctionHeader)command.Function.Header).Condition)
+					switch (command_header.FunctionHeader.Condition)
 					{
 						case InputParamCondition.All:
-							if (command.InputData.All(x => x.HasValue != null && x.HasValue.Value))
+							if (input_data.All(x => x != null && x.HasValue != null && x.HasValue.Value))
 							{
 								break;
 							}
 							return;
 						case InputParamCondition.Any:
-							if (command.InputData.Any(x => x.HasValue != null && x.HasValue.Value))
+							if (input_data.Any(x => x != null && x.HasValue != null && x.HasValue.Value))
 							{
 								break;
 							}
 							return;
 						default:
-							throw new Exception($"OnDataReady Неизвестный тип: {((FunctionHeader)command.Function.Header).Condition}");
+							throw new Exception($"OnDataReady Неизвестный тип: {command_header.FunctionHeader.Condition}");
 					}
 
-					if (_preparingCommands.TryRemove(command_token, out command))
+					if (_preparingCommands.TryRemove(command_token, out command_header))
 					{
 						_dataLinksWithCommands[data_cell_token].Remove(command_token);
 						if (_dataLinksWithCommands[data_cell_token].Count == 0)
 						{
 							_dataLinksWithCommands.TryRemove(data_cell_token, out List<string> str);
 						}
-						OnPreparedCommand(command);
+
+						if (TryCreateCommand(command_header, out Command new_command))
+						{
+							OnPreparedCommand(new_command);
+						}
 					}
 				}
 			}
@@ -303,7 +316,6 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		{
 			if (_waitConditionCommands.TryGetValue(command_token, out CommandHeader command_header))
 			{
-				var data = _dataCellRepository.Get(condition_data_cell_token).First().Data;
 				if ((bool)_dataCellRepository.Get(condition_data_cell_token).First().Data)
 				{
 					if (TryCreateCommand(command_header, out Command new_command))
@@ -348,14 +360,13 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 			else
 			{
-				if (_preparingCommands.TryGetValue(function_header.Token, out Command command))
+				if (_preparingCommands.TryGetValue(function_header.Token, out CommandHeader command_header))
 				{
-					command.Function = function;
-					if (command.InputData.All(x => x.HasValue != null) && command.Function != null)
+					if (TryCreateCommand(command_header, out Command new_command))
 					{
-						if (_preparingCommands.TryRemove(function_header.Token, out command))
+						if (_preparingCommands.TryRemove(function_header.Token, out command_header))
 						{
-							OnPreparedCommand(command);
+							OnPreparedCommand(new_command);
 						}
 					}
 				}
@@ -365,7 +376,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		public void Clear(string path)
 		{
 			CommandHeader removed_command_header;
-			Command removed_commandd;
+			CommandHeader removed_commandd;
 			List<string> removed_list;
 			var key_list = _preparingCommands.Keys.ToList().Where(x => x.StartsWith(path));
 
