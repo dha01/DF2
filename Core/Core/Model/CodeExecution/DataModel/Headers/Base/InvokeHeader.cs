@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Core.Model.CodeExecution.DataModel.Headers.Base
 {
@@ -84,8 +85,32 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Base
 		}
 	}*/
 
+	public struct TokenPart
+	{
+		public int? Index { get; set; }
+		public string Name { get; set; }
+	}
+
 	public struct Token
 	{
+		public static TokenPart Parse(string token)
+		{
+			Regex myReg = new Regex("<.>");
+			Match matche = myReg.Match(token);
+
+			if(!string.IsNullOrWhiteSpace(matche.Value))
+			{
+				token = token.Replace(matche.Value, "");
+			}
+
+			return new TokenPart
+			{
+				Index = int.TryParse(matche.Value.Trim(new[] { '<', '>' }), out int result) ? result : (int?)null,
+				Name = token
+			};
+		}
+
+
 		private string _value;
 
 		public Token(string token)
@@ -132,6 +157,11 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Base
 		public List<string> ToList(TokenType type = TokenType.Path)
 		{
 			return ToEnumerable(type).ToList();
+		}
+
+		public override string ToString()
+		{
+			return _value;
 		}
 
 		public static implicit operator string(Token token)

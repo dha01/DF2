@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Core.Model.CodeExecution.DataModel.Bodies.Commands;
 using Core.Model.CodeExecution.DataModel.Bodies.Functions;
+using Core.Model.CodeExecution.DataModel.Headers.Base;
 using Core.Model.CodeExecution.DataModel.Headers.Commands;
 using Core.Model.CodeExecution.Repository;
 using Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job;
@@ -39,12 +40,12 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		/// <summary>
 		/// Команды находящиеся в процессе исполнения.
 		/// </summary>
-		private readonly ConcurrentDictionary<string, Command> _executingCommands = new ConcurrentDictionary<string, Command>();
+		private readonly ConcurrentDictionary<string, Token> _executingCommands = new ConcurrentDictionary<string, Token>();
 		
 		/// <summary>
 		/// Исполненные команды.
 		/// </summary>
-		private readonly ConcurrentDictionary<string, Command> _executedCommands = new ConcurrentDictionary<string, Command>();
+		private readonly ConcurrentDictionary<string, Token> _executedCommands = new ConcurrentDictionary<string, Token>();
 
 		/// <summary>
 		/// Управлеяющий пулом исполнителей.
@@ -147,8 +148,10 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			{
 				if (_awaitingExecutionCommands.TryRemove(key, out Command command))
 				{
+					var command_token = command.Token;
+
 					_jobManager.AddCommand(command);
-					if (!_executingCommands.TryAdd(key, command))
+					if (!_executingCommands.TryAdd(key, command.Token))
 					{
 						throw new NotImplementedException("DataFlowLogicsService.OnFreeJob _executingCommands Не удалось добавить.");
 					}
@@ -189,9 +192,10 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		{
 			//Console.WriteLine("! OnExecutedCommand {0}", command.Header.CallstackToString());
 			
-			if (_executingCommands.TryRemove(command.Token, out Command removed_command))
+			if (_executingCommands.TryRemove(command.Token, out Token removed_command_token))
 			{
-				if (!_executedCommands.TryAdd(command.Token, removed_command))
+				
+				if (!_executedCommands.TryAdd(command.Token, removed_command_token))
 				{
 					throw new NotImplementedException("DataFlowLogicsService.OnExecutedCommand Не удалось добавить.");
 				}
@@ -225,12 +229,13 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 					{
 						CommandHeader removed_command_header;
 						Command removed_commandd;
+						Token removed_command_tokenn;
 						_allCommandHeaders.TryRemove(ke, out removed_command_header);
 						_awaitingPreparationCommandHeaders.TryRemove(ke, out removed_command_header);
 						_preparationCommandHeaders.TryRemove(ke, out removed_command_header);
 						_awaitingExecutionCommands.TryRemove(ke, out removed_commandd);
-						_executingCommands.TryRemove(ke, out removed_commandd);
-						_executedCommands.TryRemove(ke, out removed_commandd);
+						_executingCommands.TryRemove(ke, out removed_command_tokenn);
+						_executedCommands.TryRemove(ke, out removed_command_tokenn);
 					}
 					
 					_dataCellRepository.DeleteStartWith(path);
@@ -239,7 +244,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 			else
 			{
-				_executingCommands.TryAdd(command.Token, command);
+				_executingCommands.TryAdd(command.Token, command.Token);
 			}
 		}
 
@@ -260,8 +265,9 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			{
 				if (_jobManager.HasFreeJob())
 				{
+					var command_token = command.Token;
 					_jobManager.AddCommand(command);
-					if (!_executingCommands.TryAdd(command.Token, command))
+					if (!_executingCommands.TryAdd(command.Token, command.Token))
 					{
 						throw new NotImplementedException("DataFlowLogicsService.OnPreparedCommand true Не удалось добавить.");
 					}

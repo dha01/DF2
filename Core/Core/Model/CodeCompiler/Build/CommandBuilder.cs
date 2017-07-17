@@ -133,8 +133,6 @@ namespace Core.Model.CodeCompiler.Build
 
 		public static List<DataCell> BuildInputData(IEnumerable<object> data, List<string> call_stack)
 		{
-			var str = string.Join("/", call_stack);
-			call_stack.Add("InputData");
 			var index = 0;
 			return data.Select(x => new DataCell()
 			{
@@ -142,7 +140,7 @@ namespace Core.Model.CodeCompiler.Build
 				HasValue = true,
 				Header = new DataCellHeader()
 				{
-					Token = $"{str}/InputData{index++}"
+					Token = $"{string.Join("/", call_stack)}/InputData{index++}"
 				}
 			}).ToList();
 		}

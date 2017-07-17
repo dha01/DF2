@@ -43,7 +43,7 @@ namespace Core.Model.CodeCompiler.Code
 
 		public static BasicFunctionModel Sum = new BasicFunctionModel
 		{
-			BasicFunction = GetBase("Sum", 1),
+			BasicFunction = GetBase("Sum", 2, 1),
 			Invoke = obj => new DataCell
 			{
 				Data = (int)obj[0].Data + (int)obj[1].Data,
@@ -53,7 +53,7 @@ namespace Core.Model.CodeCompiler.Code
 
 		public static BasicFunctionModel Sub = new BasicFunctionModel
 		{
-			BasicFunction = GetBase("Sub", 2),
+			BasicFunction = GetBase("Sub", 2, 2),
 			Invoke = obj => new DataCell
 			{
 				Data = (int)obj[0].Data - (int)obj[1].Data,
@@ -63,7 +63,7 @@ namespace Core.Model.CodeCompiler.Code
 
 		public static BasicFunctionModel Mul = new BasicFunctionModel
 		{
-			BasicFunction = GetBase("Mul", 3),
+			BasicFunction = GetBase("Mul", 2, 3),
 			Invoke = obj =>new DataCell
 			{
 				Data = (int) obj[0].Data * (int) obj[1].Data,
@@ -73,7 +73,7 @@ namespace Core.Model.CodeCompiler.Code
 
 		public static BasicFunctionModel Div = new BasicFunctionModel
 		{
-			BasicFunction = GetBase("Div", 4),
+			BasicFunction = GetBase("Div", 2, 4),
 			Invoke = obj => new DataCell
 			{
 				Data = (int)obj[0].Data / (int)obj[1].Data,
@@ -83,7 +83,7 @@ namespace Core.Model.CodeCompiler.Code
 
 		public static BasicFunctionModel Equal = new BasicFunctionModel
 		{
-			BasicFunction = GetBase("Equal", 5),
+			BasicFunction = GetBase("Equal", 2, 5),
 			Invoke = obj => new DataCell
 			{
 				Data = obj[0].Data.Equals(obj[1].Data),
@@ -93,7 +93,7 @@ namespace Core.Model.CodeCompiler.Code
 
 		public static BasicFunctionModel NotEqual = new BasicFunctionModel
 		{
-			BasicFunction = GetBase("NotEqual", 6),
+			BasicFunction = GetBase("NotEqual", 2, 6),
 			Invoke = obj => new DataCell
 			{
 				Data = !obj[0].Equals(obj[1].Data),
@@ -103,7 +103,7 @@ namespace Core.Model.CodeCompiler.Code
 
 		public static BasicFunctionModel Any = new BasicFunctionModel
 		{
-			BasicFunction = GetBase("Any", 7, InputParamCondition.Any),
+			BasicFunction = GetBase("Any", -1, 7, InputParamCondition.Any),
 			Invoke = obj => new DataCell
 			{
 				Data = obj.First(x => x != null && x.HasValue.HasValue && x.HasValue.Value).Data,
@@ -113,7 +113,7 @@ namespace Core.Model.CodeCompiler.Code
 
 		public static BasicFunctionModel Iif = new BasicFunctionModel
 		{
-			BasicFunction = GetBase("Iif", 8, InputParamCondition.Iif),
+			BasicFunction = GetBase("Iif", 3, 8, InputParamCondition.Iif),
 			Invoke = obj => {
 				if (obj[0].HasValue == false)
 				{
@@ -130,7 +130,7 @@ namespace Core.Model.CodeCompiler.Code
 
 		public static BasicFunctionModel Set = new BasicFunctionModel
 		{
-			BasicFunction = GetBase("Set", 9),
+			BasicFunction = GetBase("Set", 1, 9),
 			Invoke = obj => new DataCell
 			{
 				Data = obj[0].Data,
@@ -140,7 +140,7 @@ namespace Core.Model.CodeCompiler.Code
 
 		public static BasicFunctionModel Not = new BasicFunctionModel
 		{
-			BasicFunction = GetBase("Not", 10),
+			BasicFunction = GetBase("Not", 1, 10),
 			Invoke = obj => new DataCell
 			{
 				Data = !(bool)obj[0].Data,
@@ -150,7 +150,7 @@ namespace Core.Model.CodeCompiler.Code
 
 		public static BasicFunctionModel Or = new BasicFunctionModel
 		{
-			BasicFunction = GetBase("Or", 11),
+			BasicFunction = GetBase("Or", 2, 11),
 			Invoke = obj => new DataCell
 			{
 				Data = (bool)obj[0].Data || (bool)obj[1].Data,
@@ -160,7 +160,7 @@ namespace Core.Model.CodeCompiler.Code
 
 		public static BasicFunctionModel And = new BasicFunctionModel
 		{
-			BasicFunction = GetBase("And", 12),
+			BasicFunction = GetBase("And", 2, 12),
 			Invoke = obj => new DataCell
 			{
 				Data = (bool)obj[0].Data && (bool)obj[1].Data,
@@ -170,7 +170,7 @@ namespace Core.Model.CodeCompiler.Code
 
 		public static BasicFunctionModel Wait = new BasicFunctionModel
 		{
-			BasicFunction = GetBase("Wait", 13),
+			BasicFunction = GetBase("Wait", 1, 13),
 			Invoke = obj => new DataCell
 			{
 				Data = obj[0].Data,
@@ -180,7 +180,7 @@ namespace Core.Model.CodeCompiler.Code
 
 		public static BasicFunctionModel IsTrue = new BasicFunctionModel
 		{
-			BasicFunction = GetBase("IsTrue", 14),
+			BasicFunction = GetBase("IsTrue", 1, 14),
 			Invoke = obj => new DataCell
 			{
 				Data = (bool)obj[0].Data == true,
@@ -190,7 +190,7 @@ namespace Core.Model.CodeCompiler.Code
 
 		public static BasicFunctionModel IsFalse = new BasicFunctionModel
 		{
-			BasicFunction = GetBase("IsFalse", 15),
+			BasicFunction = GetBase("IsFalse", 1, 15),
 			Invoke = obj => new DataCell
 			{
 				Data = (bool)obj[0].Data == false,
@@ -202,7 +202,7 @@ namespace Core.Model.CodeCompiler.Code
 
 		#region Methods / Private
 
-		private static BasicFunction GetBase(string name, int id, InputParamCondition condition = InputParamCondition.All)
+		private static BasicFunction GetBase(string name, int input_data_count, int id, InputParamCondition condition = InputParamCondition.All)
 		{
 			return new BasicFunction()
 			{
@@ -212,8 +212,9 @@ namespace Core.Model.CodeCompiler.Code
 					Name = name,
 					Token = $"BasicFunctions.{name}",
 					Id = id,
-					Condition = condition
-				}
+					Condition = condition,
+				},
+				InputDataCount = input_data_count
 			};
 		}
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Core.Model.CodeExecution.DataModel.Bodies.Commands;
 using Core.Model.CodeExecution.DataModel.Bodies.Data;
+using Core.Model.CodeExecution.DataModel.Bodies.Functions;
 using Core.Model.CodeExecution.DataModel.Headers.Base;
 using Core.Model.CodeExecution.DataModel.Headers.Commands;
 using Core.Model.CodeExecution.DataModel.Headers.Data;
@@ -102,8 +103,6 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		/// <returns>True, если нет условий или хотя бы одно условие уже получено.</returns>
 		private bool CheckCommandCodition(CommandHeader command_header, out List<DataCell> condition_data_cells)
 		{
-			//command_header.Token
-
 			condition_data_cells = new List<DataCell>();
 			var condition_data_cells_out = _dataCellRepository.Get(command_header.ConditionDataHeaders.Select(x => (string)x.Token).ToArray()).ToList();
 			if (command_header.ConditionDataHeaders.Any() && !condition_data_cells_out.Any(x =>x != null && x.HasValue != null && x.HasValue.Value))
@@ -139,6 +138,17 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		{
 			new_command = null;
 
+			var last = command_header.Token.Last();
+
+			var par = Token.Parse(last);
+
+			var fun = _functionRepository.Get(par.Name).FirstOrDefault();
+
+			var prev = command_header.Token.Prev();
+			var prev_func_par = Token.Parse(command_header.Token.Prev().Last());
+			var prev_func = (ControlFunction)_functionRepository.Get(prev_func_par.Name).FirstOrDefault();
+
+
 			// Если условия ещё не готовы, то возвращаем null.
 			if (!CheckCommandCodition(command_header, out List<DataCell> condition_data))
 			{
@@ -152,13 +162,58 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 
 			// Подготавливае места для ячеек с выходными данными.
-			var count = command_header.InputDataHeaders.Count;
-			var input_data = new DataCell[count];
+			//var count = command_header.InputDataHeaders.Count;
+			//var input_data = new DataCell[count];
+
+			DataCell[] inputs = null;
+
+			//int[] input_ids = null;
+
+			// TODO: сделать возможным получение ячейки данных по маске.
+			int count = fun.InputDataCount;
+			string[] tokens = null;
+
+			if (prev_func == null)
+			{
+				tokens = new string[count];
+				for (int i = 0; i < count; i++)
+				{
+					tokens[i] = command_header.Token.Next($"InputData{i}");
+				}
+			}
+			else
+			{
+
+				var command_template = prev_func.Commands.ToArray()[par.Index.Value - (par.Index.Value > 0 ? prev_func.InputDataCount : 0)];
+				var input_ids = command_template.InputDataIds;
+
+				count = input_ids.Count;
+				tokens = new string[count];
+
+				for (int i = 0; i < input_ids.Count; i++)
+				{
+					var id = input_ids[i];
+					if (id <= prev_func.InputDataCount)
+					{
+						tokens[i] = command_header.Token.Next($"InputData{i}");
+					}
+					else if(id >= prev_func.InputDataCount + prev_func.Commands.Count())
+					{
+						tokens[i] = new Token(prev_func_par.Name).Next($"const_{id - (prev_func.InputDataCount + prev_func.Commands.Count())}");
+					}
+					else
+					{
+						tokens[i] = prev.Next($"tmp_var_{input_ids[i]}");
+					}
+				}
+			}
+			
+			inputs = _dataCellRepository.Get(tokens).ToArray();
 
 			new_command = new Command()
 			{
 				Header = command_header,
-				InputData = input_data.ToList(),
+				InputData = inputs.ToList(),
 				OutputData = GetOutputData(command_header.OutputDataHeader),
 				ConditionData = condition_data
 			};
@@ -168,10 +223,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			switch (command_header.FunctionHeader.Condition)
 			{
 				case InputParamCondition.All:
-
-					var in_data = _dataCellRepository.Get(command_header.InputDataHeaders.Select(x => (string)x.Token).ToArray()).ToList();
-					new_command.InputData = in_data;
-					if (in_data.Any(x => x == null))
+					if (new_command.InputData.Any(x => x == null))
 					{
 						all_ready = false;
 					}
@@ -189,14 +241,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 					}*/
 					break;
 				case InputParamCondition.Any:
-					var any = false;
-
-					var in_data2 = _dataCellRepository.Get(command_header.InputDataHeaders.Select(x => (string)x.Token).ToArray()).ToList();
-					new_command.InputData = in_data2;
-					if (in_data2.Any(x => x != null && x.HasValue != null && x.HasValue.Value))
-					{
-						any = true;
-					}
+					bool any = new_command.InputData.Any(x => x != null && x.HasValue != null && x.HasValue.Value);
 					// Получаем или подписываемся на получение входных параметров.
 					/*for (int i = 0; i < command_header.InputDataHeaders.Count; i++)
 					{

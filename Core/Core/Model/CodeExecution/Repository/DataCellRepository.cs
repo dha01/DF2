@@ -1,4 +1,6 @@
-﻿using Core.Model.CodeExecution.DataModel.Bodies.Data;
+﻿using System;
+using System.Linq;
+using Core.Model.CodeExecution.DataModel.Bodies.Data;
 using Core.Model.CodeExecution.DataModel.Headers.Data;
 
 namespace Core.Model.CodeExecution.Repository
@@ -33,6 +35,27 @@ namespace Core.Model.CodeExecution.Repository
 
 			var item = _itemsTree.Get(key.Split('/'));// _items[key];
 			return item.HasValue.HasValue && item.HasValue.Value;
+		}
+
+		public void CreateDublicate(params Tuple<string, string>[] dublicates)
+		{
+			var items = Get(dublicates.Select(x => x.Item1).ToArray());
+
+			var new_items = dublicates.Select(x =>
+			{
+				var item = items.First(y => y.Token == x.Item1);
+				return new DataCell
+				{
+					HasValue = item.HasValue,
+					Data = item.Data,
+					Header = new DataCellHeader
+					{
+						Token = x.Item2
+					}
+				};
+			}).ToList();
+
+			Add(new_items);
 		}
 
 		/*protected override void AddHeader(DataCellHeader header)

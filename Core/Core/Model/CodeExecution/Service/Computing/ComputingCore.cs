@@ -32,7 +32,7 @@ namespace Core.Model.CodeExecution.Service.Computing
 			var data_cell_repository = new DataCellRepository();
 			var function_repository = new FunctionRepository(data_cell_repository);
 			var command_repository = new CommandRepository();
-			var control_execution_service = new ControlExecutionService();
+			var control_execution_service = new ControlExecutionService(data_cell_repository);
 
 			var execution_manager = new ExecutionManager(
 				new List<IExecutionService>()
@@ -124,20 +124,30 @@ namespace Core.Model.CodeExecution.Service.Computing
 		private static int index = 0;
 		public Task<DataCell> Exec(FunctionHeader function_header, params object[] param)
 		{
-			string root = "User1/Process" + index++;
+			Token root = new Token($"User1/Process{index++}").Next(function_header.Token);
 
 			var output_data_header = new DataCellHeader()
 			{
-				Token = $"{root}/result"
+				Token = root.Next("result")
 			};
 
-			var input_data = CommandBuilder.BuildInputData(param, $"{root}".Split('/').ToList());
+			var in_index = 0;
+			var input_data = param.Select(x => new DataCell()
+				{
+					Data = x,
+					HasValue = true,
+					Header = new DataCellHeader()
+					{
+						Token = root.Next($"InputData{in_index}")
+					}
+				})
+				.ToList(); //CommandBuilder.BuildInputData(param, root.ToList());
 
 			var command_headers = new List<CommandHeader>()
 			{
 				new CommandHeader()
 				{
-					Token = $"{root}",
+					Token = root,
 					FunctionHeader = function_header,//CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList()),//(FunctionHeader)BuildedControlFunction.Header,//CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList()), //SimpleMethods.Control.Simple.MainHeader,
 					InputDataHeaders = input_data.Select(x=>(DataCellHeader)x.Header).ToList(),
 					OutputDataHeader = output_data_header,

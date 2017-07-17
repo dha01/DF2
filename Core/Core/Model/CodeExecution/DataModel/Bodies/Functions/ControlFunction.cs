@@ -7,10 +7,6 @@ namespace Core.Model.CodeExecution.DataModel.Bodies.Functions
 	/// </summary>
 	public class ControlFunction : Function
 	{
-		/// <summary>
-		/// Количество входных параметровю
-		/// </summary>
-		public int InputDataCount { get; set; }
 
 		/// <summary>
 		/// Список констант.

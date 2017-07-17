@@ -5,6 +5,10 @@
 	/// </summary>
 	public class Function : Base.ContainerBase, IFunction
 	{
+		/// <summary>
+		/// Количество входных параметровю
+		/// </summary>
+		public int InputDataCount { get; set; }
 	}
 }
 
