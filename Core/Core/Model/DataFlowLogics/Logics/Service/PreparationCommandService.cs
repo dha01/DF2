@@ -37,7 +37,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			_functionRepository = function_repository;
 		}
 
-		private void AddCommandToPreparing(CommandHeader new_command_header)
+		private void AddCommandToPreparing(Token command_token, IEnumerable<string> input_data_tokens, CommandHeader new_command_header)
 		{
 			if (_preparingCommands.TryAdd(new_command_header.Token, new_command_header))
 			{
@@ -101,26 +101,26 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		/// <param name="command_header">Заголовок команды.</param>
 		/// <param name="condition_data_cells">Условия.</param>
 		/// <returns>True, если нет условий или хотя бы одно условие уже получено.</returns>
-		private bool CheckCommandCodition(CommandHeader command_header, out List<DataCell> condition_data_cells)
+		private bool CheckCommandCodition(Token command_token, IEnumerable<string> condition_data_tokens, CommandHeader command_header, out List<DataCell> condition_data_cells)
 		{
 			condition_data_cells = new List<DataCell>();
-			var condition_data_cells_out = _dataCellRepository.Get(command_header.ConditionDataHeaders.Select(x => (string)x.Token).ToArray()).ToList();
-			if (command_header.ConditionDataHeaders.Any() && !condition_data_cells_out.Any(x =>x != null && x.HasValue != null && x.HasValue.Value))
+			var condition_data_cells_out = _dataCellRepository.Get(condition_data_tokens.ToArray()).ToList();
+			if (condition_data_tokens.Any() && !condition_data_cells_out.Any(x =>x != null && x.HasValue != null && x.HasValue.Value))
 			{
-				if (_waitConditionCommands.TryAdd(command_header.Token, command_header))
+				if (_waitConditionCommands.TryAdd(command_token, command_header))
 				{
 					//throw new NotImplementedException("PreparationCommandService.CheckCommandCodition не удалось добавить.");
 				}
 
-				foreach (var input_dataa in command_header.ConditionDataHeaders)
+				foreach (var input_dataa in condition_data_tokens)
 				{
-					if(!_dataLinksWithCommands.TryGetValue(input_dataa.Token, out List<string> list))
+					if(!_dataLinksWithCommands.TryGetValue(input_dataa, out List<string> list))
 					{
 						list = new List<string>();
-						_dataLinksWithCommands.TryAdd(input_dataa.Token, list);
+						_dataLinksWithCommands.TryAdd(input_dataa, list);
 					}
 
-					list.Add(command_header.Token);
+					list.Add(command_token);
 				}
 				return false;
 			}
@@ -134,23 +134,62 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		/// <param name="command_header">Заголовок команды.</param>
 		/// <param name="new_command">Созданная команда.</param>
 		/// <returns>Удалось ли создать готовую к исполнению команду.</returns>
-		private bool TryCreateCommand(CommandHeader command_header, out Command new_command)
+		private bool TryCreateCommand(Token command_token, Token output_data_token, CommandHeader command_header, out Command new_command)
 		{
 			new_command = null;
 
-			var last = command_header.Token.Last();
+			var last = command_token.Last();
 
 			var par = Token.Parse(last);
 
-			var fun = _functionRepository.Get(par.Name).FirstOrDefault();
+			var function = _functionRepository.Get(par.Name).FirstOrDefault();
 
-			var prev = command_header.Token.Prev();
-			var prev_func_par = Token.Parse(command_header.Token.Prev().Last());
+			var prev = command_token.Prev();
+			var prev_func_par = Token.Parse(command_token.Prev().Last());
 			var prev_func = (ControlFunction)_functionRepository.Get(prev_func_par.Name).FirstOrDefault();
+
+			/////////////
+			
+			//int[] input_ids = null;
+
+			int cond_count = 0;
+			string[] condition_data_tokens = null;
+
+			if (prev_func == null)
+			{
+				condition_data_tokens = new string[0];
+			}
+			else
+			{
+				var command_template = prev_func.Commands.ToArray()[par.Index.Value - (par.Index.Value > 0 ? prev_func.InputDataCount : 0)];
+				var cond_ids = command_template.ConditionId;
+
+				cond_count = cond_ids.Count;
+				condition_data_tokens = new string[cond_count];
+
+				for (int i = 0; i < cond_ids.Count; i++)
+				{
+					var id = cond_ids[i];
+					if (id <= prev_func.InputDataCount)
+					{
+						condition_data_tokens[i] = command_token.Next($"InputData{i}");
+					}
+					else if (id >= prev_func.InputDataCount + prev_func.Commands.Count())
+					{
+						condition_data_tokens[i] = new Token(prev_func_par.Name).Next($"const_{id - (prev_func.InputDataCount + prev_func.Commands.Count())}");
+					}
+					else
+					{
+						condition_data_tokens[i] = prev.Next($"tmp_var_{cond_ids[i]}");
+					}
+				}
+			}
+
+			///////////// 
 
 
 			// Если условия ещё не готовы, то возвращаем null.
-			if (!CheckCommandCodition(command_header, out List<DataCell> condition_data))
+			if (!CheckCommandCodition(command_token, condition_data_tokens, command_header, out List<DataCell> condition_data))
 			{
 				return false;
 			}
@@ -170,57 +209,66 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			//int[] input_ids = null;
 
 			// TODO: сделать возможным получение ячейки данных по маске.
-			int count = fun.InputDataCount;
-			string[] tokens = null;
+			int count = function.InputDataCount;
+			string[] input_data_tokens = null;
 
 			if (prev_func == null)
 			{
-				tokens = new string[count];
+				input_data_tokens = new string[count];
 				for (int i = 0; i < count; i++)
 				{
-					tokens[i] = command_header.Token.Next($"InputData{i}");
+					input_data_tokens[i] = command_token.Next($"InputData{i}");
 				}
 			}
 			else
 			{
-
 				var command_template = prev_func.Commands.ToArray()[par.Index.Value - (par.Index.Value > 0 ? prev_func.InputDataCount : 0)];
 				var input_ids = command_template.InputDataIds;
 
 				count = input_ids.Count;
-				tokens = new string[count];
+				input_data_tokens = new string[count];
 
 				for (int i = 0; i < input_ids.Count; i++)
 				{
 					var id = input_ids[i];
 					if (id <= prev_func.InputDataCount)
 					{
-						tokens[i] = command_header.Token.Next($"InputData{i}");
+						input_data_tokens[i] = command_token.Next($"InputData{i}");
 					}
 					else if(id >= prev_func.InputDataCount + prev_func.Commands.Count())
 					{
-						tokens[i] = new Token(prev_func_par.Name).Next($"const_{id - (prev_func.InputDataCount + prev_func.Commands.Count())}");
+						input_data_tokens[i] = new Token(prev_func_par.Name).Next($"const_{id - (prev_func.InputDataCount + prev_func.Commands.Count())}");
 					}
 					else
 					{
-						tokens[i] = prev.Next($"tmp_var_{input_ids[i]}");
+						input_data_tokens[i] = prev.Next($"tmp_var_{input_ids[i]}");
 					}
 				}
 			}
 			
-			inputs = _dataCellRepository.Get(tokens).ToArray();
+			inputs = _dataCellRepository.Get(input_data_tokens).ToArray();
+
+			var n_command_header = new CommandHeader
+			{
+				ConditionDataHeaders = _dataCellRepository.Get(condition_data_tokens).Select(x=>(DataCellHeader)x.Header).ToList(),
+				InputDataHeaders = input_data_tokens.Select(x => new DataCellHeader {Token = x}).ToList(),
+				OutputDataHeader = new DataCellHeader {Token = output_data_token},
+				Token = command_token
+			};
+			n_command_header.Header = n_command_header;
+
 
 			new_command = new Command()
 			{
-				Header = command_header,
+				Header = n_command_header,
 				InputData = inputs.ToList(),
-				OutputData = GetOutputData(command_header.OutputDataHeader),
+				OutputData = GetOutputData(n_command_header.OutputDataHeader),
 				ConditionData = condition_data
 			};
 
 			var all_ready = true;
 
-			switch (command_header.FunctionHeader.Condition)
+			switch (((FunctionHeader)function.Header).Condition)
 			{
 				case InputParamCondition.All:
 					if (new_command.InputData.Any(x => x == null))
@@ -260,24 +308,24 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 					}
 					break;
 				default:
-					throw new Exception($"CreateNewCommand Неизвестный тип: {command_header.FunctionHeader.Condition}");
+					throw new Exception($"CreateNewCommand Неизвестный тип: {((FunctionHeader)function.Header).Condition}");
 			}
 
 			if (!all_ready)
 			{
-				AddCommandToPreparing(command_header);
+				AddCommandToPreparing(command_token, input_data_tokens, command_header);
 			}
 			//_dataCellRepository.Add(new_command.InputData.Where(x => x.HasValue == null), false);
 
 			// Получаем или подписываемся на получение функций.
-			var function = _functionRepository.Get(command_header.FunctionHeader.Token).FirstOrDefault();
+			//var function = _functionRepository.Get(command_header.FunctionHeader.Token).FirstOrDefault();
 			if (function == null)
 			{
-				if (all_ready)
+				/*if (all_ready)
 				{
 					all_ready = false;
 					AddCommandToPreparing(command_header);
-				}
+				}*/
 				//_functionRepository.Subscribe(function_header, OnFunctionReady);
 				// TODO: нужно отправлять запросы на другие узлы для получения функции.
 			}
@@ -297,7 +345,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 			
 			// Добавляем новую команду, находящуюся в процессе подготовки.
-			if (TryCreateCommand(command_header, out Command new_command))
+			if (TryCreateCommand(command_header.Token, command_header.OutputDataHeader.Token, command_header, out Command new_command))
 			{
 				OnPreparedCommand(new_command);
 			}
@@ -343,7 +391,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 							_dataLinksWithCommands.TryRemove(data_cell_token, out List<string> str);
 						}
 
-						if (TryCreateCommand(command_header, out Command new_command))
+						if (TryCreateCommand(command_header.Token, command_header.OutputDataHeader.Token, command_header, out Command new_command))
 						{
 							OnPreparedCommand(new_command);
 						}
@@ -363,7 +411,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			{
 				if ((bool)_dataCellRepository.Get(condition_data_cell_token).First().Data)
 				{
-					if (TryCreateCommand(command_header, out Command new_command))
+					if (TryCreateCommand(command_header.Token, command_header.OutputDataHeader.Token, command_header, out Command new_command))
 					{
 						OnPreparedCommand(new_command);
 					}
@@ -407,7 +455,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			{
 				if (_preparingCommands.TryGetValue(function_header.Token, out CommandHeader command_header))
 				{
-					if (TryCreateCommand(command_header, out Command new_command))
+					if (TryCreateCommand(command_header.Token, command_header.OutputDataHeader.Token, command_header, out Command new_command))
 					{
 						if (_preparingCommands.TryRemove(function_header.Token, out command_header))
 						{
