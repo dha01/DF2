@@ -5,15 +5,16 @@
 	/// </summary>
 	public enum TemplateFunctionRowType
 	{
-		/// <summary>
-		/// Возвращаемое значение.
-		/// </summary>
-		Output,
 
 		/// <summary>
 		/// Входное значение.
 		/// </summary>
 		Input,
+
+		/// <summary>
+		/// Возвращаемое значение.
+		/// </summary>
+		Output,
 
 		/// <summary>
 		/// Функция.

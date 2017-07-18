@@ -45,6 +45,25 @@ namespace Core.Model.CodeExecution.Service.Execution
 			_basicExecutionService = new BasicExecutionService();
 		}
 
+		private void ThrowReturnedValue(DataCell output, Token callstack)
+		{
+			var par = Token.Parse(callstack.Last());
+			if (par.Index == 0)
+			{
+				ThrowReturnedValue(output, callstack.Prev());
+			}
+			else
+			{
+				var result = callstack.Next("result");
+				if (output.Token != result)
+				{
+					output.Header.Token = result;
+				}
+				_dataCellRepository.Add(new[] { output });
+				_dataFlowLogicsService.OnDataReady(output.Header.Token);
+			}
+		}
+
 		public virtual void Execute(Function function, IEnumerable<DataCell> input_data, DataCell output, Token? callstack = null)
 		{
 			var control_function = (ControlFunction)function;
@@ -54,21 +73,24 @@ namespace Core.Model.CodeExecution.Service.Execution
 		//	var token = new Token(string.Join("/", callstack.ToList()));
 
 			// Локальный массив временных данных функции. Добавляем выходные данные нулевым элементом.
-			var tmp_array = new List<DataCell>(tmp_count) { output };
+			var tmp_array = new List<DataCell>(tmp_count) {/* output */};
 
 			// Добавляем входные данные.
 			tmp_array.AddRange(input_data);
 
 			int count = input_data.Count() + 1;
 
+			var commands = control_function.Commands.ToList();
+
 			// Добавляем ячейки для всех остальных команд.
-			for (int i = 0; i < control_function.Commands.Count() - 1; i++)
+			for (int i = 0; i < commands.Count()/* - 1*/; i++)
 			{
 				var data = new DataCell()
 				{
 					Header = new DataCellHeader()
 					{
-						Token = callstack.Value.Next($"tmp_var_{i + count}")
+						//Token = callstack.Value.Next($"tmp_var_{i + count}")
+						Token = callstack.Value.Next($"{commands[i].FunctionHeader.Token}<{i}>").Next("result")
 					},
 					Data = null,
 					HasValue = null
@@ -93,7 +115,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 
 			// Создаем список новых команд.
 			var command_list = control_function.Commands.ToList();
-
+			
 			if (command_list.All(x => x.FunctionHeader is BasicFunctionHeader))
 			{
 				// Исполняем базовые команды.
@@ -131,6 +153,9 @@ namespace Core.Model.CodeExecution.Service.Execution
 						     y.ConditionId.Select(x => tmp_array[x]).All(x => x.HasValue != null && x.HasValue.Value) &&
 						     y.InputDataIds.Select(x => tmp_array[x]).All(x => x.HasValue != null && x.HasValue.Value));
 				}
+
+				ThrowReturnedValue(tmp_array[command_list[0].OutputDataId],
+					callstack.Value.Next($"{command_list[0].FunctionHeader.Token}<{command_list.IndexOf(command_list[0])}>"));
 			}
 			else
 			{
@@ -151,7 +176,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 				// Добаляем новые команды на исполнение
 				foreach (var command_template in command_list)
 				{
-					var command_token = callstack.Value.Next($"{command_template.FunctionHeader.Token}<{command_template.OutputDataId}>");
+					var command_token = callstack.Value.Next($"{command_template.FunctionHeader.Token}<{command_list.IndexOf(command_template)}>");
 					var input_datas = command_template.InputDataIds.Select(x => (DataCellHeader) tmp_array[x].Header).ToList();
 
 					var input_index = 0;

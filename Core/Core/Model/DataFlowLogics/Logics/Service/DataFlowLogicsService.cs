@@ -238,8 +238,8 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 						_executedCommands.TryRemove(ke, out removed_command_tokenn);
 					}
 					
-					_dataCellRepository.DeleteStartWith(path);
-					_preparationCommandService.Clear(path);
+					//_dataCellRepository.DeleteStartWith(path);
+					//_preparationCommandService.Clear(path);
 				}
 			}
 			else
@@ -286,6 +286,11 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			{
 				//throw new NotImplementedException("DataFlowLogicsService.OnPreparedCommand Не удалось извлечь.");
 			}
+		}
+
+		public void OnDataReady(string data_cell_token)
+		{
+			_preparationCommandService.OnDataReady(data_cell_token);
 		}
 
 		#region Информация о состоянии

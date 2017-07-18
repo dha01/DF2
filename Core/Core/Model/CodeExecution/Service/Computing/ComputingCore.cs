@@ -40,7 +40,8 @@ namespace Core.Model.CodeExecution.Service.Computing
 					new BasicExecutionService(),
 					control_execution_service,
 					new CSharpExecutionService(function_repository)
-				}
+				},
+				data_cell_repository
 			);
 
 			var job_manager = new JobManager(execution_manager);

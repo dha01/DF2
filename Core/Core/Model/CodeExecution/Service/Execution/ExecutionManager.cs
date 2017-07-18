@@ -4,6 +4,7 @@ using Core.Model.CodeExecution.DataModel.Bodies.Commands;
 using Core.Model.CodeExecution.DataModel.Bodies.Data;
 using Core.Model.CodeExecution.DataModel.Bodies.Functions;
 using Core.Model.CodeExecution.DataModel.Headers.Base;
+using Core.Model.CodeExecution.Repository;
 
 namespace Core.Model.CodeExecution.Service.Execution
 {
@@ -15,12 +16,33 @@ namespace Core.Model.CodeExecution.Service.Execution
 
 		private Dictionary<Type, IExecutionService> _availableExecutionServices;
 
-		public ExecutionManager(IEnumerable<IExecutionService> execution_services)
+		private IDataCellRepository _dataCellRepository;
+
+		public ExecutionManager(IEnumerable<IExecutionService> execution_services, IDataCellRepository data_cell_repository)
 		{
+			_dataCellRepository = data_cell_repository;
 			_availableExecutionServices = new Dictionary<Type, IExecutionService>();
 			foreach (var execution_service in execution_services)
 			{
 				_availableExecutionServices.Add(execution_service.GetType(), execution_service);
+			}
+		}
+
+		private void ThrowReturnedValue(DataCell output, Token callstack)
+		{
+			var par = Token.Parse(callstack.Last());
+			if (par.Index == 0)
+			{
+				ThrowReturnedValue(output, callstack.Prev());
+			}
+			else
+			{
+				var result = callstack.Next("result");
+				if (output.Token != result)
+				{
+					output.Header.Token = result;
+				}
+				_dataCellRepository.Add(new []{ output });
 			}
 		}
 
@@ -29,6 +51,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 			if (function.GetType() == typeof(BasicFunction))
 			{
 				Execute((BasicFunction)function, input_data, output, callstack);
+				ThrowReturnedValue(output, callstack.Value);
 			}
 			else
 			if (function.GetType() == typeof(ControlFunction))

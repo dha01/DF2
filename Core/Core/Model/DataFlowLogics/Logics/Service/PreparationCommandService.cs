@@ -161,7 +161,9 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 			else
 			{
-				var command_template = prev_func.Commands.ToArray()[par.Index.Value - (par.Index.Value > 0 ? prev_func.InputDataCount : 0)];
+				var commands = prev_func.Commands.ToList();
+
+				var command_template = prev_func.Commands.ToArray()[par.Index.Value];
 				var cond_ids = command_template.ConditionId;
 
 				cond_count = cond_ids.Count;
@@ -180,7 +182,9 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 					}
 					else
 					{
-						condition_data_tokens[i] = prev.Next($"tmp_var_{cond_ids[i]}");
+						//condition_data_tokens[i] = prev.Next($"tmp_var_{cond_ids[i]}");
+						var funcc = commands.First(x => x.OutputDataId == id);
+						condition_data_tokens[i] = prev.Next($"{funcc.FunctionHeader.Token}<{commands.IndexOf(funcc)}>").Next("result");
 					}
 				}
 			}
@@ -222,7 +226,9 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			}
 			else
 			{
-				var command_template = prev_func.Commands.ToArray()[par.Index.Value - (par.Index.Value > 0 ? prev_func.InputDataCount : 0)];
+				var commands = prev_func.Commands.ToList();
+
+				var command_template = commands[par.Index.Value];
 				var input_ids = command_template.InputDataIds;
 
 				count = input_ids.Count;
@@ -241,7 +247,9 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 					}
 					else
 					{
-						input_data_tokens[i] = prev.Next($"tmp_var_{input_ids[i]}");
+						//input_data_tokens[i] = prev.Next($"tmp_var_{input_ids[i]}");
+						var funcc = commands.First(x => x.OutputDataId == id);
+						input_data_tokens[i] = prev.Next($"{funcc.FunctionHeader.Token}<{commands.IndexOf(funcc)}>").Next("result");
 					}
 				}
 			}
@@ -409,7 +417,13 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		{
 			if (_waitConditionCommands.TryGetValue(command_token, out CommandHeader command_header))
 			{
-				if ((bool)_dataCellRepository.Get(condition_data_cell_token).First().Data)
+				if (TryCreateCommand(command_header.Token, command_header.OutputDataHeader.Token, command_header, out Command new_command))
+				{
+					OnPreparedCommand(new_command);
+					_waitConditionCommands.TryRemove(command_token, out CommandHeader token);
+				}
+
+				/*if ((bool)_dataCellRepository.Get(condition_data_cell_token).First().Data)
 				{
 					if (TryCreateCommand(command_header.Token, command_header.OutputDataHeader.Token, command_header, out Command new_command))
 					{
@@ -423,7 +437,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 					{
 						_waitConditionCommands.TryRemove(command_token, out CommandHeader token);
 					}
-				}
+				}*/
 			}
 		}
 
@@ -468,7 +482,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 
 		public void Clear(string path)
 		{
-			CommandHeader removed_command_header;
+			/*CommandHeader removed_command_header;
 			CommandHeader removed_commandd;
 			List<string> removed_list;
 			var key_list = _preparingCommands.Keys.ToList().Where(x => x.StartsWith(path));
@@ -489,7 +503,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 			foreach (var ke in key_list)
 			{
 				_dataLinksWithCommands.TryRemove(ke, out removed_list);
-			}
+			}*/
 		}
 	}
 }

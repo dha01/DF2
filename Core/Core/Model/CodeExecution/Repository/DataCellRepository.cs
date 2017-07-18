@@ -10,6 +10,11 @@ namespace Core.Model.CodeExecution.Repository
 	/// </summary>
 	public class DataCellRepository : ContainerRepositoryBase<DataCell, DataCellHeader>, IDataCellRepository
 	{
+		public DataCellRepository()
+		{
+			
+		}
+
 		protected override void AddConteiner(DataCell conteiner)
 		{
 			var item = _itemsTree.Get(conteiner.Token.ToEnumerable());

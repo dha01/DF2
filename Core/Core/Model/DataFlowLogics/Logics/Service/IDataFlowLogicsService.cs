@@ -28,5 +28,7 @@ namespace Core.Model.DataFlowLogics.Logics.Service
 		/// </summary>
 		/// <returns></returns>
 		StateQueuesInfo GetStateQueuesInfo();
+
+		void OnDataReady(string data_cell_token);
 	}
 }
