@@ -506,7 +506,7 @@ namespace CustomNamespace
 			var text3 = GetText(assembly, "CustomNamespace.CustomClass.Fib_labda_3");
 			//var new_text = GetNewText(assembly, "CustomNamespace.CustomClass.MyFunction");
 
-			var count = 10;
+			var count = 1;
 
 			Task<DataCell>[] tasks = new Task<DataCell>[count + 1];
 			int?[] results = new int?[count + 1];

@@ -42,26 +42,12 @@ namespace Core.Model.CodeExecution.Repository
 						var result = tree.Get(path.Skip(1));
 						return result;
 					}
-					else
-					{
-						if (_items.ContainsKey(part))
-						{
-							var c = 5;
-						}
-					}
 				}
 				else
 				{
 					if (_values.TryGetValue(part, out T_conteiner value))
 					{
 						return value;
-					}
-					else
-					{
-						if (_values.ContainsKey(part))
-						{
-							var c = 5;
-						}
 					}
 				}
 
@@ -93,6 +79,33 @@ namespace Core.Model.CodeExecution.Repository
 					else
 					{
 						_values.TryRemove(part, out cont);
+					}
+				}
+			}
+
+			public void DeleteChilds(IEnumerable<string> path)
+			{
+				var part = path.First();
+				Tree tree;
+				T_conteiner cont;
+
+				var count = path.Count();
+				if (path.Count() > 1)
+				{
+					if (_items.TryGetValue(part, out tree))
+					{
+						tree.DeleteChilds(path.Skip(1));
+					}
+				}
+				else
+				{
+					if (_items.TryGetValue(part, out tree))
+					{
+						tree._items.Clear();
+						foreach (var key in _values.Keys.Where(x => !x.StartsWith("result")))
+						{
+							_values.TryRemove(key, out cont);
+						}
 					}
 				}
 			}
@@ -249,6 +262,14 @@ namespace Core.Model.CodeExecution.Repository
 				_itemsTree.Delete(token.Trim('/').Split('/'));
 				//_items.TryRemove(token, out T_conteiner container);
 				//_itemHeaders.TryRemove(token, out T_header container_header);
+			}
+		}
+
+		public virtual void DeleteChilds(params string[] tokens)
+		{
+			foreach (var token in tokens)
+			{
+				_itemsTree.DeleteChilds(token.Trim('/').Split('/'));
 			}
 		}
 

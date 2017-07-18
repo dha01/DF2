@@ -11,7 +11,7 @@ namespace Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job
 	/// </summary>
 	public class JobManager : IJobManager
 	{
-		private const int MAX_JOB_COUNT = 4;
+		private const int MAX_JOB_COUNT = 8;
 
 		//private ICommandRepository _commandRepository;
 

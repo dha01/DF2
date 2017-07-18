@@ -15,6 +15,7 @@ namespace Core.Model.CodeExecution.Repository
 		IEnumerable<T_conteiner> Get(params string[] tokens);
 		void Delete(params string[] tokens);
 		void DeleteStartWith(params string[] tokens);
+		void DeleteChilds(params string[] tokens);
 
 		void AddHeaders(IEnumerable<T_header> header);
 
