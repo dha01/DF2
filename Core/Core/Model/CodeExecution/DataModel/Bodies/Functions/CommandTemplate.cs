@@ -13,6 +13,8 @@ namespace Core.Model.CodeExecution.DataModel.Bodies.Functions
 		/// </summary>
 		public FunctionHeader FunctionHeader { get; set; }
 
+		public string FunctionHash => FunctionHeader.Token.Hash;
+
 		/// <summary>
 		/// Список идентификаторов входных параметров.
 		/// </summary>

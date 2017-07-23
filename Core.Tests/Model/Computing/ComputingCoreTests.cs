@@ -6,10 +6,12 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Core.Model.CodeCompiler.Build;
+using Core.Model.CodeCompiler.Code;
 using Core.Model.CodeExecution.DataModel.Bodies.Commands;
 using Core.Model.CodeExecution.DataModel.Bodies.Data;
 using Core.Model.CodeExecution.DataModel.Bodies.Functions;
@@ -17,6 +19,10 @@ using Core.Model.CodeExecution.DataModel.Headers.Data;
 using Core.Model.CodeExecution.DataModel.Headers.Functions;
 using Core.Model.CodeExecution.Repository;
 using Core.Model.CodeExecution.Service.Computing;
+using Core.Model.CodeExecution.Service.Execution;
+using Core.Model.DataFlowLogics.BlockChain.DataModel;
+using Core.Model.DataFlowLogics.BlockChain.Repository;
+using Core.Model.DataFlowLogics.BlockChain.Service;
 using Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job;
 using Core.Model.DataFlowLogics.Logger;
 using Core.Model.DataFlowLogics.Logics.Service;
@@ -494,9 +500,85 @@ namespace CustomNamespace
 		}
 
 		[TestMethod]
+		public void BlockChainTest()
+		{
+			var function_repository = new FunctionHashRepository();
+			var data_cell_repository = new DataCellHashRepository();
+
+			var ts = new TransactionExecutorService(
+				new DataCellHashService(data_cell_repository), 
+				new FunctionHashService(function_repository, data_cell_repository), 
+				new ExecutionManager(new List<IExecutionService>
+					{
+						new BasicExecutionService(),
+						new CSharpExecutionService(new FunctionRepository(new DataCellRepository()))
+					}, new DataCellRepository()), 
+				new TransactionPoolService());
+
+			SHA512 my_sha = SHA512.Create();
+
+			var input_value = new DataCellHash
+			{
+				Hash = Convert.ToBase64String(my_sha.ComputeHash(Encoding.ASCII.GetBytes("User0/Process0/Input0"))),
+				Type = "int",
+				Value = 3
+			};
+
+			var text = CommandBuilder.CompileMethodFromAssembly(assembly, "CustomNamespace.CustomClass.Fib");
+			var text1 = CommandBuilder.CompileMethodFromAssembly(assembly, "CustomNamespace.CustomClass.Fib_labda_1");
+			var text2 = CommandBuilder.CompileMethodFromAssembly(assembly, "CustomNamespace.CustomClass.Fib_labda_2");
+			var text3 = CommandBuilder.CompileMethodFromAssembly(assembly, "CustomNamespace.CustomClass.Fib_labda_3");
+
+			data_cell_repository.Set(input_value);
+			function_repository.Set(new []
+			{
+				new FunctionHash
+				{
+					Function = text,
+					Hash = text.Token.Hash
+				},
+				new FunctionHash
+				{
+					Function = text1,
+					Hash = text1.Token.Hash
+				},
+				new FunctionHash
+				{
+					Function = text2,
+					Hash = text2.Token.Hash
+				},
+				new FunctionHash
+				{
+					Function = text3,
+					Hash = text3.Token.Hash
+				},
+			});
+
+			var task_hash = Convert.ToBase64String(my_sha.ComputeHash(Encoding.ASCII.GetBytes("User0/Process0/")));
+
+			ts.Execute(new ExecutionTransaction
+			{
+				ParentFunction = null,
+				Index = 0,
+				Inputs = new []{ input_value.Hash },
+				Temps = null,
+				Function = text.Token.Hash,
+				TaskHash = task_hash,
+				IsInitial = true,
+				ParentTransaction = null
+			});
+		}
+
+
+		[TestMethod]
 		public void IntegrationSCustomCodeTest2()
 		{
+			SHA512 mySHA256 = SHA512.Create();
 
+			
+			var hash = mySHA256.ComputeHash(Encoding.ASCII.GetBytes("string"));
+			var str = Convert.ToBase64String(hash);
+			var arr = Convert.FromBase64String(str);
 			//	computing_core.AddAssembly(@"F:\Main Folder\Аспирантура\Диссертация\Program\DF2\SimpleMethods\bin\Debug\netcoreapp1.1\SimpleMethods.dll");
 
 

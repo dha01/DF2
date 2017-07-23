@@ -51,7 +51,7 @@ namespace Core.Model.CodeExecution.Service.Execution
 			if (function.GetType() == typeof(BasicFunction))
 			{
 				Execute((BasicFunction)function, input_data, output, callstack);
-				ThrowReturnedValue(output, callstack.Value);
+				//ThrowReturnedValue(output, callstack.Value);
 			}
 			else
 			if (function.GetType() == typeof(ControlFunction))
