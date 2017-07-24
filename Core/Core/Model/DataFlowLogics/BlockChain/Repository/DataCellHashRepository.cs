@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Core.Model.DataFlowLogics.BlockChain.DataModel;
 
 namespace Core.Model.DataFlowLogics.BlockChain.Repository
@@ -18,15 +20,23 @@ namespace Core.Model.DataFlowLogics.BlockChain.Repository
 
 	    public void Set(params DataCellHash[] data_cells)
 	    {
-		    foreach (var data_cell in data_cells)
+		    if (data_cells.Any(
+			    x => x.Hash == "3aRuH6jAgZZLJib4Hu/V8A3/DY9GZVZ9dkQMiQyNPh50PYi4hYfJShf1m5gNKnzwwDOPS4IwEANOKLsHvP91Ag=="))
 		    {
-			    if (_dataCells.TryGetValue(data_cell.Hash, out DataCellHash val))
+			    var f = 5;
+		    }
+			foreach (var data_cell in data_cells)
+		    {
+			    if (!_dataCells.TryAdd(data_cell.Hash, data_cell))
 			    {
-				    _dataCells.TryUpdate(data_cell.Hash, data_cell, val);
-			    }
-			    else
-			    {
-				    _dataCells.TryAdd(data_cell.Hash, data_cell);
+				    if (!_dataCells.TryGetValue(data_cell.Hash, out DataCellHash val))
+				    {
+					    throw new NotImplementedException();
+				    }/*
+				    if (_dataCells.TryUpdate(data_cell.Hash, data_cell, val))
+				    {
+						throw new NotImplementedException();
+					}*/
 			    }
 		    }
 	    }

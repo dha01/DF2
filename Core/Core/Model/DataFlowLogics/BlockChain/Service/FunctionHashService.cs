@@ -31,17 +31,17 @@ namespace Core.Model.DataFlowLogics.BlockChain.Service
 			    if (function_hash.Function is ControlFunction)
 			    {
 				    var control_function = (ControlFunction) function_hash.Function;
-					foreach (var constant in control_function.Constants)
+				    for (int i = 0; i < control_function.Constants.Count; i++)
 				    {
-					    function_constans.Add(new DataCellHash
+					    var cons = control_function.Constants[i];
+						function_constans.Add(new DataCellHash
 					    {
-						    Value = constant,
-							Type = constant.GetType().ToString(),
-							Hash = Convert.ToBase64String(_mySha.ComputeHash(Encoding.ASCII.GetBytes($"{control_function.Token.Hash}/Const_{control_function.Constants.IndexOf(constant)}")))
-						});
+						    Value = cons,
+						    Type = cons.GetType().ToString(),
+						    Hash = Convert.ToBase64String(_mySha.ComputeHash(Encoding.ASCII.GetBytes($"{control_function.Token.Hash}/Const_{i}")))
+					    });
 					}
-
-				}
+			    }
 		    }
 
 		    if (function_constans.Any())

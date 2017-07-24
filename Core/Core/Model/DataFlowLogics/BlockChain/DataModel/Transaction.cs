@@ -31,5 +31,14 @@ namespace Core.Model.DataFlowLogics.BlockChain.DataModel
 		}
 		
 		public virtual string TaskHash { get; set; }
+
+		public virtual Transaction Clone()
+		{
+			return new Transaction
+			{
+				_hash = _hash,
+				TaskHash = TaskHash
+			};
+		}
 	}
 }

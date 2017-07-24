@@ -14,6 +14,7 @@ using Core.Model.CodeExecution.Service.Execution;
 using Core.Model.DataFlowLogics.BlockChain.DataModel;
 using Core.Model.DataFlowLogics.BlockChain.Repository;
 using Core.Model.DataFlowLogics.BlockChain.Service;
+using Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job;
 using NUnit.Framework;
 
 namespace Core.Tests.Model.DataFlowLogics.BlockChain.Service
@@ -69,6 +70,13 @@ namespace CustomNamespace
 		[Test]
 		public void BlockChainTest()
 		{
+			var _mySha = SHA512.Create();
+			var one = Convert.ToBase64String(_mySha.ComputeHash(Encoding.ASCII.GetBytes($"o07+HMx9CckGOC4XFxy1BGCzteX9XxNeyAuxIX/uEKJVDieH+06qHR9ENTsdnjMYVG6sksH0UsMIE2uuzo9kiA==/Const_0")));
+			
+			var two = Convert.ToBase64String(_mySha.ComputeHash(Encoding.ASCII.GetBytes($"o07+HMx9CckGOC4XFxy1BGCzteX9XxNeyAuxIX/uEKJVDieH+06qHR9ENTsdnjMYVG6sksH0UsMIE2uuzo9kiA==/Const_1")));
+			var three = Convert.ToBase64String(_mySha.ComputeHash(Encoding.ASCII.GetBytes($"o07+HMx9CckGOC4XFxy1BGCzteX9XxNeyAuxIX/uEKJVDieH+06qHR9ENTsdnjMYVG6sksH0UsMIE2uuzo9kiA==/Const_0")));
+
+
 			var data_cell_repository = new DataCellHashRepository();
 			var data_cell_service = new DataCellHashService(data_cell_repository);
 			var function_service = new FunctionHashService(new FunctionHashRepository(), data_cell_repository);
@@ -144,20 +152,49 @@ namespace CustomNamespace
 				IsInitial = true,
 				ParentTransaction = null
 			};
-
+			/*
+			var job_hash_manager = new JobHashManager(transaction_pool_service, ts);
+			*/
 			transaction_pool_service.EnqueueToPreparation(2, first_transaction);
 
 
-			while (transaction_pool_service.TryDequeueToPreparation(out Transaction transaction))
-			{
-				ts.Execute(transaction);
-			}
+			bool a = false;
+			bool b = false;
 
-			if (first_transaction.Temps != null && first_transaction.Temps[0] != null)
+			Task.Run(() =>
 			{
-				var result = data_cell_service.GetLocal(first_transaction.Temps[0]).FirstOrDefault();
-			}
+				while (!a || !b)
+				{
+					a = false;
+					while (transaction_pool_service.TryDequeueToPreparation(out Transaction transaction))
+					{
+						
+						ts.Execute(transaction.Clone());
+					}
+					a = true;
+				}
+			});
+			Task.Run(() =>
+			{
+				while (!a || !b)
+				{
+					b = false;
+					while (transaction_pool_service.TryDequeueToPreparation(out Transaction transaction))
+					{
+						ts.Execute(transaction.Clone());
+					}
+					b = true;
+				}
+			});
 
+
+			var hash_result = transaction_pool_service.GetResultHash(first_transaction.Hash).Result;
+			var result = data_cell_service.GetLocal(hash_result).FirstOrDefault()?.Value;
+			/*if (first_transaction.Temps != null && first_transaction.Temps[0] != null)
+			{
+				var result = data_cell_service.GetLocal(first_transaction.Temps[0]).FirstOrDefault()?.Value;
+			}*/
+			Assert.Fail(result?.ToString());
 		}
 	}
 }

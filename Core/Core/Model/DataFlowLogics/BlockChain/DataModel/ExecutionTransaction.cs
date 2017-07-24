@@ -22,6 +22,22 @@ namespace Core.Model.DataFlowLogics.BlockChain.DataModel
 
 		public bool IsInitial { get; set; } = true;
 
+		public override Transaction Clone()
+		{
+			return new ExecutionTransaction
+			{
+				_hash = _hash,
+				TaskHash = TaskHash,
+				ParentTransaction = ParentTransaction,
+				Index = Index,
+				Inputs = Inputs?.ToArray(),
+				Temps = Temps?.ToArray(),
+				Function = Function,
+				ParentFunction = ParentFunction,
+				IsInitial = IsInitial
+			};
+		}
+
 		public string GetOutputHash()
 		{
 			IEnumerable<byte> bytes = Encoding.ASCII.GetBytes($"{TaskHash}/{ParentTransaction}/{ParentFunction}/{Function}<{Index}>/{string.Join(",", Inputs)}/result");

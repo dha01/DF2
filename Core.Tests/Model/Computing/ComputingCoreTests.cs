@@ -27,13 +27,13 @@ using Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job;
 using Core.Model.DataFlowLogics.Logger;
 using Core.Model.DataFlowLogics.Logics.Service;
 using Core.Model.NetworkLogic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 //using SimpleMethods.Simple;
 
 namespace Core.Tests.Model.Computing
 {
-	[TestClass]
+	[TestFixture]
 	public class ComputingCoreTests
 	{
 		private IFunctionRepository _functionRepository;
@@ -50,7 +50,7 @@ namespace Core.Tests.Model.Computing
 
 		private IDataFlowLogicsService _dataFlowLogicsService;
 
-		[TestInitialize()]
+		[SetUp]
 		public void Initialize()
 		{
 			//Math2.Sum;
@@ -80,7 +80,7 @@ namespace Core.Tests.Model.Computing
 			Mock.Get(_commandManager).Verify(x => x.AddHeaders(command_headers));
 		}*/
 
-		[TestMethod]
+		[Test]
 		public void ThredTest()
 		{
 			
@@ -353,7 +353,7 @@ namespace Core.Tests.Model.Computing
 		}
 
 
-		[TestMethod]
+		[Test]
 		public void IntegrationTest()
 		{
 			/*var cs_assembly = CSharpFunctionExtractor.ExtractAssembly(
@@ -436,7 +436,7 @@ namespace Core.Tests.Model.Computing
 		}
 
 
-		[TestMethod]
+		[Test]
 		public void IntegrationSimpleTest()
 		{
 			var computing_core = ComputingCore.InitComputingCore();
@@ -492,14 +492,14 @@ namespace CustomNamespace
 			Return(Exec<int>(""Fib"", a - b) + Exec<int>(""Fib"", a - c));
 		}
 	}
-}");
+}");/*
 		[ClassInitialize]
 		public static void ComputingCoreTestsInit(TestContext tc)
 		{
 			computing_core.AddAssembly(assembly);
-		}
+		}*/
 
-		[TestMethod]
+		[Test]
 		public void BlockChainTest()
 		{
 			var function_repository = new FunctionHashRepository();
@@ -570,7 +570,7 @@ namespace CustomNamespace
 		}
 
 
-		[TestMethod]
+		[Test]
 		public void IntegrationSCustomCodeTest2()
 		{
 			SHA512 mySHA256 = SHA512.Create();
@@ -645,7 +645,7 @@ namespace CustomNamespace
 			}
 		}
 
-		[TestMethod]
+		[Test]
 		public void IntegrationSCustomCodeTest()
 		{
 			//Meth();
@@ -747,7 +747,7 @@ namespace CustomNamespace
 			return GetText(new_code);
 		}
 
-		[TestMethod]
+		[Test]
 		public void Command()
 		{
 			//CommandBuilder.BuildHeader("Main", $"SimpleMethods.Control.Simple".Split('.').ToList())

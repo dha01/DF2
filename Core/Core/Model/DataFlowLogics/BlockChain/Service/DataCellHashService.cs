@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Core.Model.DataFlowLogics.BlockChain.DataModel;
 using Core.Model.DataFlowLogics.BlockChain.Repository;
 
@@ -23,6 +27,7 @@ namespace Core.Model.DataFlowLogics.BlockChain.Service
 
 		public IEnumerable<DataCellHash> GetGlobal(params string[] data_cell_hashs)
 		{
+
 			throw new NotImplementedException();
 		}
 
