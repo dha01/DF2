@@ -98,7 +98,7 @@ namespace CustomNamespace
 			{
 				Hash = Convert.ToBase64String(my_sha.ComputeHash(Encoding.ASCII.GetBytes("User0/Process0/Input0"))),
 				Type = "int",
-				Value = 20
+				Value = 21
 			};
 
 			var text = CommandBuilder.CompileMethodFromAssembly(assembly, "CustomNamespace.CustomClass.Fib");
@@ -152,12 +152,12 @@ namespace CustomNamespace
 				IsInitial = true,
 				ParentTransaction = null
 			};
-			/*
+			
 			var job_hash_manager = new JobHashManager(transaction_pool_service, ts);
-			*/
+			
 			transaction_pool_service.EnqueueToPreparation(2, first_transaction);
 
-
+/*
 			bool a = false;
 			bool b = false;
 
@@ -185,7 +185,7 @@ namespace CustomNamespace
 					}
 					b = true;
 				}
-			});
+			});*/
 
 
 			var hash_result = transaction_pool_service.GetResultHash(first_transaction.Hash).Result;

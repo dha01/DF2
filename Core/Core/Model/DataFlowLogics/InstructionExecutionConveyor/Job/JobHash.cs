@@ -57,30 +57,34 @@ namespace Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job
 
 		public void Strart()
 		{
-			lock (_objectLock)
-			{
-				_isWork = true;
-				_eventReset.Set();
-			}
+			/*lock (_objectLock)
+			{*/
+				if(!_isWork)
+				{
+					_eventReset.Set();
+					_isWork = true;
+				}
+			/*}*/
 		}
 
 		public void Stop()
 		{
-			lock (_objectLock)
-			{
+			_eventReset.Reset();
+			/*lock (_objectLock)
+			{*/
 				_isWork = false;
-			}
-			_eventReset.WaitOne(1000);
+			/*}*/
+			_eventReset.WaitOne();
 		}
 
 		public bool IsWork
 		{
 			get
 			{
-				lock (_objectLock)
-				{
+				/*lock (_objectLock)
+				{*/
 					return _isWork;
-				}
+				/*}*/
 			}
 		}
 
@@ -100,19 +104,16 @@ namespace Core.Model.DataFlowLogics.InstructionExecutionConveyor.Job
 			while (true)
 			{
 				Stop();
-				while ( _transactionPoolService.QueueLength > 0)
+				while (_transactionPoolService.TryDequeueToPreparation(out Transaction transaction))
 				{
-					while (_transactionPoolService.TryDequeueToPreparation(out Transaction transaction))
+					try
 					{
-						try
-						{
-							_transactionExecutorService.Execute(transaction.Clone());
-							_speedTest.Incremental();
-						}
-						catch (Exception e)
-						{
-							Console.WriteLine(e.Message);
-						}
+						_transactionExecutorService.Execute(transaction.Clone());
+						_speedTest.Incremental();
+					}
+					catch (Exception e)
+					{
+						Console.WriteLine(e.Message);
 					}
 				}
 			}

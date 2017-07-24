@@ -126,7 +126,7 @@ namespace Core.Model.DataFlowLogics.BlockChain.Service
 				Interlocked.Increment(ref _queueLength);
 				_enqueueSpeedTest.Incremental();
 			}
-			//OnAddToPreparation.Invoke();
+			OnAddToPreparation.Invoke();
 		}
 
 		public bool TryDequeueToPreparation(out Transaction transaction)
