@@ -560,7 +560,6 @@ namespace CustomNamespace
 				Temps = null,
 				Function = text.Token.Hash,
 				TaskHash = Transaction.GetHash("User0/Process0/"),
-				IsInitial = true,
 				ParentTransaction = null
 			});
 		}

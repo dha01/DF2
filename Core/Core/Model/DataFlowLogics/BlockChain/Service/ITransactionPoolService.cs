@@ -21,12 +21,14 @@ namespace Core.Model.DataFlowLogics.BlockChain.Service
 
 		void UpdateToPool(Transaction transaction);
 
-		Task<string> GetResultHash(string transaction_hash, int timeout = -1);
+		string GetResultHash(string transaction_hash, int timeout = -1);
 
 		bool TryGetFromPool(string transaction_hash, out Transaction transaction);
 
 		void EnqueueToPreparation(int priotiry, params Transaction[] transactions);
 
 		bool TryDequeueToPreparation(out Transaction transaction);
+
+		void CalculationComplite(string transaction_hash);
 	}
 }

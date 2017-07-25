@@ -12,6 +12,8 @@ namespace Core.Model.DataFlowLogics
 
 		private long _taskCounter = 0;
 
+		private long _totalTaskCounter = 0;
+
 		private Task _taskTimer;
 
 		public SpeedTest(int interval = 1000)
@@ -20,8 +22,10 @@ namespace Core.Model.DataFlowLogics
 			{
 				while (true)
 				{
-					Interlocked.Exchange(ref _taskPerSecond, Interlocked.Read(ref _taskCounter));
+					var task_counter = Interlocked.Read(ref _taskCounter);
+					Interlocked.Exchange(ref _taskPerSecond, task_counter);
 					Interlocked.Exchange(ref _taskCounter, 0);
+					_totalTaskCounter += task_counter;
 					Thread.Sleep(interval);
 				}
 			});

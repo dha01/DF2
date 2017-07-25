@@ -95,13 +95,13 @@ namespace CustomNamespace
 			{
 				Hash = Transaction.GetHash("User0/Process0/Input0"),
 				Type = "int",
-				Value = 20
+				Value = 25
 			};
 
-			var text = CommandBuilder.CompileMethodFromAssembly(assembly, "CustomNamespace.CustomClass.Fib");
-			var text1 = CommandBuilder.CompileMethodFromAssembly(assembly, "CustomNamespace.CustomClass.Fib_labda_1");
-			var text2 = CommandBuilder.CompileMethodFromAssembly(assembly, "CustomNamespace.CustomClass.Fib_labda_2");
-			var text3 = CommandBuilder.CompileMethodFromAssembly(assembly, "CustomNamespace.CustomClass.Fib_labda_3");
+			var func_fib = CommandBuilder.CompileMethodFromAssembly(assembly, "CustomNamespace.CustomClass.Fib");
+			var func_fib_lambda_1 = CommandBuilder.CompileMethodFromAssembly(assembly, "CustomNamespace.CustomClass.Fib_labda_1");
+			var func_fib_lambda_2 = CommandBuilder.CompileMethodFromAssembly(assembly, "CustomNamespace.CustomClass.Fib_labda_2");
+			var func_fib_lambda_3 = CommandBuilder.CompileMethodFromAssembly(assembly, "CustomNamespace.CustomClass.Fib_labda_3");
 
 			function_service.Set(BasicFunctionModel.AllMethods.Select(x => new FunctionHash
 			{
@@ -116,37 +116,34 @@ namespace CustomNamespace
 			{
 				new FunctionHash
 				{
-					Function = text,
-					Hash = text.Token.Hash
+					Function = func_fib,
+					Hash = func_fib.Token.Hash
 				},
 				new FunctionHash
 				{
-					Function = text1,
-					Hash = text1.Token.Hash
+					Function = func_fib_lambda_1,
+					Hash = func_fib_lambda_1.Token.Hash
 				},
 				new FunctionHash
 				{
-					Function = text2,
-					Hash = text2.Token.Hash
+					Function = func_fib_lambda_2,
+					Hash = func_fib_lambda_2.Token.Hash
 				},
 				new FunctionHash
 				{
-					Function = text3,
-					Hash = text3.Token.Hash
+					Function = func_fib_lambda_3,
+					Hash = func_fib_lambda_3.Token.Hash
 				},
 			});
-
-			var task_hash = Transaction.GetHash("User0/Process0/");
-
+			
 			var first_transaction = new ExecutionTransaction
 			{
 				ParentFunction = null,
 				Index = 0,
 				Inputs = new[] {input_value.Hash},
 				Temps = null,
-				Function = text.Token.Hash,
-				TaskHash = task_hash,
-				IsInitial = true,
+				Function = func_fib.Token.Hash,
+				TaskHash = Transaction.GetHash("User0/Process0/"),
 				ParentTransaction = null
 			};
 			
@@ -154,43 +151,10 @@ namespace CustomNamespace
 			
 			transaction_pool_service.EnqueueToPreparation(2, first_transaction);
 
-/*
-			bool a = false;
-			bool b = false;
 
-			Task.Run(() =>
-			{
-				while (!a || !b)
-				{
-					a = false;
-					while (transaction_pool_service.TryDequeueToPreparation(out Transaction transaction))
-					{
-						
-						ts.Execute(transaction.Clone());
-					}
-					a = true;
-				}
-			});
-			Task.Run(() =>
-			{
-				while (!a || !b)
-				{
-					b = false;
-					while (transaction_pool_service.TryDequeueToPreparation(out Transaction transaction))
-					{
-						ts.Execute(transaction.Clone());
-					}
-					b = true;
-				}
-			});*/
-
-
-			var hash_result = transaction_pool_service.GetResultHash(first_transaction.Hash).Result;
+			var hash_result = transaction_pool_service.GetResultHash(first_transaction.Hash);
 			var result = data_cell_service.GetLocal(hash_result).FirstOrDefault()?.Value;
-			/*if (first_transaction.Temps != null && first_transaction.Temps[0] != null)
-			{
-				var result = data_cell_service.GetLocal(first_transaction.Temps[0]).FirstOrDefault()?.Value;
-			}*/
+
 			Assert.Fail(result?.ToString());
 		}
 	}

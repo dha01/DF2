@@ -19,8 +19,6 @@ namespace Core.Model.DataFlowLogics.BlockChain.DataModel
 		public string Function { get; set; }
 		public string ParentFunction { get; set; }
 
-		public bool IsInitial { get; set; } = true;
-
 		public override Transaction Clone()
 		{
 			return new ExecutionTransaction
@@ -32,8 +30,7 @@ namespace Core.Model.DataFlowLogics.BlockChain.DataModel
 				Inputs = Inputs?.ToArray(),
 				Temps = Temps?.ToArray(),
 				Function = Function,
-				ParentFunction = ParentFunction,
-				IsInitial = IsInitial
+				ParentFunction = ParentFunction
 			};
 		}
 

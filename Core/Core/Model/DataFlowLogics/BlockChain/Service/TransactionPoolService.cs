@@ -34,10 +34,6 @@ namespace Core.Model.DataFlowLogics.BlockChain.Service
 			{ 1, new ConcurrentQueue<Transaction>() },
 			{ 2, new ConcurrentQueue<Transaction>() }
 		};
-		/*
-		private readonly ConcurrentQueue<Transaction> _concurrentQueueZero = new ConcurrentQueue<Transaction>();
-		private readonly ConcurrentQueue<Transaction> _concurrentQueueFirst = new ConcurrentQueue<Transaction>();
-		private readonly ConcurrentQueue<Transaction> _concurrentQueueSecond = new ConcurrentQueue<Transaction>();*/
 
 		private readonly ConcurrentDictionary<string, Transaction> _transactionsPool = new ConcurrentDictionary<string, Transaction>();
 
@@ -52,13 +48,7 @@ namespace Core.Model.DataFlowLogics.BlockChain.Service
 		{
 			if (_transactionsPool.TryAdd(transaction.Hash, transaction))
 			{
-				/*if (_waitResults.TryGetValue(transaction.Hash, out ManualResetEvent waiting))
-				{
-					if (((ExecutionTransaction)transaction)?.Temps?[0] != null)
-					{
-						waiting.Set();
-					}
-				}*/
+
 			}
 		}
 
@@ -68,52 +58,35 @@ namespace Core.Model.DataFlowLogics.BlockChain.Service
 			{
 				if (_transactionsPool.TryUpdate(transaction.Hash, transaction, exists_transaction))
 				{
-					/*if (_waitResults.TryGetValue(transaction.Hash, out ManualResetEvent waiting))
-					{
-						if (((ExecutionTransaction)transaction)?.Temps?[0] != null)
-						{
-							waiting.Set();
-						}
-					}*/
+
 				}
 			}
 		}
 
 		private readonly ConcurrentDictionary<string, ManualResetEvent> _waitResults = new ConcurrentDictionary<string, ManualResetEvent>();
 
-		public async Task<string> GetResultHash(string transaction_hash, int timeout = -1)
+		public void CalculationComplite(string transaction_hash)
 		{
-			return await Task.Factory.StartNew(() =>
+			if(_waitResults.TryGetValue(transaction_hash, out ManualResetEvent manual_reset_event))
 			{
-				_transactionsPool.TryGetValue(transaction_hash, out Transaction got_transaction);
+				manual_reset_event.Set();
+			}
+		}
 
-				while (((ExecutionTransaction)got_transaction)?.Temps?[0] == null)
-				{
-					Thread.Sleep(1000);
-					
-					_transactionsPool.TryGetValue(transaction_hash, out got_transaction);
-				}/*
+		public string GetResultHash(string transaction_hash, int timeout = -1)
+		{
+			var mre = new ManualResetEvent(false);
+			_waitResults.TryAdd(transaction_hash, mre);
+			mre.WaitOne(timeout);
+			_transactionsPool.TryGetValue(transaction_hash, out Transaction got_transaction);
 
-				if (((ExecutionTransaction)got_transaction)?.Temps?[0] == null)
-				{
-					var mre = new ManualResetEvent(false);
+			var result = ((ExecutionTransaction) got_transaction)?.Temps?[0];
 
-					if (_waitResults.TryAdd(transaction_hash, mre))
-					{
-
-					}
-					else
-					{
-						if (!_waitResults.TryGetValue(transaction_hash, out mre))
-						{
-							throw new NotImplementedException("DataCellHashRepository.Get");
-						}
-					}
-					mre.WaitOne(timeout);
-				}
-				_transactionsPool.TryGetValue(transaction_hash, out got_transaction);*/
-				return ((ExecutionTransaction)got_transaction)?.Temps?[0];
-			});
+			if (result == null)
+			{
+				throw new NotImplementedException();
+			}
+			return result;
 		}
 
 		public bool TryGetFromPool(string transaction_hash, out Transaction transaction)
@@ -138,9 +111,6 @@ namespace Core.Model.DataFlowLogics.BlockChain.Service
 		{
 			Transaction transaction_in = null;
 			var result = _concurrentQueue.Values.Any(x => x.TryDequeue(out transaction_in));
-			/*var result = _concurrentQueueZero.TryDequeue(out transaction_in) ||
-			             _concurrentQueueFirst.TryDequeue(out transaction_in) ||
-			             _concurrentQueueSecond.TryDequeue(out transaction_in);*/
 
 			if (result)
 			{
