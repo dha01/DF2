@@ -9,8 +9,7 @@ namespace Core.Model.DataFlowLogics.BlockChain.DataModel
 	{
 		public override void RecalacHash()
 		{
-			IEnumerable<byte> bytes = Encoding.ASCII.GetBytes($"{TaskHash}/{ParentTransaction}/{ParentFunction}/{Function}<{Index}>/{string.Join(",", Inputs)}");
-			_hash = Convert.ToBase64String(_mySHA512.ComputeHash(bytes.ToArray()));
+			_hash = GetHash($"{TaskHash}/{ParentTransaction}/{ParentFunction}/{Function}<{Index}>/{string.Join(",", Inputs)}");
 		}
 
 		public string ParentTransaction { get; set; }
@@ -40,8 +39,7 @@ namespace Core.Model.DataFlowLogics.BlockChain.DataModel
 
 		public string GetOutputHash()
 		{
-			IEnumerable<byte> bytes = Encoding.ASCII.GetBytes($"{TaskHash}/{ParentTransaction}/{ParentFunction}/{Function}<{Index}>/{string.Join(",", Inputs)}/result");
-			return Convert.ToBase64String(_mySHA512.ComputeHash(bytes.ToArray()));
+			return GetHash($"{TaskHash}/{ParentTransaction}/{ParentFunction}/{Function}<{Index}>/{string.Join(",", Inputs)}/result");
 		}
 
 		public ExecutionCompliteTransaction GetCompliteExecutionTransaction()

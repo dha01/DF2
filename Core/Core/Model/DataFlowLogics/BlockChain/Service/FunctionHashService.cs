@@ -19,9 +19,7 @@ namespace Core.Model.DataFlowLogics.BlockChain.Service
 		    _functionHashRepository = function_hash_repository;
 		    _dataCellHashRepository = data_cell_hash_repository;
 	    }
-
-	    private static SHA512 _mySha = SHA512.Create();
-
+		
 		public void Set(params FunctionHash[] function_hashs)
 	    {
 
@@ -38,7 +36,7 @@ namespace Core.Model.DataFlowLogics.BlockChain.Service
 					    {
 						    Value = cons,
 						    Type = cons.GetType().ToString(),
-						    Hash = Convert.ToBase64String(_mySha.ComputeHash(Encoding.ASCII.GetBytes($"{control_function.Token.Hash}/Const_{i}")))
+						    Hash = Transaction.GetHash($"{control_function.Token.Hash}/Const_{i}")
 					    });
 					}
 			    }

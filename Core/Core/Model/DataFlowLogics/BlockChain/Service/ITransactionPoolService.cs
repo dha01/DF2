@@ -14,6 +14,9 @@ namespace Core.Model.DataFlowLogics.BlockChain.Service
 
 		Action OnAddToPreparation { get; set; }
 
+
+		void DeleteFromPool(string transaction_hash);
+
 		void AddToPool(Transaction transaction);
 
 		void UpdateToPool(Transaction transaction);

@@ -514,12 +514,10 @@ namespace CustomNamespace
 						new CSharpExecutionService(new FunctionRepository(new DataCellRepository()))
 					}, new DataCellRepository()), 
 				new TransactionPoolService());
-
-			SHA512 my_sha = SHA512.Create();
-
+			
 			var input_value = new DataCellHash
 			{
-				Hash = Convert.ToBase64String(my_sha.ComputeHash(Encoding.ASCII.GetBytes("User0/Process0/Input0"))),
+				Hash = Transaction.GetHash("User0/Process0/Input0"),
 				Type = "int",
 				Value = 3
 			};
@@ -554,8 +552,6 @@ namespace CustomNamespace
 				},
 			});
 
-			var task_hash = Convert.ToBase64String(my_sha.ComputeHash(Encoding.ASCII.GetBytes("User0/Process0/")));
-
 			ts.Execute(new ExecutionTransaction
 			{
 				ParentFunction = null,
@@ -563,7 +559,7 @@ namespace CustomNamespace
 				Inputs = new []{ input_value.Hash },
 				Temps = null,
 				Function = text.Token.Hash,
-				TaskHash = task_hash,
+				TaskHash = Transaction.GetHash("User0/Process0/"),
 				IsInitial = true,
 				ParentTransaction = null
 			});
@@ -573,11 +569,7 @@ namespace CustomNamespace
 		[Test]
 		public void IntegrationSCustomCodeTest2()
 		{
-			SHA512 mySHA256 = SHA512.Create();
-
-			
-			var hash = mySHA256.ComputeHash(Encoding.ASCII.GetBytes("string"));
-			var str = Convert.ToBase64String(hash);
+			var str = Transaction.GetHash("string");
 			var arr = Convert.FromBase64String(str);
 			//	computing_core.AddAssembly(@"F:\Main Folder\Аспирантура\Диссертация\Program\DF2\SimpleMethods\bin\Debug\netcoreapp1.1\SimpleMethods.dll");
 

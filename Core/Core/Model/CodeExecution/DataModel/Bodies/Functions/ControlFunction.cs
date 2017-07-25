@@ -16,6 +16,6 @@ namespace Core.Model.CodeExecution.DataModel.Bodies.Functions
 		/// <summary>
 		/// Список команд.
 		/// </summary>
-		public IEnumerable<CommandTemplate> Commands { get; set; }
+		public List<CommandTemplate> Commands { get; set; }
 	}
 }

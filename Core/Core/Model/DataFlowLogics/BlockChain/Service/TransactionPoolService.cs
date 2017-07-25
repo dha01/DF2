@@ -43,6 +43,11 @@ namespace Core.Model.DataFlowLogics.BlockChain.Service
 
 		public Action OnAddToPreparation { get; set; } = null;
 
+		public void DeleteFromPool(string transaction_hash)
+		{
+			_transactionsPool.TryRemove(transaction_hash, out Transaction transaction);
+		}
+
 		public void AddToPool(Transaction transaction)
 		{
 			if (_transactionsPool.TryAdd(transaction.Hash, transaction))

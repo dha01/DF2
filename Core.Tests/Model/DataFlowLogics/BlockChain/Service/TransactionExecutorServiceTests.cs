@@ -70,11 +70,10 @@ namespace CustomNamespace
 		[Test]
 		public void BlockChainTest()
 		{
-			var _mySha = SHA512.Create();
-			var one = Convert.ToBase64String(_mySha.ComputeHash(Encoding.ASCII.GetBytes($"o07+HMx9CckGOC4XFxy1BGCzteX9XxNeyAuxIX/uEKJVDieH+06qHR9ENTsdnjMYVG6sksH0UsMIE2uuzo9kiA==/Const_0")));
+			var one = Transaction.GetHash($"o07+HMx9CckGOC4XFxy1BGCzteX9XxNeyAuxIX/uEKJVDieH+06qHR9ENTsdnjMYVG6sksH0UsMIE2uuzo9kiA==/Const_0");
 			
-			var two = Convert.ToBase64String(_mySha.ComputeHash(Encoding.ASCII.GetBytes($"o07+HMx9CckGOC4XFxy1BGCzteX9XxNeyAuxIX/uEKJVDieH+06qHR9ENTsdnjMYVG6sksH0UsMIE2uuzo9kiA==/Const_1")));
-			var three = Convert.ToBase64String(_mySha.ComputeHash(Encoding.ASCII.GetBytes($"o07+HMx9CckGOC4XFxy1BGCzteX9XxNeyAuxIX/uEKJVDieH+06qHR9ENTsdnjMYVG6sksH0UsMIE2uuzo9kiA==/Const_0")));
+			var two = Transaction.GetHash($"o07+HMx9CckGOC4XFxy1BGCzteX9XxNeyAuxIX/uEKJVDieH+06qHR9ENTsdnjMYVG6sksH0UsMIE2uuzo9kiA==/Const_1");
+			var three = Transaction.GetHash($"o07+HMx9CckGOC4XFxy1BGCzteX9XxNeyAuxIX/uEKJVDieH+06qHR9ENTsdnjMYVG6sksH0UsMIE2uuzo9kiA==/Const_0");
 
 
 			var data_cell_repository = new DataCellHashRepository();
@@ -92,13 +91,11 @@ namespace CustomNamespace
 				}, new DataCellRepository()),
 				transaction_pool_service);
 
-			SHA512 my_sha = SHA512.Create();
-
 			var input_value = new DataCellHash
 			{
-				Hash = Convert.ToBase64String(my_sha.ComputeHash(Encoding.ASCII.GetBytes("User0/Process0/Input0"))),
+				Hash = Transaction.GetHash("User0/Process0/Input0"),
 				Type = "int",
-				Value = 21
+				Value = 20
 			};
 
 			var text = CommandBuilder.CompileMethodFromAssembly(assembly, "CustomNamespace.CustomClass.Fib");
@@ -139,7 +136,7 @@ namespace CustomNamespace
 				},
 			});
 
-			var task_hash = Convert.ToBase64String(my_sha.ComputeHash(Encoding.ASCII.GetBytes("User0/Process0/")));
+			var task_hash = Transaction.GetHash("User0/Process0/");
 
 			var first_transaction = new ExecutionTransaction
 			{

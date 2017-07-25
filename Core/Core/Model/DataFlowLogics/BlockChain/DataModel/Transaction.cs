@@ -8,12 +8,9 @@ namespace Core.Model.DataFlowLogics.BlockChain.DataModel
 {
 	public class Transaction
 	{
-		protected static SHA512 _mySHA512 = SHA512.Create();
-
 		public virtual void RecalacHash()
 		{
-			IEnumerable<byte> bytes = Encoding.ASCII.GetBytes(TaskHash);
-			_hash = Convert.ToBase64String(_mySHA512.ComputeHash(bytes.ToArray()));
+			_hash = GetHash(TaskHash);
 		}
 
 		protected string _hash;
@@ -39,6 +36,12 @@ namespace Core.Model.DataFlowLogics.BlockChain.DataModel
 				_hash = _hash,
 				TaskHash = TaskHash
 			};
+		}
+
+		public static string GetHash(string text)
+		{
+			var my_sha = SHA512.Create();
+			return Convert.ToBase64String(my_sha.ComputeHash(Encoding.ASCII.GetBytes(text)));
 		}
 	}
 }

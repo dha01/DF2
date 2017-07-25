@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Core.Model.DataFlowLogics.BlockChain.DataModel;
 
 namespace Core.Model.CodeExecution.DataModel.Headers.Base
 {
@@ -34,14 +35,11 @@ namespace Core.Model.CodeExecution.DataModel.Headers.Base
 		private string _value;
 
 		public string Hash { get; }
-
-		private static SHA512 _mySHA512 = SHA512.Create();
-
+		
 		public Token(string token)
 		{
 			_value = token;
-			Hash = Convert.ToBase64String(_mySHA512.ComputeHash(Encoding.ASCII.GetBytes(_value)));
-			//_value.GetHashCode()
+			Hash = Transaction.GetHash(_value);
 		}
 
 		public enum TokenType
